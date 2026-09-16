@@ -163,6 +163,12 @@ class ValidateScriptTests(unittest.TestCase):
         assert result.returncode == 0, result.stderr
         assert "validated 3 source RPMs" in result.stdout
 
+    def test_returns_zero_when_packages_directory_is_absent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result = self.run_validate(root)
+            assert result.returncode == 0, result.stderr
+
     def test_the_checked_in_factory_tree_passes_its_own_gate(self) -> None:
         result = self.run_validate(ROOT)
         assert result.returncode == 0, result.stdout + result.stderr
