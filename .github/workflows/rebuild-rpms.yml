@@ -31,8 +31,6 @@ on:
 permissions:
   contents: read
   id-token: write
-  packages: write
-  attestations: write
 
 # Build waves may run concurrently.  They use run-scoped artifacts and each
 # publication re-seeds from the then-current repository, so concurrent work
