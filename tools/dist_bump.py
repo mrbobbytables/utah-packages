@@ -28,14 +28,17 @@ We express the counter in the disttag rather than in `Release:`, so the
 translation is that a moved baseline retires the counter instead of re-seating
 it.
 
-Like theirs, this refuses to guess at a `Release:` built from macros --
-nodejs, kernel-headers and krb5 are the packages that shape is used for -- and
-asks for the bump to be handled by hand rather than comparing two strings that
-do not mean what they appear to.
+When `Release:` uses macros like `%autorelease`, spec-defined `%global`/`%define`
+macros (such as `baserelease`), or conditional release tags, they are evaluated
+or queried via `rpmspec` if available, so that `baseline` can be compared
+reliably. If an unresolvable macro remains, this refuses to guess and asks for
+the bump to be handled by hand.
 """
 from __future__ import annotations
 
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -44,23 +47,103 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.package_inventory import source_locks
 
 ROOT = Path(__file__).resolve().parent.parent
-RELEASE = re.compile(r"^Release:\s*(\S+)", re.MULTILINE)
+RELEASE = re.compile(r"^Release:\s*(.+)$", re.MULTILINE)
 
 
 class BumpError(Exception):
     """The recorded bump cannot be applied to this spec."""
 
 
-def spec_release(spec: str) -> str:
-    """The `Release:` value, with a trailing dist macro removed."""
+def _strip_conditional_macros(text: str) -> str:
+    """Strip nested RPM conditional macro expressions like %{?...}."""
+    while "%{?" in text:
+        start = text.find("%{?")
+        depth = 0
+        end = -1
+        for i in range(start, len(text)):
+            if text[i : i + 2] == "%{" or text[i : i + 3] == "%{?":
+                depth += 1
+            elif text[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    end = i
+                    break
+        if end != -1:
+            text = text[:start] + text[end + 1 :]
+        else:
+            break
+    return text
+
+
+def spec_release(spec: str, spec_path: Path | str | None = None) -> str:
+    """The `Release:` value, with macros expanded and trailing dist removed."""
+    if spec_path is not None and shutil.which("rpmspec"):
+        try:
+            out = subprocess.check_output(
+                ["rpmspec", "-q", "--srpm", "--qf", "%{RELEASE}", str(spec_path)],
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+            for dist in ("%{?dist}", "%{dist}"):
+                if out.endswith(dist):
+                    out = out[: -len(dist)]
+                    break
+            if out and "%" not in out:
+                return out
+        except Exception:
+            pass
+
     match = RELEASE.search(spec)
     if match is None:
         raise BumpError("spec has no Release: line")
-    release = match.group(1)
+    release = match.group(1).strip()
     for dist in ("%{?dist}", "%{dist}"):
         if release.endswith(dist):
             release = release[: -len(dist)]
             break
+
+    # Parse %global and %define macros defined in the spec
+    macros: dict[str, str] = {}
+    for line in spec.splitlines():
+        macro_match = re.match(r"^%(?:global|define)\s+(\w+)\s+(.+)$", line)
+        if macro_match:
+            macros[macro_match.group(1)] = macro_match.group(2).strip()
+
+    # Expand %autorelease or %{autorelease} (with optional -b <base> flag)
+    def parse_autorelease(rel_str: str) -> str | None:
+        clean = rel_str.strip()
+        if clean.startswith("%{autorelease") and clean.endswith("}"):
+            clean = "%" + clean[2:-1]
+        if clean == "%autorelease" or clean.startswith("%autorelease "):
+            b_match = re.search(r"-b\s*(\S+)", clean)
+            if b_match:
+                return b_match.group(1)
+            return "1"
+        return None
+
+    auto = parse_autorelease(release)
+    if auto is not None:
+        return auto
+
+    release = _strip_conditional_macros(release)
+
+    # Expand referenced %{macro} definitions
+    for _ in range(5):
+        expanded = False
+        for k, v in macros.items():
+            pattern = f"%{{{k}}}"
+            if pattern in release:
+                release = release.replace(pattern, v)
+                expanded = True
+        if not expanded:
+            break
+
+    release = _strip_conditional_macros(release)
+
+    auto = parse_autorelease(release)
+    if auto is not None:
+        return auto
+
     if "%" in release:
         raise BumpError(
             f"Release: {match.group(1)} is built from macros; bump it by hand "
@@ -92,7 +175,7 @@ def main(name: str) -> str:
     specs = sorted((ROOT / "packages" / name).glob("*.spec"))
     if not specs:
         raise BumpError(f"{name} records a dist_bump but has no spec")
-    return suffix(entry, spec_release(specs[0].read_text()))
+    return suffix(entry, spec_release(specs[0].read_text(), spec_path=specs[0]))
 
 
 if __name__ == "__main__":

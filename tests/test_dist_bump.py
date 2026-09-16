@@ -14,11 +14,43 @@ class SpecReleaseTests(unittest.TestCase):
         self.assertEqual(spec_release("Release: 7\n"), "7")
 
     def test_refuses_a_release_built_from_macros(self) -> None:
-        # krb5, nodejs and kernel-headers all do this. Comparing the literal
-        # string against a baseline would compare two things that are not
-        # releases.
+        # nodejs and kernel-headers specrelease do this when unresolvable.
+        # Comparing the literal string against a baseline would compare two things
+        # that are not releases.
         with self.assertRaises(BumpError):
             spec_release("Release: %{krb5_release}%{?dist}\n")
+
+    def test_expands_autorelease_default(self) -> None:
+        self.assertEqual(spec_release("Release: %autorelease\n"), "1")
+        self.assertEqual(spec_release("Release: %{autorelease}\n"), "1")
+
+    def test_expands_autorelease_with_base_flag(self) -> None:
+        self.assertEqual(spec_release("Release: %autorelease -b3\n"), "3")
+        self.assertEqual(spec_release("Release: %{autorelease -b 5}\n"), "5")
+
+    def test_evaluates_spec_globals_and_conditionals(self) -> None:
+        pipewire = (
+            "%global baserelease 3\n"
+            "Release: %{baserelease}%{?snapdate:.%{snapdate}git%{shortcommit}}%{?dist}\n"
+        )
+        self.assertEqual(spec_release(pipewire), "3")
+
+        libxcursor = (
+            "%global gitversion 8f677eaea\n"
+            "Release: 5%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}\n"
+        )
+        self.assertEqual(spec_release(libxcursor), "5")
+
+        firefox = (
+            "Release: 1%{?pre_tag}%{?dist}\n"
+        )
+        self.assertEqual(spec_release(firefox), "1")
+
+        samba = (
+            "%global samba_release %autorelease\n"
+            "Release: %{samba_release}\n"
+        )
+        self.assertEqual(spec_release(samba), "1")
 
     def test_reports_a_spec_with_no_release(self) -> None:
         with self.assertRaises(BumpError):
