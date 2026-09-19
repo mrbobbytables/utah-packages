@@ -32,6 +32,14 @@ class MultimediaClosureTests(unittest.TestCase):
         errors = validate(self.manifest, self.locks, report)
         self.assertTrue(any("unlocked factory source" in error for error in errors))
 
+    def test_version_mismatch_in_nevra_is_rejected(self):
+        report = json.loads(json.dumps(self.report))
+        # Modify NEVRA of first entry to have mismatched version
+        req = report["requirements"][0]
+        req["binary_nevra"] = "PackageKit-gstreamer-plugin-99.99.99-1.hum1.bfin.x86_64"
+        errors = validate(self.manifest, self.locks, report)
+        self.assertTrue(any("does not contain locked source version" in error for error in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

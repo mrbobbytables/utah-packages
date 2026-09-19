@@ -678,11 +678,11 @@
     },
     {
       "name": "gstreamer1-plugin-libav",
-      "version": "1.28.7",
-      "url": "https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-1.28.7.tar.xz",
-      "filename": "gst-libav-1.28.7.tar.xz",
+      "version": "1.28.6",
+      "url": "https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-1.28.6.tar.xz",
+      "filename": "gst-libav-1.28.6.tar.xz",
       "stage": 4,
-      "sha512": "7a199c95727f5bd7fccacf6a1ab8d0dcaa708da7f1e279de9f9e4b3386cd2371e6d4196a04243afe8493f04306563fad92439b9cc10408291255274da2cea546"
+      "sha512": "6c11b4149945a5cf557a7ddfe2fef6a70ce504b49e126f2a19ccd9ec601d5867da31527a669c77aa3e22fe20015503f4190ab11e20554999b02ba652690785b6"
     },
     {
       "name": "gstreamer1-plugins-bad-free",
@@ -709,11 +709,11 @@
     },
     {
       "name": "gstreamer1-plugins-ugly-free",
-      "version": "1.28.7",
-      "url": "https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-1.28.7.tar.xz",
-      "filename": "gst-plugins-ugly-1.28.7.tar.xz",
+      "version": "1.28.6",
+      "url": "https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-1.28.6.tar.xz",
+      "filename": "gst-plugins-ugly-1.28.6.tar.xz",
       "stage": 1,
-      "sha512": "6dc22c7fb007b2458c2ab6ec1830a95ebc1c3de4172c85e4ea795f931d5d0e02289e0da39345b4b41976280aba9af35ea7c3a200cc8403e623fe5cba71c4e58a"
+      "sha512": "6356a7281366c278b21f1ad775fb82dbafebc9b52c64173f53bb037cc7dd5d989ec1f9d031fddbd4e1170915046907a3e2747becc3087a5c2d31a9c38bbb5a25"
     },
     {
       "name": "gtk2",

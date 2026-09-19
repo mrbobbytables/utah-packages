@@ -33,15 +33,16 @@ def validate(manifest: dict[str, Any], locks: dict[str, Any], report: dict[str, 
         provided = _names(provided_section.get("packages", []), "hummingbird_provided.packages", errors)
 
     lock_entries = locks.get("packages")
+    lock_names: set[str] = set()
+    lock_versions: dict[str, str] = {}
     if not isinstance(lock_entries, list):
         errors.append("config/upstream-sources.json packages must be a list")
-        lock_names: set[str] = set()
     else:
-        lock_names = {
-            entry.get("name")
-            for entry in lock_entries
-            if isinstance(entry, dict) and isinstance(entry.get("name"), str)
-        }
+        for entry in lock_entries:
+            if isinstance(entry, dict) and isinstance(entry.get("name"), str):
+                lock_names.add(entry["name"])
+                if isinstance(entry.get("version"), str):
+                    lock_versions[entry["name"]] = entry["version"]
 
     source_section = manifest.get("multimedia_sources", {})
     source_map: dict[str, str] = {}
@@ -92,6 +93,14 @@ def validate(manifest: dict[str, Any], locks: dict[str, Any], report: dict[str, 
             errors.append(f"{name} has no factory binary")
         if not isinstance(entry.get("binary_nevra"), str) or not entry["binary_nevra"]:
             errors.append(f"{name} has no binary NEVRA")
+        elif source in lock_versions:
+            expected_version = lock_versions[source]
+            nevra = entry["binary_nevra"]
+            if f"-{expected_version}-" not in nevra:
+                errors.append(
+                    f"{name} binary NEVRA ({nevra}) does not contain "
+                    f"locked source version ({expected_version})"
+                )
 
     if set(report_by_name) != set(required):
         errors.append(
