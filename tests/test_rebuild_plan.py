@@ -125,14 +125,6 @@ class PublishedComparisonTests(unittest.TestCase):
             )
 
 
-    def test_rebuild_reason_invalidates_published_match(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            recipe(root, "demo", "3")
-            entry = {"name": "demo", "version": "1.0", "rebuild_reason": "Relink against newer ABI"}
-            self.assertFalse(is_published(root, entry, {"demo": ("1.0", "3.hum1.bfin")}))
-
-
 class ChangedEntryTests(unittest.TestCase):
     """A stage move has to force a rebuild.
 

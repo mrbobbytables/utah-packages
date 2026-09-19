@@ -110,8 +110,6 @@ def is_published(root: Path, entry: dict, published: dict[str, tuple[str, str]])
     name = entry["name"]
     if name not in published:
         return False
-    if entry.get("rebuild_reason") is not None:
-        return False
     published_version, published_release = published[name]
     if normalize_version(published_version) != normalize_version(entry.get("version", "")):
         return False
