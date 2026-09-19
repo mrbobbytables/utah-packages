@@ -211,8 +211,8 @@ def expand_spec_macros(text: str, macros: dict[str, str]) -> str:
     """Expand macros like %{name} or %name without clobbering longer tokens."""
     for k in sorted(macros.keys(), key=len, reverse=True):
         v = macros[k]
-        text = re.sub(r"%\{\??\b" + re.escape(k) + r"\b\}", v, text)
-        text = re.sub(r"%\b" + re.escape(k) + r"\b", v, text)
+        text = re.sub(r"%\{\??\b" + re.escape(k) + r"\b\}", lambda _: v, text)
+        text = re.sub(r"%\b" + re.escape(k) + r"\b", lambda _: v, text)
     return text
 
 
