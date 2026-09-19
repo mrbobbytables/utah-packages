@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import tomllib
@@ -17,6 +18,42 @@ from tools.rawhide_sources import import_binaries, source_name
 
 def command(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, text=True, capture_output=True, check=False)
+
+
+def factory_sources(destination: Path) -> set[str]:
+    """Return package and binary names whose source is the factory itself (direct-upstream recipes)."""
+    if not destination.is_dir():
+        return set()
+    names: set[str] = set()
+    for directory in sorted(destination.iterdir()):
+        if not directory.is_dir():
+            continue
+        provenance_path = directory / ".hummingbird-upstream.json"
+        if not provenance_path.is_file():
+            continue
+        try:
+            data = json.loads(provenance_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            continue
+        if data.get("branch") == "upstream":
+            names.add(directory.name)
+            if "package" in data and isinstance(data["package"], str):
+                names.add(data["package"])
+            main_name = directory.name
+            for spec in sorted(directory.glob("*.spec")):
+                for line in spec.read_text(errors="replace").splitlines():
+                    match_name = re.match(r"^Name:\s*(\S+)", line)
+                    if match_name:
+                        main_name = match_name.group(1)
+                        names.add(main_name)
+                    match_pkg = re.match(r"^%package(?:\s+-n)?\s+(\S+)", line)
+                    if match_pkg:
+                        sub = match_pkg.group(1)
+                        if "-n" in line:
+                            names.add(sub)
+                        else:
+                            names.add(f"{main_name}-{sub}")
+    return names
 
 
 def resolve_source(binary: str) -> tuple[str | None, str | None]:
@@ -44,6 +81,9 @@ def main() -> int:
         policy = tomllib.loads(args.policy.read_text())
         excluded = set(policy.get("unavailable", {}).get("packages", []))
         binaries = [binary for binary in binaries if binary not in excluded]
+
+    factory = factory_sources(args.destination)
+    binaries = [binary for binary in binaries if binary not in factory]
 
     resolved: dict[str, str] = {}
     unavailable: list[dict[str, str]] = []

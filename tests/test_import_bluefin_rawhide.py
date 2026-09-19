@@ -63,6 +63,49 @@ class ResolveSourceTests(unittest.TestCase):
         self.assertEqual(error, "cannot derive source package from not-an-srpm")
 
 
+class FactorySourcesTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.destination = Path(self._tmp.name) / "packages"
+
+    def test_nonexistent_destination_returns_empty_set(self) -> None:
+        self.assertEqual(tool.factory_sources(self.destination), set())
+
+    def test_rawhide_branch_is_not_a_factory_source(self) -> None:
+        pkg_dir = self.destination / "mesa"
+        pkg_dir.mkdir(parents=True)
+        (pkg_dir / ".hummingbird-upstream.json").write_text(
+            json.dumps({"package": "mesa", "branch": "rawhide"})
+        )
+        self.assertEqual(tool.factory_sources(self.destination), set())
+
+    def test_upstream_branch_identifies_package_and_spec_names(self) -> None:
+        pkg_dir = self.destination / "pipewire-libs-extra"
+        pkg_dir.mkdir(parents=True)
+        (pkg_dir / ".hummingbird-upstream.json").write_text(
+            json.dumps({"package": "pipewire-libs-extra", "branch": "upstream"})
+        )
+        spec = (
+            "Name: pipewire-libs-extra\n"
+            "%package -n libspa-extra\n"
+            "%package subpkg\n"
+        )
+        (pkg_dir / "pipewire-libs-extra.spec").write_text(spec)
+        expected = {
+            "pipewire-libs-extra",
+            "libspa-extra",
+            "pipewire-libs-extra-subpkg",
+        }
+        self.assertEqual(tool.factory_sources(self.destination), expected)
+
+    def test_corrupt_or_missing_provenance_is_ignored(self) -> None:
+        (self.destination / "corrupt").mkdir(parents=True)
+        (self.destination / "corrupt" / ".hummingbird-upstream.json").write_text("invalid json")
+        (self.destination / "no-provenance").mkdir(parents=True)
+        self.assertEqual(tool.factory_sources(self.destination), set())
+
+
 class MainTests(unittest.TestCase):
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
@@ -161,6 +204,24 @@ class MainTests(unittest.TestCase):
         queried = [call[-1] for call in calls if call[0] == "dnf"]
         self.assertEqual(queried, ["pipewire-alsa"])
         self.assertEqual(self.read_report()["binary_count"], 1)
+
+    def test_factory_sources_are_never_queried(self) -> None:
+        self.write_manifest(["pipewire-alsa", "pipewire-libs-extra"])
+        extra_dir = self.destination / "pipewire-libs-extra"
+        extra_dir.mkdir(parents=True)
+        (extra_dir / ".hummingbird-upstream.json").write_text(
+            json.dumps({"package": "pipewire-libs-extra", "branch": "upstream"})
+        )
+        status, calls = self.run_main({
+            "pipewire-alsa": completed(stdout="pipewire-1.4.2-3.fc44.src.rpm\n"),
+            "pipewire": completed(),
+        })
+        self.assertEqual(status, 0)
+        queried = [call[-1] for call in calls if call[0] == "dnf"]
+        self.assertEqual(queried, ["pipewire-alsa"])
+        report = self.read_report()
+        self.assertEqual(report["binary_count"], 1)
+        self.assertEqual(report["unavailable"], [])
 
     def test_absent_policy_file_leaves_every_binary_in_scope(self) -> None:
         self.write_manifest(["pipewire-alsa", "zlib-devel"])
