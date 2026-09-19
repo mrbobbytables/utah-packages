@@ -1,8 +1,113 @@
+diff --git a/src/debug/Makefile.am b/src/debug/Makefile.am
+index 4815f49..780076f 100644
+--- a/src/debug/Makefile.am
++++ b/src/debug/Makefile.am
+@@ -1,6 +1,6 @@
+ # Remove the # for more hardware-specific debugging programs.
+ # I'll need those only if you're fiddling with the guts of drivers.
+-noinst_PROGRAMS = delay svctor # ed dnstest znth
++noinst_PROGRAMS = delay # ed dnstest znth
+ 
+ LDADD = $(top_builddir)/src/lib/libatm.la
+ 
+diff --git a/src/include/atm.h b/src/include/atm.h
+index 59f5a99..c0b68fc 100644
+--- a/src/include/atm.h
++++ b/src/include/atm.h
+@@ -9,6 +9,21 @@
+ #include <stdint.h>
+ #include <sys/socket.h>
+ #include <linux/atm.h>
++#include <linux/atmioc.h>
++#include <linux/atmdev.h>
++
++/* Fallback IOCTLs dropped in Linux 6.11+ kernel UAPI */
++#ifndef ATM_GETADDR
++#define ATM_GETADDR	_IOW('a',ATMIOC_ITF+6,struct atmif_sioc)
++#define ATM_RSTADDR	_IOW('a',ATMIOC_ITF+7,struct atmif_sioc)
++#define ATM_ADDADDR	_IOW('a',ATMIOC_ITF+8,struct atmif_sioc)
++#define ATM_DELADDR	_IOW('a',ATMIOC_ITF+9,struct atmif_sioc)
++#define ATM_ADDLECSADDR	_IOW('a', ATMIOC_ITF+14, struct atmif_sioc)
++#define ATM_DELLECSADDR	_IOW('a', ATMIOC_ITF+15, struct atmif_sioc)
++#define ATM_GETLECSADDR	_IOW('a', ATMIOC_ITF+16, struct atmif_sioc)
++#define ATM_ADDPARTY	_IOW('a', ATMIOC_SPECIAL+4,struct atm_iobuf)
++#define ATM_DROPPARTY	_IOW('a', ATMIOC_SPECIAL+5,int)
++#endif
+ 
+ #ifdef  __cplusplus
+ extern "C" {
+diff --git a/src/include/linux/atmsvc.h b/src/include/linux/atmsvc.h
+index 64ccd38..434b209 100644
+--- a/src/include/linux/atmsvc.h
++++ b/src/include/linux/atmsvc.h
+@@ -1,3 +1,7 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++/* atmsvc.h - ATM signaling kernel-demon interface definitions */
++/* Compatibility replacement for dropped kernel UAPI header */
++
+ #ifndef _LINUX_ATMSVC_H
+ #define _LINUX_ATMSVC_H
+ 
+@@ -7,6 +11,7 @@
+ #include <linux/atmdev.h>
+ 
+ #define ATMSIGD_CTRL _IO('a',ATMIOC_SPECIAL)
++				/* become ATM signaling demon control socket */
+ 
+ enum atmsvc_msg_type { as_catch_null, as_bind, as_connect, as_accept, as_reject,
+ 		       as_listen, as_okay, as_error, as_indicate, as_close,
+@@ -16,21 +21,26 @@ enum atmsvc_msg_type { as_catch_null, as_bind, as_connect, as_accept, as_reject,
+ struct atmsvc_msg {
+ 	enum atmsvc_msg_type type;
+ 	atm_kptr_t vcc;
+-	atm_kptr_t listen_vcc;
+-	int reply;
+-	struct sockaddr_atmpvc pvc;
+-	struct sockaddr_atmsvc local;
+-	struct atm_qos qos;
+-	struct atm_sap sap;
+-	unsigned int session;
+-	struct sockaddr_atmsvc svc;
++	atm_kptr_t listen_vcc;		/* indicate */
++	int reply;			/* for okay and close:		   */
++					/*   < 0: error before active	   */
++					/*        (sigd has discarded ctx) */
++					/*   ==0: success		   */
++				        /*   > 0: error when active (still */
++					/*        need to close)	   */
++	struct sockaddr_atmpvc pvc;	/* indicate, okay (connect) */
++	struct sockaddr_atmsvc local;	/* local SVC address */
++	struct atm_qos qos;		/* QOS parameters */
++	struct atm_sap sap;		/* SAP */
++	unsigned int session;		/* for p2pm */
++	struct sockaddr_atmsvc svc;	/* SVC address */
+ } __ATM_API_ALIGN;
+ 
+ #define SELECT_TOP_PCR(tp) ((tp).pcr ? (tp).pcr : \
+   (tp).max_pcr && (tp).max_pcr != ATM_MAX_PCR ? (tp).max_pcr : \
+   (tp).min_pcr ? (tp).min_pcr : ATM_MAX_PCR)
+ 
+-/* IOCTLs dropped in Linux 6.11+ kernel UAPI */
++/* Fallback IOCTLs dropped in Linux 6.11+ kernel UAPI */
+ #ifndef ATM_GETADDR
+ #define ATM_GETADDR	_IOW('a',ATMIOC_ITF+6,struct atmif_sioc)
+ #define ATM_RSTADDR	_IOW('a',ATMIOC_ITF+7,struct atmif_sioc)
+@@ -39,8 +49,8 @@ struct atmsvc_msg {
+ #define ATM_ADDLECSADDR	_IOW('a', ATMIOC_ITF+14, struct atmif_sioc)
+ #define ATM_DELLECSADDR	_IOW('a', ATMIOC_ITF+15, struct atmif_sioc)
+ #define ATM_GETLECSADDR	_IOW('a', ATMIOC_ITF+16, struct atmif_sioc)
+-#define ATM_ADDPARTY  	_IOW('a', ATMIOC_SPECIAL+4,struct atm_iobuf)
+-#define ATM_DROPPARTY 	_IOW('a', ATMIOC_SPECIAL+5,int)
++#define ATM_ADDPARTY	_IOW('a', ATMIOC_SPECIAL+4,struct atm_iobuf)
++#define ATM_DROPPARTY	_IOW('a', ATMIOC_SPECIAL+5,int)
+ #endif
+ 
+ #endif
 diff --git a/src/test/Makefile.am b/src/test/Makefile.am
-index 8b9f6d4..e876a3e 100644
+index e70d273..af8dddb 100644
 --- a/src/test/Makefile.am
 +++ b/src/test/Makefile.am
-@@ -1,7 +1,7 @@
+@@ -1,6 +1,6 @@
  USRPGMS = aread awrite ttcp_atm atmswitch svc_recv svc_send @pmp_send@
  EXTRA_PROGRAMS = pmp_send
 -PGMS = align aping br bw isp window
@@ -10,4 +115,3 @@ index 8b9f6d4..e876a3e 100644
  bin_PROGRAMS = $(USRPGMS)
  noinst_PROGRAMS = $(PGMS)
  
- LDADD = $(top_builddir)/src/lib/libatm.la

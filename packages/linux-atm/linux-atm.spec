@@ -33,7 +33,7 @@ Patch9: linux-atm-2.5.1-disable-zntune.patch
 Patch10: linux-atm-c99.patch
 Patch11: linux-atm-use_socklen_t.patch
 Patch12: linux-atm-dont-use-bool-keyword.patch
-# linux/atmsvc.h dropped in modern kernel UAPI headers, disable uninstalled isp test tool
+# linux/atmsvc.h dropped in modern kernel UAPI headers; provide compat atmsvc.h/ioctls and disable uninstalled isp/svctor tools
 Patch13: linux-atm-2.5.1-disable-isp.patch
 
 %description
