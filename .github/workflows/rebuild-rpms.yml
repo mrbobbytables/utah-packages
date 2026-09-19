@@ -188,10 +188,11 @@ jobs:
         env:
           FACTORY_REPO: ${{ vars.FACTORY_REPO }}
           BUILD_LIST: ${{ needs.prepare.outputs.build_list }}
+          BUILDROOT_DIGEST: ${{ needs.prepare.outputs.buildroot_digest }}
         run: |
           mkdir -p work/reports
           docker run --rm \
-            -e FACTORY_REPO -e BUILD_LIST \
+            -e FACTORY_REPO -e BUILD_LIST -e BUILDROOT_DIGEST \
             -v "$PWD/work:/work:Z" \
             -v "$PWD/packages:/packages:ro,Z" \
             -v "$PWD/config:/repos:ro,Z" \
@@ -214,6 +215,7 @@ jobs:
               rpm -q --qf "buildroot openssl: %{VERSION}-%{RELEASE}\n" openssl-libs || true
               python3 /tools/buildroot_lock.py snapshot fedora-44 \
                 --config /repos/buildroot-lock.json \
+                --digest "$BUILDROOT_DIGEST" \
                 --output /work/reports/buildroot-fedora-44.json
               : > /work/reports/preflight.txt
               # Only resolve BuildRequires for packages this run will actually

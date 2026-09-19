@@ -37,6 +37,19 @@ def validate_buildroots(path: Path) -> None:
             if not isinstance(package, dict) or not package.get("nevra"):
                 raise SystemExit(f"buildroot {name} package locks must carry NEVRA entries")
 
+    workflow_path = path.resolve().parent.parent / ".github" / "workflows" / "rebuild-rpms.yml"
+    if workflow_path.is_file():
+        match = re.search(r"^\s*BUILDROOT_IMAGE:\s*(\S+)", workflow_path.read_text(), re.MULTILINE)
+        if match:
+            wf_image = match.group(1).strip()
+            fedora_44 = data["buildroots"].get("fedora-44", {})
+            lock_image = fedora_44.get("image", "") if isinstance(fedora_44, dict) else ""
+            if lock_image and wf_image != lock_image:
+                raise SystemExit(
+                    f"buildroot drift: config/buildroot-lock.json fedora-44 image ({lock_image}) "
+                    f"does not match rebuild-rpms.yml BUILDROOT_IMAGE ({wf_image})"
+                )
+
 
 def check_provenance(path: Path, data: dict) -> None:
     required = {"package", "branch", "remote", "commit", "tree", "imported_at"}

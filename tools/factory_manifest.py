@@ -21,13 +21,12 @@ def rpm_files(root: Path) -> list[str]:
 
 
 def reports(root: Path, prefix: str | None = None) -> list[object]:
-    report_dirs = [root / "reports", root]
+    reports_dir = root / "reports"
+    targets = [reports_dir] if reports_dir.is_dir() else [root]
     values = []
     seen = set()
-    for directory in report_dirs:
-        if not directory.is_dir():
-            continue
-        for path in sorted(directory.rglob("*.json")):
+    for directory in targets:
+        for path in sorted(directory.glob("*.json")):
             if path.name == "manifest.json":
                 continue
             if prefix and not path.name.startswith(prefix):
@@ -63,19 +62,20 @@ def main(argv: list[str] | None = None) -> int:
     if not isinstance(requested, list):
         requested = []
 
-    source_reports = reports(args.repository)
-    buildroot_reports = [
-        item
-        for item in source_reports
-        if isinstance(item, dict)
-        and (
-            str(item.get("name", "")).startswith("fedora-")
-            or "buildroot" in str(item.get("report", ""))
-        )
-    ]
-    package_reports = [
-        item for item in source_reports if item not in buildroot_reports
-    ]
+    all_reports = reports(args.repository)
+    buildroot_reports = []
+    package_reports = []
+    for item in all_reports:
+        if (
+            isinstance(item, dict)
+            and item.get("schema") == 1
+            and "packages" in item
+            and "name" in item
+        ):
+            buildroot_reports.append(item)
+        elif isinstance(item, dict) and "package" in item:
+            package_reports.append(item)
+
     payload = {
         "schema": 1,
         "created_at": datetime.now(UTC).isoformat(),

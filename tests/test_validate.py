@@ -193,6 +193,20 @@ class ValidateScriptTests(unittest.TestCase):
         assert result.returncode != 0
         assert "invalid buildroot lock" in result.stderr
 
+    def test_detects_drift_between_buildroot_lock_and_workflow(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.build(root)
+            wf_dir = root / ".github" / "workflows"
+            wf_dir.mkdir(parents=True)
+            wf_file = wf_dir / "rebuild-rpms.yml"
+            wf_file.write_text(
+                "jobs:\n  prepare:\n    env:\n      BUILDROOT_IMAGE: quay.io/fedora/fedora:44@sha256:" + "1" * 64 + "\n"
+            )
+            result = self.run_validate(root)
+            assert result.returncode != 0
+            assert "buildroot drift" in result.stderr
+
     def test_reports_a_package_with_no_source_lock(self) -> None:
         result = self.check(provenance=RAWHIDE_PROVENANCE, locked=())
         assert result.returncode == 1

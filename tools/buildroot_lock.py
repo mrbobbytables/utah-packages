@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -91,22 +92,40 @@ def cmd_snapshot(args: argparse.Namespace) -> int:
     lock = load_lock(args.config)
     spec = buildroot(lock, args.name)
     packages = rpm_packages()
+    locked_image = spec["image"]
+    base_ref = locked_image.split("@")[0]
+    digest = getattr(args, "digest", None) or os.environ.get("BUILDROOT_DIGEST")
+    actual_image = (
+        getattr(args, "image", None)
+        or (f"{base_ref}@{digest}" if digest else None)
+        or os.environ.get("ACTUAL_BUILDROOT_IMAGE")
+        or os.environ.get("BUILDROOT_IMAGE")
+        or locked_image
+    )
     payload = {
         "schema": 1,
         "name": args.name,
-        "image": spec["image"],
+        "image": actual_image,
+        "locked_image": locked_image,
         "captured_at": datetime.now(UTC).isoformat(),
         "packages": packages,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     expected = spec.get("packages", [])
+    errors = []
+    if actual_image != locked_image:
+        msg = f"buildroot image mismatch: lock specifies {locked_image}, actual running image is {actual_image}"
+        if args.strict:
+            errors.append(msg)
+        else:
+            print(f"warning: {msg}", file=sys.stderr)
     if args.strict and expected:
-        errors = compare(expected, packages)
-        if errors:
-            for error in errors:
-                print(error, file=sys.stderr)
-            return 1
+        errors.extend(compare(expected, packages))
+    if errors:
+        for error in errors:
+            print(error, file=sys.stderr)
+        return 1
     print(f"captured {len(packages)} buildroot packages for {args.name}: {args.output}")
     return 0
 
@@ -123,6 +142,8 @@ def main(argv: list[str] | None = None) -> int:
     snapshot = sub.add_parser("snapshot")
     snapshot.add_argument("name")
     snapshot.add_argument("--output", type=Path, required=True)
+    snapshot.add_argument("--image", help="actual image/digest of the running buildroot")
+    snapshot.add_argument("--digest", help="actual digest of the running buildroot")
     snapshot.add_argument("--strict", action="store_true")
     snapshot.set_defaults(func=cmd_snapshot)
 

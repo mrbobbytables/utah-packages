@@ -4,14 +4,6 @@
     "fedora-44": {
       "image": "quay.io/fedora/fedora:44@sha256:e7d398c0a67572b33a43260102f9135ab79b6b8d95efca91faa5179d83b2cdf0",
       "packages": []
-    },
-    "fedora-rawhide": {
-      "image": "quay.io/fedora/fedora:rawhide@sha256:2e51c8da2f3d11e62d9e24126514933d08efe8ea5ae00a1385617a1741ee5061",
-      "packages": []
-    },
-    "hummingbird-bootc-os": {
-      "image": "quay.io/hummingbird-community/bootc-os:latest@sha256:c5539f9ed4d93aab6bd41e4f5aef8ab83055f3f9e855a47b69fadb7420d0d1df",
-      "packages": []
     }
   }
 }

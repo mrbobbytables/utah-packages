@@ -135,6 +135,46 @@ class BuildrootLockTests(unittest.TestCase):
                 ])
                 self.assertEqual(rc, 1)
 
+    def test_cmd_snapshot_records_actual_image_and_strict_image_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            lock = Path(directory) / "lock.json"
+            locked_img = "quay.io/fedora/fedora:44@sha256:" + "c" * 64
+            actual_img = "quay.io/fedora/fedora:44@sha256:" + "d" * 64
+            lock.write_text(
+                json.dumps({
+                    "schema": 1,
+                    "buildroots": {
+                        "fedora-44": {
+                            "image": locked_img,
+                            "packages": [],
+                        }
+                    },
+                })
+            )
+            out = Path(directory) / "snapshot.json"
+            with patch("tools.buildroot_lock.rpm_packages", return_value=[]):
+                # Non-strict allows actual image differing from locked image and records both
+                rc = buildroot_main([
+                    "--config", str(lock),
+                    "snapshot", "fedora-44",
+                    "--image", actual_img,
+                    "--output", str(out),
+                ])
+                self.assertEqual(rc, 0)
+                data = json.loads(out.read_text())
+                self.assertEqual(data["image"], actual_img)
+                self.assertEqual(data["locked_image"], locked_img)
+
+                # Strict rejects when actual image != locked image
+                rc_strict = buildroot_main([
+                    "--config", str(lock),
+                    "snapshot", "fedora-44",
+                    "--image", actual_img,
+                    "--output", str(out),
+                    "--strict",
+                ])
+                self.assertEqual(rc_strict, 1)
+
 
 class FactoryManifestTests(unittest.TestCase):
     def test_manifest_aggregates_sources_buildroots_and_oci(self) -> None:
@@ -153,8 +193,10 @@ class FactoryManifestTests(unittest.TestCase):
                 })
             )
             (repo / "reports" / "buildroot-demo.json").write_text(
-                json.dumps({"name": "fedora-44", "packages": [{"nevra": "glibc-2.41.x86_64"}]})
+                json.dumps({"schema": 1, "name": "fedora-44", "packages": [{"nevra": "glibc-2.41.x86_64"}]})
             )
+            # Unrelated json published beside repo should be ignored
+            (repo / "unrelated.json").write_text(json.dumps({"arbitrary": "data"}))
             lock = root / "lock.json"
             lock.write_text(
                 json.dumps({
