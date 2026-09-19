@@ -641,7 +641,7 @@ def apply(root: Path, proposal: dict, opener=urllib.request.urlopen) -> dict:
     feed = resolve_feed(entry)
 
     module = gnome_module(entry) or (feed.get("module") if feed and feed.get("type") == "gnome" else None)
-    if module and entry.get("url", "").startswith(GNOME_SOURCES):
+    if module and (entry.get("url", "").startswith(GNOME_SOURCES) or (feed and feed.get("type") == "gnome")):
         tarball = tarball_version(release)
         url = f"{GNOME_SOURCES}{module}/{major(tarball)}/{module}-{tarball}.tar.xz"
         digest = sha512_of(url, opener=opener)

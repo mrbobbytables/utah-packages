@@ -764,6 +764,37 @@ class LookasideSafetyTests(unittest.TestCase):
                 apply(root, {"name": "foo", "latest": "1.1"}, opener=fake_opener({}))
             self.assertIn("lookaside", str(ctx.exception).lower())
 
+    def test_apply_migrates_lookaside_with_gnome_feed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "config").mkdir()
+            (root / "packages" / "adwaita-icon-theme").mkdir(parents=True)
+            (root / "config" / "upstream-sources.json").write_text(
+                json.dumps(
+                    {
+                        "packages": [
+                            {
+                                "name": "adwaita-icon-theme",
+                                "version": "46.0",
+                                "url": "https://src.fedoraproject.org/repo/pkgs/rpms/adwaita-icon-theme/adwaita-icon-theme-46.0.tar.xz/sha512/abc/adwaita-icon-theme-46.0.tar.xz",
+                                "filename": "adwaita-icon-theme-46.0.tar.xz",
+                                "sha512": "a" * 128,
+                                "feed": "https://download.gnome.org/sources/adwaita-icon-theme",
+                            }
+                        ]
+                    }
+                )
+            )
+            fake_url = "https://download.gnome.org/sources/adwaita-icon-theme/46/adwaita-icon-theme-46.1.tar.xz"
+            opener = fake_opener({fake_url: b"tarball-bytes"})
+            updated = apply(
+                root,
+                {"name": "adwaita-icon-theme", "latest": "46.1"},
+                opener=opener,
+            )
+            self.assertEqual(updated["url"], fake_url)
+            self.assertEqual(updated["version"], "46.1")
+
     def test_main_apply_continues_past_lookaside_package(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
