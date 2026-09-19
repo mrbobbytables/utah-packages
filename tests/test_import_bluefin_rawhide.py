@@ -114,11 +114,16 @@ class FactorySourcesTests(unittest.TestCase):
             json.dumps({"package": "unreadable-spec", "branch": "upstream"})
         )
         spec = pkg_dir / "unreadable-spec.spec"
-        spec.touch(mode=0o000)
-        try:
+        spec.write_text("Name: unreadable-spec\n")
+        original_read_text = Path.read_text
+
+        def mock_read_text(path_obj, *args, **kwargs):
+            if path_obj == spec:
+                raise OSError("Permission denied")
+            return original_read_text(path_obj, *args, **kwargs)
+
+        with mock.patch.object(Path, "read_text", side_effect=mock_read_text, autospec=True):
             self.assertEqual(tool.factory_sources(self.destination), {"unreadable-spec"})
-        finally:
-            spec.chmod(0o644)
 
 
 class MainTests(unittest.TestCase):

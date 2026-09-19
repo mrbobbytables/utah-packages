@@ -39,8 +39,8 @@ def factory_sources(destination: Path) -> set[str]:
             names.add(directory.name)
             if "package" in data and isinstance(data["package"], str):
                 names.add(data["package"])
-            main_name = directory.name
             for spec in sorted(directory.glob("*.spec")):
+                main_name = directory.name
                 try:
                     spec_content = spec.read_text(errors="replace")
                 except OSError:
