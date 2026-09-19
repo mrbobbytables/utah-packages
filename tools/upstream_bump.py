@@ -334,34 +334,49 @@ def _forge_request(url: str) -> urllib.request.Request:
     return urllib.request.Request(url, headers=headers)
 
 
-def forge_versions(feed: dict, opener=urllib.request.urlopen) -> list[str]:
+def forge_versions(feed: dict, opener=urllib.request.urlopen, max_pages: int = 5) -> list[str]:
     """Every version a forge lists for a project, tag prefixes stripped."""
-    if feed["forge"] == "github":
-        url = (
-            f"{GITHUB_API}/repos/{feed['owner']}/{feed['repo']}"
-            f"/{feed['endpoint']}?per_page=100"
-        )
-    else:
-        project = urllib.parse.quote(feed["path"], safe="")
-        url = (
-            f"https://{feed['host']}/api/v4/projects/{project}"
-            f"/repository/tags?per_page=100"
-        )
-    with opener(_forge_request(url), timeout=60) as response:
-        document = json.loads(response.read())
-    if not isinstance(document, list):
-        raise ValueError("forge returned no list")
     found = []
-    for item in document:
-        if feed.get("endpoint") == "releases" and feed["forge"] == "github":
-            if item.get("draft") or item.get("prerelease"):
-                continue
-            tag = item.get("tag_name", "")
+    page = 1
+    while page <= max_pages:
+        page_param = f"&page={page}" if page > 1 else ""
+        if feed["forge"] == "github":
+            url = (
+                f"{GITHUB_API}/repos/{feed['owner']}/{feed['repo']}"
+                f"/{feed['endpoint']}?per_page=100{page_param}"
+            )
         else:
-            tag = item.get("name", "")
-        version = strip_tag_prefix(tag)
-        if version:
-            found.append(version)
+            project = urllib.parse.quote(feed["path"], safe="")
+            url = (
+                f"https://{feed['host']}/api/v4/projects/{project}"
+                f"/repository/tags?per_page=100{page_param}"
+            )
+        try:
+            with opener(_forge_request(url), timeout=60) as response:
+                document = json.loads(response.read())
+        except Exception:
+            if page == 1:
+                raise
+            break
+        if not isinstance(document, list):
+            if page == 1:
+                raise ValueError("forge returned no list")
+            break
+        if not document:
+            break
+        for item in document:
+            if feed.get("endpoint") == "releases" and feed["forge"] == "github":
+                if item.get("draft") or item.get("prerelease"):
+                    continue
+                tag = item.get("tag_name", "")
+            else:
+                tag = item.get("name", "")
+            version = strip_tag_prefix(tag)
+            if version:
+                found.append(version)
+        if len(document) < 100:
+            break
+        page += 1
     return found
 
 
@@ -760,7 +775,10 @@ def main() -> int:
     for bump in finals:
         print(f"{bump['name']}: {bump['current']} -> {bump['latest']}")
         if args.apply:
-            apply(args.root, bump)
+            try:
+                apply(args.root, bump)
+            except ValueError as err:
+                print(f"skipped apply for {bump['name']}: {err}", file=sys.stderr)
 
     for item in review:
         print(

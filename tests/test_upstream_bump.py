@@ -531,6 +531,20 @@ class ForgeVersionListingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             forge_versions(feed, opener=opener)
 
+    def test_github_tags_pagination(self):
+        feed = {"forge": "github", "endpoint": "tags", "owner": "o", "repo": "r"}
+        page1 = [{"name": f"v1.{i}"} for i in range(100)]
+        page2 = [{"name": "v0.9"}]
+        opener = fake_opener(
+            {
+                "https://api.github.com/repos/o/r/tags?per_page=100": json.dumps(page1).encode(),
+                "https://api.github.com/repos/o/r/tags?per_page=100&page=2": json.dumps(page2).encode(),
+            }
+        )
+        versions = forge_versions(feed, opener=opener)
+        self.assertEqual(len(versions), 101)
+        self.assertIn("0.9", versions)
+
 
 class ForgeProposalTests(unittest.TestCase):
     ENTRY = {
@@ -749,6 +763,50 @@ class LookasideSafetyTests(unittest.TestCase):
             with self.assertRaises(ValueError) as ctx:
                 apply(root, {"name": "foo", "latest": "1.1"}, opener=fake_opener({}))
             self.assertIn("lookaside", str(ctx.exception).lower())
+
+    def test_main_apply_continues_past_lookaside_package(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "config").mkdir()
+            (root / "packages" / "foo").mkdir(parents=True)
+            (root / "packages" / "bar").mkdir(parents=True)
+            (root / "config" / "upstream-sources.json").write_text(
+                json.dumps(
+                    {
+                        "packages": [
+                            {
+                                "name": "foo",
+                                "version": "1.0",
+                                "url": "https://src.fedoraproject.org/repo/pkgs/rpms/foo/foo-1.0.tar.gz/sha512/abc/foo-1.0.tar.gz",
+                                "filename": "foo-1.0.tar.gz",
+                                "sha512": "a" * 128,
+                            },
+                            {
+                                "name": "bar",
+                                "version": "1.0",
+                                "url": "https://download.gnome.org/sources/bar/1/bar-1.0.tar.xz",
+                                "filename": "bar-1.0.tar.xz",
+                                "sha512": "b" * 128,
+                            },
+                        ]
+                    }
+                )
+            )
+            finals = [
+                {"name": "foo", "current": "1.0", "latest": "1.1", "kind": "final"},
+                {"name": "bar", "current": "1.0", "latest": "1.1", "kind": "final"},
+            ]
+            opener = fake_opener(
+                {"https://download.gnome.org/sources/bar/1/bar-1.1.tar.xz": b"content"}
+            )
+            applied = []
+            for bump in finals:
+                try:
+                    res = apply(root, bump, opener=opener)
+                    applied.append(res["name"])
+                except ValueError:
+                    pass
+            self.assertEqual(applied, ["bar"])
 
 
 class AuditInventoryTests(unittest.TestCase):
