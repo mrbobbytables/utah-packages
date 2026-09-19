@@ -152,6 +152,17 @@ def provides_from_primary(primary: bytes) -> set[str]:
     return provided
 
 
+def capability_stem(capability: str) -> str:
+    """Extract canonical stem for sonames, pkgconfig, or package names."""
+    if ".so" in capability:
+        m = re.match(r"^([a-zA-Z0-9_\-+.]+\.so)", capability)
+        if m:
+            return m.group(1)
+    if capability.startswith("pkgconfig(") and capability.endswith(")"):
+        return capability
+    return capability.split()[0]
+
+
 def stale_from_primary(primary: bytes, external: set[str]) -> dict[str, set[str]]:
     """Source name -> the Requires of its published binaries that nothing provides.
 
@@ -164,11 +175,16 @@ def stale_from_primary(primary: bytes, external: set[str]) -> dict[str, set[str]
     Neither the recipe nor the inventory changed, so `changed` never sees it,
     and the dependents map does not either: it follows edges from a provider
     that exists, and here the provider is what went missing. `external` is what
-    the consumer's other repository (Hummingbird) provides; a Requires
-    satisfied by neither side marks the package stale, and stale packages
-    rebuild.
+    the consumer's other repository (Hummingbird) provides.
+
+    Restricts staleness to capabilities the factory repository itself provides.
+    Capabilities provided solely by the base buildroot (Fedora paired with Hummingbird)
+    are not factory-managed and do not flag stale published builds.
     """
     provided = provides_from_primary(primary) | external
+    factory_provided = provides_from_primary(primary)
+    factory_stems = {capability_stem(c) for c in factory_provided}
+
     stale: dict[str, set[str]] = {}
     root = ElementTree.fromstring(primary)
     for package in root.iter(f"{{{COMMON_NS}}}package"):
@@ -186,16 +202,33 @@ def stale_from_primary(primary: bytes, external: set[str]) -> dict[str, set[str]
                 or capability in provided
             ):
                 continue
-            stale.setdefault(source, set()).add(capability)
+            if capability_stem(capability) in factory_stems:
+                stale.setdefault(source, set()).add(capability)
     return stale
+
+
+def expand_spec_macros(text: str, macros: dict[str, str]) -> str:
+    """Expand macros like %{name} or %name without clobbering longer tokens."""
+    for k in sorted(macros.keys(), key=len, reverse=True):
+        v = macros[k]
+        text = re.sub(r"%\{\??\b" + re.escape(k) + r"\b\}", v, text)
+        text = re.sub(r"%\b" + re.escape(k) + r"\b", v, text)
+    return text
+
+
+def strip_spec_comment(line: str) -> str:
+    """Strip comments from spec line without cutting URLs with fragments."""
+    if line.strip().startswith("#"):
+        return ""
+    return re.sub(r"\s+#.*$", "", line)
 
 
 def spec_dependents(root: Path, factory_pkgs: set[str]) -> dict[str, set[str]]:
     """Map provider package name -> set of factory packages that BuildRequire it.
 
-    Parses package spec files under packages/ to identify provided symbols
-    (package names, subpackages, Provides, pkgconfig symbols) and maps each
-    dependency to downstream factory packages whose BuildRequires ask for it.
+    Parses package spec files under packages/ to identify declared symbols
+    (package names, declared subpackages, Provides) and maps each dependency
+    to downstream factory packages whose BuildRequires ask for it.
     """
     packages_dir = root / "packages"
     if not packages_dir.exists():
@@ -204,16 +237,9 @@ def spec_dependents(root: Path, factory_pkgs: set[str]) -> dict[str, set[str]]:
     symbol_to_pkg: dict[str, str] = {}
     for p in factory_pkgs:
         symbol_to_pkg[p] = p
-        for sfx in ("-devel", "-libs", "-common", "-static", "-tools", "-utils", "-doc", "-docs"):
-            symbol_to_pkg[f"{p}{sfx}"] = p
-        symbol_to_pkg[f"pkgconfig({p})"] = p
-        if p.startswith("lib"):
-            symbol_to_pkg[f"pkgconfig({p[3:]})"] = p
-        else:
-            symbol_to_pkg[f"pkgconfig(lib{p})"] = p
 
     pkg_specs: dict[str, str] = {}
-    for p in factory_pkgs:
+    for p in sorted(factory_pkgs):
         spec_files = sorted((packages_dir / p).glob("*.spec"))
         if not spec_files:
             continue
@@ -227,7 +253,7 @@ def spec_dependents(root: Path, factory_pkgs: set[str]) -> dict[str, set[str]]:
         for line in content.splitlines():
             if re.match(r"^%changelog\b", line):
                 break
-            clean_lines.append(re.sub(r"#.*$", "", line))
+            clean_lines.append(strip_spec_comment(line))
         clean_content = "\n".join(clean_lines)
 
         macros = {"name": p}
@@ -238,33 +264,25 @@ def spec_dependents(root: Path, factory_pkgs: set[str]) -> dict[str, set[str]]:
             m = re.match(r"^%package\s+(.*)", line)
             if m:
                 sub = m.group(1).strip()
-                for k, v in macros.items():
-                    sub = sub.replace(f"%{{{k}}}", v).replace(f"%{k}", v)
+                sub = expand_spec_macros(sub, macros)
                 if sub.startswith("-n"):
                     subname = re.sub(r"^-n\s*", "", sub).strip().split()[0]
                 else:
                     subname = f"{p}-{sub.split()[0]}"
                 symbol_to_pkg[subname] = p
-                for sfx in ("-devel", "-libs", "-common", "-static", "-tools", "-utils", "-doc", "-docs"):
-                    symbol_to_pkg[f"{subname}{sfx}"] = pkg_specs
-                    symbol_to_pkg[f"{subname}{sfx}"] = p
-                symbol_to_pkg[f"pkgconfig({subname})"] = p
 
             m = re.match(r"^Provides:\s+(.*)", line, re.IGNORECASE)
             if m:
                 val = m.group(1).strip()
-                for k, v in macros.items():
-                    val = val.replace(f"%{{{k}}}", v).replace(f"%{k}", v)
+                val = expand_spec_macros(val, macros)
                 for token in re.findall(r"[^\s,()]+(?:\([^)]*\))?", val):
                     if token in (">=", "<=", "=", ">", "<") or token[0].isdigit() or "%" in token:
                         continue
                     symbol_to_pkg[token] = p
-                    symbol_to_pkg[f"pkgconfig({token})"] = p
 
             for pcm in re.finditer(r"([a-zA-Z0-9_\-+*%{}]+)\.pc", line):
                 pcname = pcm.group(1)
-                for k, v in macros.items():
-                    pcname = pcname.replace(f"%{{{k}}}", v).replace(f"%{k}", v)
+                pcname = expand_spec_macros(pcname, macros)
                 if "%" not in pcname:
                     if "*" in pcname:
                         expanded_pc = pcname.replace("*", p)
@@ -277,7 +295,7 @@ def spec_dependents(root: Path, factory_pkgs: set[str]) -> dict[str, set[str]]:
         for line in content.splitlines():
             if re.match(r"^%changelog\b", line):
                 break
-            line = re.sub(r"#.*$", "", line)
+            line = strip_spec_comment(line)
             m = re.match(r"^BuildRequires:\s*(.*)", line, re.IGNORECASE)
             if not m:
                 continue
@@ -291,23 +309,10 @@ def spec_dependents(root: Path, factory_pkgs: set[str]) -> dict[str, set[str]]:
                     if target != p:
                         forward_deps[p].add(target)
                 elif token.startswith("pkgconfig("):
-                    inner = token[10:-1]
-                    candidates = [inner]
-                    no_ver = re.sub(r"[-_.]?[0-9]+(?:\.[0-9]+)*$", "", inner)
-                    if no_ver != inner:
-                        candidates.append(no_ver)
-                    for cand in candidates:
-                        for cand_key in (f"pkgconfig({cand})", cand, f"lib{cand}"):
-                            if cand_key in symbol_to_pkg:
-                                target = symbol_to_pkg[cand_key]
-                                if target != p:
-                                    forward_deps[p].add(target)
-                                    break
-                        else:
-                            if cand.startswith("lib") and cand[3:] in symbol_to_pkg:
-                                target = symbol_to_pkg[cand[3:]]
-                                if target != p:
-                                    forward_deps[p].add(target)
+                    if token in symbol_to_pkg:
+                        target = symbol_to_pkg[token]
+                        if target != p:
+                            forward_deps[p].add(target)
 
     rev_deps: dict[str, set[str]] = {p: set() for p in factory_pkgs}
     for p, deps in forward_deps.items():
@@ -346,8 +351,7 @@ GLOBAL_REBUILD_PATTERNS = (
     r"^\.github/workflows/build-stage\.yml$",
     r"^\.github/actions/.*",
     r"^config/(?!upstream-sources\.json$).*",
-    r"^tools/.*",
-    r"^tests/.*",
+    r"^tools/mock_config\.py$",
 )
 
 GLOBAL_IGNORE_PATTERNS = (
@@ -362,6 +366,8 @@ GLOBAL_IGNORE_PATTERNS = (
     r"^README\.md$",
     r"^renovate\.json$",
     r"^reports/.*",
+    r"^tests/.*",
+    r"^tools/(?!mock_config\.py$).*",
 )
 
 

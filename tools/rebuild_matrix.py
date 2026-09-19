@@ -274,25 +274,6 @@ def main() -> int:
     print(f"will build {len(build)} of {len(config['packages'])} packages")
     return 0
 
-    if late := overflow(build):
-        raise SystemExit(
-            "no job exists for stage 11 or later; "
-            f"reduce the stage of: {', '.join(late)}"
-        )
-
-    outputs = stage_outputs(build)
-    for stage in range(11):
-        chunks = json.loads(outputs[f"stage{stage}_chunks"])
-        if len(chunks) > 1:
-            names = json.loads(outputs[f"stage{stage}"])
-            print(f"stage {stage}: {len(names)} packages in {len(chunks)} chunks")
-
-    with open(os.environ["GITHUB_OUTPUT"], "a") as handle:
-        for key, value in outputs.items():
-            handle.write(f"{key}={value}\n")
-    print(f"will build {len(build)} of {len(config['packages'])} packages")
-    return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

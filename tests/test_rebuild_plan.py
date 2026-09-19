@@ -398,9 +398,13 @@ class GlobalChangeTests(unittest.TestCase):
         self.assertTrue(is_global)
 
     def test_global_tooling_changes_trigger_full_rebuild(self) -> None:
-        is_global, triggers = is_global_change(["tools/source_pipeline.py"])
+        is_global, triggers = is_global_change(["tools/mock_config.py"])
         self.assertTrue(is_global)
-        self.assertIn("tools/source_pipeline.py", triggers)
+        self.assertIn("tools/mock_config.py", triggers)
+
+        # Test and planning tool changes do not force full rebuilds
+        is_global, _ = is_global_change(["tools/rebuild_plan.py", "tests/test_rebuild_plan.py"])
+        self.assertFalse(is_global)
 
     def test_global_config_changes_trigger_full_rebuild(self) -> None:
         is_global, triggers = is_global_change(["config/hummingbird.repo"])
@@ -425,7 +429,7 @@ class StaleTests(unittest.TestCase):
     """A published binary asking for what nothing provides any more rebuilds."""
 
     PRIMARY = full_primary(
-        ("libheif", "libheif", ["libheif.so.1()(64bit)"], ["libavcodec.so.62()(64bit)", "libc.so.6"]),
+        ("libheif", "libheif", ["libheif.so.1()(64bit)"], ["libavcodec.so.62()(64bit)", "libX11.so.6()(64bit)"]),
         ("libavcodec-free", "ffmpeg-free", ["libavcodec.so.63()(64bit)"], ["libc.so.6"]),
         ("gnome-shell", "gnome-shell", ["gnome-shell"], ["libheif.so.1()(64bit)", "rpmlib(PayloadIsZstd)", "(foo or bar)", "/usr/bin/python3"]),
     )
@@ -441,9 +445,15 @@ class StaleTests(unittest.TestCase):
         stale = stale_from_primary(self.PRIMARY, self.EXTERNAL)
         self.assertEqual(stale, {"libheif": {"libavcodec.so.62()(64bit)"}})
 
+    def test_unsatisfied_base_buildroot_sonames_do_not_flag_stale(self) -> None:
+        # libX11.so.6()(64bit) is unsatisfied in PRIMARY and absent from EXTERNAL,
+        # but libX11.so is not provided by the factory, so it must not mark libheif stale.
+        stale = stale_from_primary(self.PRIMARY, {"libavcodec.so.62()(64bit)"})
+        self.assertEqual(stale, {})
+
     def test_external_provides_count_as_satisfied(self) -> None:
-        stale = stale_from_primary(self.PRIMARY, set())
-        self.assertIn("libc.so.6", stale["ffmpeg-free"])
+        stale = stale_from_primary(self.PRIMARY, {"libavcodec.so.62()(64bit)"})
+        self.assertNotIn("libheif", stale)
 
     def test_rpmlib_rich_and_file_requires_are_not_judged(self) -> None:
         stale = stale_from_primary(self.PRIMARY, self.EXTERNAL)
