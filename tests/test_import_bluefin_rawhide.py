@@ -90,12 +90,14 @@ class FactorySourcesTests(unittest.TestCase):
             "Name: pipewire-libs-extra\n"
             "%package -n libspa-extra\n"
             "%package subpkg\n"
+            "%package plugin-nautilus\n"
         )
         (pkg_dir / "pipewire-libs-extra.spec").write_text(spec)
         expected = {
             "pipewire-libs-extra",
             "libspa-extra",
             "pipewire-libs-extra-subpkg",
+            "pipewire-libs-extra-plugin-nautilus",
         }
         self.assertEqual(tool.factory_sources(self.destination), expected)
 
@@ -104,6 +106,19 @@ class FactorySourcesTests(unittest.TestCase):
         (self.destination / "corrupt" / ".hummingbird-upstream.json").write_text("invalid json")
         (self.destination / "no-provenance").mkdir(parents=True)
         self.assertEqual(tool.factory_sources(self.destination), set())
+
+    def test_unreadable_spec_is_ignored(self) -> None:
+        pkg_dir = self.destination / "unreadable-spec"
+        pkg_dir.mkdir(parents=True)
+        (pkg_dir / ".hummingbird-upstream.json").write_text(
+            json.dumps({"package": "unreadable-spec", "branch": "upstream"})
+        )
+        spec = pkg_dir / "unreadable-spec.spec"
+        spec.touch(mode=0o000)
+        try:
+            self.assertEqual(tool.factory_sources(self.destination), {"unreadable-spec"})
+        finally:
+            spec.chmod(0o644)
 
 
 class MainTests(unittest.TestCase):

@@ -41,18 +41,22 @@ def factory_sources(destination: Path) -> set[str]:
                 names.add(data["package"])
             main_name = directory.name
             for spec in sorted(directory.glob("*.spec")):
-                for line in spec.read_text(errors="replace").splitlines():
+                try:
+                    spec_content = spec.read_text(errors="replace")
+                except OSError:
+                    continue
+                for line in spec_content.splitlines():
                     match_name = re.match(r"^Name:\s*(\S+)", line)
                     if match_name:
                         main_name = match_name.group(1)
                         names.add(main_name)
-                    match_pkg = re.match(r"^%package(?:\s+-n)?\s+(\S+)", line)
-                    if match_pkg:
-                        sub = match_pkg.group(1)
-                        if "-n" in line:
-                            names.add(sub)
-                        else:
-                            names.add(f"{main_name}-{sub}")
+                    match_pkg_n = re.match(r"^%package\s+-n\s+(\S+)", line)
+                    if match_pkg_n:
+                        names.add(match_pkg_n.group(1))
+                    else:
+                        match_pkg = re.match(r"^%package\s+(\S+)", line)
+                        if match_pkg:
+                            names.add(f"{main_name}-{match_pkg.group(1)}")
     return names
 
 
