@@ -158,6 +158,7 @@ When a later stage cannot see what an earlier stage built, check in this order:
 | Exit **125**, log under ~1 KB (transient) | `docker run` failed before the build; infrastructure | Not the package. Re-run once at most |
 | `Signature verification failed` after a clean download | The repo's `gpgkey` is a multi-key bundle and one key in it fails to import | Point `gpgkey` at the single release key. Verify its fingerprint against the one the failing transaction named. **Keep `gpgcheck=1`** |
 | `wrong key?` on a third-party repo whose content the build does not need | A repo signed by a key the image does not trust | Disable that repo for the build |
+| `curl 16 Error in the HTTP2 framing layer` during dist-git clone | Git over HTTP/2 framing reset on Fedora dist-git | Run `git config --global http.version HTTP/1.1` before invoking `tools/import_rawhide.py` |
 
 ## Verify against primary sources
 
@@ -170,6 +171,16 @@ Do not infer a version from what Rawhide ships or from a package name.
 - **Binary versus source names** — `wayland` the source RPM ships as
   `libwayland-server` and `wayland-devel`. A name lookup that misses is not a
   missing package.
+- **Disjunctive or optional runtime dependencies** — when a consumer specifies
+  an OR requirement (e.g. `NetworkManager-wifi` needing `(wpa_supplicant >= 1:1.1 or iwd)`
+  alongside `wireless-regdb`), the standard daemon (`wpa_supplicant`) and data package
+  (`wireless-regdb`) satisfy the dependency at stage 0 without pulling in alternative
+  tooling chains (`iwd` needing `ell`).
+- **Direct upstream source locks without local rpmspec** — when `rpmspec` is
+  unavailable locally to evaluate `%name` and `%version` macros for
+  `tools/bootstrap_upstream_sources.py`, lock entries can be derived directly from
+  the spec's `Version:` and `Source0:`, verified against upstream releases and the
+  dist-git `sources` SHA-512 hash, and configured with Fedora lookaside `fallback_urls`.
 
 ## Never
 

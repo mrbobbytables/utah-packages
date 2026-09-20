@@ -2447,6 +2447,16 @@
       "sha512": "ab56199345fdc385e62e414ec200c10777c985fb2bde767f9c76e049f47bc6d2ae83ed12d60dc1ebe0e66f22f7a7e554c13ab13837fb8cb2fbd5481149b07654"
     },
     {
+      "name": "wireless-regdb",
+      "version": "2026.09.03",
+      "url": "https://www.kernel.org/pub/software/network/wireless-regdb/wireless-regdb-2026.09.03.tar.xz",
+      "filename": "wireless-regdb-2026.09.03.tar.xz",
+      "sha512": "625918883b65361081db2d5ede754af5d58892da969500655d6211f163c463bfa8c6ab671d3be17117651fc45c41fb3f960a3544c91236fb314179318c191aa2",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/rpms/wireless-regdb/wireless-regdb-2026.09.03.tar.xz/sha512/625918883b65361081db2d5ede754af5d58892da969500655d6211f163c463bfa8c6ab671d3be17117651fc45c41fb3f960a3544c91236fb314179318c191aa2/wireless-regdb-2026.09.03.tar.xz"
+      ]
+    },
+    {
       "name": "wireplumber",
       "stage": 4,
       "version": "0.5.14",
@@ -2462,6 +2472,16 @@
       "sha512": "101dd7a18fbaee0754318cf9ec8403068df4091ccc5d3dd0bd1e46627d56a183c718c206816c08e5dbadf6fd5c747fa0c95eca1925fa27c7eeda133909696f9b",
       "fallback_urls": [
         "https://src.fedoraproject.org/repo/pkgs/rpms/wl-clipboard/wl-clipboard-2.3.0.tar.gz/sha512/101dd7a18fbaee0754318cf9ec8403068df4091ccc5d3dd0bd1e46627d56a183c718c206816c08e5dbadf6fd5c747fa0c95eca1925fa27c7eeda133909696f9b/wl-clipboard-2.3.0.tar.gz"
+      ]
+    },
+    {
+      "name": "wpa_supplicant",
+      "version": "2.11",
+      "url": "https://w1.fi/releases/wpa_supplicant-2.11.tar.gz",
+      "filename": "wpa_supplicant-2.11.tar.gz",
+      "sha512": "9a0a3a9d6fa2235903c40aa57b5955f0c9dd1dccfd0e3825a3b6f92b3e32db8d464b3ea0aef3285ba3ee109e7b190560cedd744902e954f0003cdba543e277b2",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/rpms/wpa_supplicant/wpa_supplicant-2.11.tar.gz/sha512/9a0a3a9d6fa2235903c40aa57b5955f0c9dd1dccfd0e3825a3b6f92b3e32db8d464b3ea0aef3285ba3ee109e7b190560cedd744902e954f0003cdba543e277b2/wpa_supplicant-2.11.tar.gz"
       ]
     },
     {

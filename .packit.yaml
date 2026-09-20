@@ -1852,6 +1852,12 @@ packages:
     downstream_package_name: wireguard-tools
     paths:
       - packages/wireguard-tools
+  wireless-regdb:
+    specfile_path: wireless-regdb.spec
+    upstream_package_name: wireless-regdb
+    downstream_package_name: wireless-regdb
+    paths:
+      - packages/wireless-regdb
   wireplumber:
     specfile_path: wireplumber.spec
     upstream_package_name: wireplumber
@@ -1864,6 +1870,12 @@ packages:
     downstream_package_name: wl-clipboard
     paths:
       - packages/wl-clipboard
+  wpa_supplicant:
+    specfile_path: wpa_supplicant.spec
+    upstream_package_name: wpa_supplicant
+    downstream_package_name: wpa_supplicant
+    paths:
+      - packages/wpa_supplicant
   wsdd:
     specfile_path: wsdd.spec
     upstream_package_name: wsdd
