@@ -24,6 +24,12 @@ packages/*/*.asc
 !packages/*/[0-9A-F][0-9A-F]*.asc
 !packages/*/*key*.asc
 !packages/*/*keyring*.asc
+# ...and a cargo vendor tree, for the same reason. It is a SourceN the spec
+# extracts in %prep, not something source_pipeline.py fetches: it is
+# deliberately absent from the sources manifest (this factory cannot push to
+# the Fedora lookaside, so a listed tarball 404s), and build-stage only has it
+# because `cp -a packages/<pkg>/` copies what is committed.
+!packages/*/*-vendor.tar.gz
 packages/*/*.sha256sum
 packages/*/*.upstream
 

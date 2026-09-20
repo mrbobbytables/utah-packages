@@ -8,6 +8,13 @@ repos:
       - id: check-merge-conflict
       - id: detect-private-key
       - id: check-added-large-files
+        # Cargo vendor trees are legitimately large (fish's is ~12 MB) and are
+        # committed on purpose: they are a SourceN the spec extracts, and this
+        # factory cannot push them to the Fedora lookaside. Without this
+        # exclude the documented vendoring procedure cannot be followed without
+        # --no-verify, which would skip every other hook too. The 500 KB
+        # default still applies to everything else.
+        exclude: ^packages/[^/]+/[^/]+-vendor\.tar\.gz$
       # Imported spec files and patches are upstream bytes. Reformatting them
       # changes what we ship and what the source locks describe.
       - id: end-of-file-fixer

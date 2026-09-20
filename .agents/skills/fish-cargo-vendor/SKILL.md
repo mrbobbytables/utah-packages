@@ -29,12 +29,31 @@ crate tree and build against it fully offline.
    The emitted config maps `crates-io` -> `vendored-sources` and any git dep
    -> the same.
 2. **Package it.** `tar -czf <name>-<version>-vendor.tar.gz -C <src> vendor`.
-   Commit the tarball in `packages/<name>/`.
+   Commit the tarball in `packages/<name>/`. Two repo guards are set up to
+   allow this, both keyed on the `*-vendor.tar.gz` suffix — name the file that
+   way or you will fight them:
+   - `.gitignore` ignores `packages/*/*.tar.*` and `packages/*/*.gz` because
+     those are normally pipeline-fetched artefacts. A negation re-includes
+     `!packages/*/*-vendor.tar.gz`, so a plain `git add` works; a differently
+     named tarball needs `git add -f`.
+   - `check-added-large-files` caps additions at 500 KB by default, and a
+     vendor tree is far bigger (fish's is ~12 MB). The hook carries an
+     `exclude` for the same suffix. Do **not** reach for `git commit
+     --no-verify` — that skips every other hook, including
+     `detect-private-key` and the factory-contract check.
 3. **Do NOT list it in `sources`.** `source_pipeline.py` only fetches
    sources-file entries, and this factory cannot push to
    `src.fedoraproject.org` lookaside, so a listed tarball 404s and fails the
    build. Committing it is enough: build-stage stages `packages/<name>/` with
    `cp -a`, so `Source11` is present without any fetch.
+
+   The trade-off is that `verify_staged_sources` never checksums it, so git
+   history is the only integrity anchor — unlike every other source, which the
+   sha512 manifest covers. Two things follow. Generate the tree with
+   `--locked` so it is reproducible from `Cargo.lock`, and say so in the PR
+   body: a reviewer has to spot-check the vendored crates against crates.io,
+   because no automated gate will. Record in the spec, next to `Source11`, why
+   the tarball is absent from `sources`.
 4. **Add the source.** `Source11: <name>-<version>-vendor.tar.gz` in the spec.
 5. **Extract in %prep.** `tar -xf %{SOURCE11}` (after the upstream source and
    any fork extraction, before %autopatch).
@@ -80,6 +99,10 @@ crate tree and build against it fully offline.
 - `python3 tools/validate.py .` — package has a source lock and packit config.
 - `python3 -m pytest tests -q` — passes (every package is in
   `config/upstream-sources.json`).
-- `pre-commit run --files packages/<name>/fish.spec packages/<name>/fish-<v>-vendor.tar.gz` — passes.
+- `pre-commit run --files packages/<name>/<name>.spec packages/<name>/<name>-<v>-vendor.tar.gz` — passes.
+  Note this only proves the hooks accept the files; `check-added-large-files`
+  inspects *newly added* paths, so it reports "no files to check" once the
+  tarball is committed. To prove the guards really let a fresh vendor tree in,
+  stage it in a scratch clone and run the hook there before trusting it.
 - If rpmbuild is available: `rpmbuild -br --define "_sourcedir ." packages/<name>/<name>.spec`
   and confirm `.cargo/config.toml` contains `replace-with = "vendored-sources"`.
