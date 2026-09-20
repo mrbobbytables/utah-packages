@@ -84,6 +84,13 @@ crate tree and build against it fully offline.
   If you build with `--locked`, a lock/source mismatch aborts the build.
 - **`--locked` on generation.** Always run `cargo vendor --locked` so the
   committed tree matches `Cargo.lock`; otherwise rebuilds drift.
+- **CRLF line endings and loose vendor trees.** Many upstream crates published to
+  crates.io contain DOS/CRLF line endings. Never leave an unarchived `vendor/`
+  directory in the repository tree or stage loose crate files; doing so causes
+  `pre-commit run --all-files` to fail on line endings or formatting hooks.
+  Always package the tree into the `<name>-<version>-vendor.tar.gz` tarball
+  outside the repo or remove loose `vendor/` files before running pre-commit,
+  ensuring only the compressed archive is committed.
 - **RPM version syntax in Provides.** RPM spec parsers reject hyphens in the
   version component of EVR (e.g. `Invalid version (double separator '-')`).
   When declaring `bundled(crate(...))` provides for crates with build metadata

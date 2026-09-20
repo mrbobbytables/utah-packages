@@ -242,7 +242,7 @@ for f in $(find share/tools -type f -name '*.py'); do
 done
 
 # Combine the upstream cargo config (the xtask alias) with the vendored
-# crates. %cargo_prep -v emits [net] offline + crates-io -> vendored-sources.
+# crates. cargo_prep -v emits [net] offline + crates-io -> vendored-sources.
 mv .cargo/config.toml fishshell-cargo-config.toml
 %cargo_prep -v vendor
 cat fishshell-cargo-config.toml >> .cargo/config.toml
