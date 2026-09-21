@@ -22,35 +22,47 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from tools.rebuild_plan import (
     cacheable,
-    stale_from_primary,
-    provides_from_primary,
     changed_entries,
     dependents_from_primary,
+    format_build_plan,
+    is_global_change,
+    is_published,
+    merge_dependents,
     overflow,
     plan,
-    prunable_sources,
+    provides_from_primary,
     published_from_primary,
+    spec_dependents,
     stage_outputs,
+    stale_from_primary,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
 PUBLISHED_REPO_TIMEOUT = 120
 INVENTORY = "config/upstream-sources.json"
-HUMMINGBIRD_OWNED = "config/hummingbird-provided-sources.json"
 
 
-def changed_recipes(base_sha: str) -> set[str]:
+def git_diff_paths(base_sha: str) -> list[str]:
+    """Changed file paths between base_sha and HEAD."""
+    if not re.fullmatch(r"[0-9a-f]{40}", base_sha or "") or set(base_sha) == {"0"}:
+        return []
+    try:
+        return subprocess.check_output(
+            ["git", "diff", "--name-only", f"{base_sha}..HEAD"], text=True
+        ).splitlines()
+    except subprocess.CalledProcessError:
+        return []
+
+
+def changed_recipes(base_sha: str, paths: list[str] | None = None) -> set[str]:
     """Recipes touched since the base commit.
 
     Empty when there is no range to read -- a scheduled run has no `before` and
     no pull request base -- which is why the published comparison must stand on
     its own rather than leaning on this.
     """
-    if not re.fullmatch(r"[0-9a-f]{40}", base_sha or "") or set(base_sha) == {"0"}:
-        return set()
-    paths = subprocess.check_output(
-        ["git", "diff", "--name-only", f"{base_sha}..HEAD"], text=True
-    ).splitlines()
+    if paths is None:
+        paths = git_diff_paths(base_sha)
     changed = {
         match.group(1)
         for path in paths
@@ -124,31 +136,37 @@ def fetch_published(base_url: str) -> dict[str, tuple[str, str]]:
 
 def main() -> int:
     config = json.loads((ROOT / INVENTORY).read_text())
-    hummingbird_owned = set(
-        json.loads((ROOT / HUMMINGBIRD_OWNED).read_text())["sources"]
-    )
+    base_sha = os.environ.get("BASE_SHA", "")
     full = os.environ.get("FULL") == "1"
     factory_repo = os.environ.get("FACTORY_REPO", "")
 
-    changed = changed_recipes(os.environ.get("BASE_SHA", ""))
+    paths = git_diff_paths(base_sha)
+    is_global, global_triggers = is_global_change(paths)
+    if is_global:
+        full = True
+        print(f"global rebuild triggered by: {', '.join(global_triggers)}")
+
+    changed = changed_recipes(base_sha, paths)
     print(f"changed package recipes: {', '.join(sorted(changed)) or 'none'}")
 
+    factory_pkgs = {entry["name"] for entry in config["packages"]}
+    spec_deps = spec_dependents(ROOT, factory_pkgs)
+
     published: dict[str, tuple[str, str]] = {}
-    dependents: dict[str, set[str]] = {}
+    primary_deps: dict[str, set[str]] = {}
     stale: dict[str, set[str]] = {}
-    primary = b""
-    if factory_repo:
+    if not full:
+        primary = b""
         try:
             primary = fetch_primary(factory_repo)
             published = published_from_primary(primary)
+            primary_deps = dependents_from_primary(primary) if primary else {}
             print(f"published repo has {len(published)} source packages")
         except Exception as error:  # noqa: BLE001 - availability, not correctness
             print(
                 f"WARNING: could not read published repo, rebuilding all: {error}",
                 file=sys.stderr,
             )
-    if not full:
-        dependents = dependents_from_primary(primary) if primary else {}
         # A published package whose binaries require something that neither
         # the published repository nor Hummingbird provides is stale: it was
         # built against a build root that has since moved. Without the
@@ -156,10 +174,12 @@ def main() -> int:
         # made -- the run then trusts the recipe match alone, as before.
         if primary:
             try:
-                external = provides_from_primary(
-                    fetch_primary(hummingbird_baseurl(ROOT / "config" / "hummingbird.repo"))
-                )
-                stale = stale_from_primary(primary, external)
+                hb_repo = ROOT / "config" / "hummingbird.repo"
+                if hb_repo.exists():
+                    external = provides_from_primary(
+                        fetch_primary(hummingbird_baseurl(hb_repo))
+                    )
+                    stale = stale_from_primary(primary, external)
             except Exception as error:  # noqa: BLE001 - availability, not correctness
                 print(
                     "WARNING: could not read the Hummingbird repository, "
@@ -173,6 +193,9 @@ def main() -> int:
             file=sys.stderr,
         )
 
+    dependents = merge_dependents(spec_deps, primary_deps)
+
+    reasons: dict[str, list[str]] = {}
     build = plan(
         config,
         ROOT,
@@ -182,15 +205,35 @@ def main() -> int:
         factory_repo=factory_repo,
         dependents=dependents,
         stale=set(stale),
+        reasons=reasons,
+        global_triggers=global_triggers,
     )
     building = {entry["name"] for entry in build}
-    direct = {
+
+    direct_changes = {
         entry["name"]
-        for entry in plan(
-            config, ROOT, published=published, changed=changed, full=full,
-            factory_repo=factory_repo, stale=set(stale),
-        )
+        for entry in build
+        if entry["name"] in changed
+        or (not full and not is_published(ROOT, entry, published))
     }
+    # A stale package was selected because its published build requires
+    # something nothing provides any more, not because anything upstream of it
+    # was edited. Bucketing it as a reverse dependency inflated the closure the
+    # report attributes to this run's edits; the per-package reasons were
+    # already right.
+    stale_rebuilds = {
+        entry["name"]
+        for entry in build
+        if entry["name"] not in direct_changes and not full and entry["name"] in stale
+    }
+    reverse_deps = {
+        entry["name"]
+        for entry in build
+        if entry["name"] not in direct_changes
+        and entry["name"] not in stale_rebuilds
+        and not full
+    }
+
     for entry in config["packages"]:
         name = entry["name"]
         if name not in building:
@@ -198,8 +241,9 @@ def main() -> int:
         elif name in stale:
             missing = ", ".join(sorted(stale[name])[:3])
             print(f"rebuild {name}: published build requires {missing}, which nothing provides")
-        elif name not in direct:
-            print(f"rebuild {name}: depends on something being rebuilt")
+        elif name in reverse_deps:
+            r = "; ".join(reasons.get(name, []))
+            print(f"rebuild {name}: {r}")
 
     if late := overflow(build):
         raise SystemExit(
@@ -207,11 +251,34 @@ def main() -> int:
             f"reduce the stage of: {', '.join(late)}"
         )
 
+    summary_md, plan_json = format_build_plan(
+        build,
+        reasons,
+        full=full,
+        global_triggers=global_triggers,
+        direct_changes=direct_changes,
+        reverse_deps=reverse_deps,
+        stale_rebuilds=stale_rebuilds,
+        total_inventory=len(config["packages"]),
+    )
+
+    if "GITHUB_STEP_SUMMARY" in os.environ:
+        try:
+            with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as handle:
+                handle.write(summary_md + "\n")
+        except OSError as error:
+            print(f"WARNING: could not write GITHUB_STEP_SUMMARY: {error}", file=sys.stderr)
+
+    reports_dir = ROOT / "work" / "reports"
+    try:
+        reports_dir.mkdir(parents=True, exist_ok=True)
+        (reports_dir / "build-plan.md").write_text(summary_md)
+        (reports_dir / "build-plan.json").write_text(json.dumps(plan_json, indent=2))
+    except OSError as error:
+        print(f"WARNING: could not write build plan reports: {error}", file=sys.stderr)
+
     outputs = stage_outputs(build)
     outputs["cacheable"] = json.dumps(cacheable(build, changed, set(stale)))
-    outputs["prune_sources"] = json.dumps(
-        prunable_sources(published, hummingbird_owned)
-    )
     for stage in range(11):
         chunks = json.loads(outputs[f"stage{stage}_chunks"])
         if len(chunks) > 1:

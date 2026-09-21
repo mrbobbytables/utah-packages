@@ -69,6 +69,11 @@ jobs:
         id: factory
         with:
           image: ${{ inputs.factory_image }}
+      - name: Work out which earlier stages to collect
+        id: prior
+        if: inputs.stage != '0'
+        run: |
+          printf 'pattern=rpm-s[0-%s]-*\n' "$(( ${{ inputs.stage }} - 1 ))" >> "$GITHUB_OUTPUT"
       - name: Collect RPMs built by earlier stages
         if: inputs.stage != '0'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8

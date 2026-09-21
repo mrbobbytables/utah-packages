@@ -9,13 +9,16 @@ from tools.rebuild_plan import (
     changed_entries,
     dependents_from_primary,
     expected_release,
+    format_build_plan,
+    is_global_change,
     is_published,
+    merge_dependents,
     overflow,
     plan,
-    prunable_sources,
     provides_from_primary,
     published_from_primary,
     reverse_closure,
+    spec_dependents,
     stage_outputs,
     stale_from_primary,
 )
@@ -248,6 +251,67 @@ class PlanTests(unittest.TestCase):
                 1,
             )
 
+    def test_new_package_selected_incrementally(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            recipe(root, "published_pkg", "1")
+            recipe(root, "new_pkg", "1")
+            config = {
+                "packages": [
+                    {"name": "published_pkg", "version": "1.0"},
+                    {"name": "new_pkg", "version": "1.0"},
+                ]
+            }
+            reasons = {}
+            build = plan(
+                config,
+                root,
+                published={"published_pkg": ("1.0", "1.hum1.bfin")},
+                changed=set(),
+                full=False,
+                factory_repo="https://example.invalid/repo/",
+                reasons=reasons,
+            )
+            self.assertEqual([e["name"] for e in build], ["new_pkg"])
+            self.assertEqual(reasons["new_pkg"], ["new or unpublished package"])
+
+    def test_version_mismatch_selected_incrementally(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            recipe(root, "demo", "1")
+            config = {"packages": [{"name": "demo", "version": "2.0"}]}
+            reasons = {}
+            build = plan(
+                config,
+                root,
+                published={"demo": ("1.0", "1.hum1.bfin")},
+                changed=set(),
+                full=False,
+                factory_repo="https://example.invalid/repo/",
+                reasons=reasons,
+            )
+            self.assertEqual([e["name"] for e in build], ["demo"])
+            self.assertEqual(reasons["demo"], ["version/release mismatch with published repo"])
+
+    def test_global_triggers_select_full_rebuild_with_reasons(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            recipe(root, "demo", "1")
+            config = {"packages": [{"name": "demo", "version": "1.0"}]}
+            reasons = {}
+            build = plan(
+                config,
+                root,
+                published={"demo": ("1.0", "1.hum1.bfin")},
+                changed=set(),
+                full=True,
+                factory_repo="https://example.invalid/repo/",
+                reasons=reasons,
+                global_triggers=["tools/mock_config.py"],
+            )
+            self.assertEqual([e["name"] for e in build], ["demo"])
+            self.assertEqual(reasons["demo"], ["global trigger (tools/mock_config.py)"])
+
 
 def full_primary(*packages: tuple[str, str, list[str], list[str]]) -> bytes:
     """A primary.xml with real namespaces, provides and requires.
@@ -343,6 +407,132 @@ class DependentsTests(unittest.TestCase):
         self.assertEqual([e["name"] for e in build], ["mutter"])
 
 
+class SpecDependentsTests(unittest.TestCase):
+    """Build-time dependency edges parsed from specs."""
+
+    def test_spec_dependents_finds_buildrequires_relationships(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            packages_dir = root / "packages"
+
+            # libfoo provides libfoo, libfoo-devel, pkgconfig(libfoo)
+            p_foo = packages_dir / "libfoo"
+            p_foo.mkdir(parents=True)
+            (p_foo / "libfoo.spec").write_text(
+                "Name: libfoo\nVersion: 1.0\nRelease: 1%{?dist}\n"
+                "%package devel\nSummary: devel\n"
+            )
+
+            # bar BuildRequires: libfoo-devel
+            p_bar = packages_dir / "bar"
+            p_bar.mkdir(parents=True)
+            (p_bar / "bar.spec").write_text(
+                "Name: bar\nVersion: 1.0\nRelease: 1%{?dist}\n"
+                "BuildRequires: libfoo-devel\n"
+            )
+
+            deps = spec_dependents(root, {"libfoo", "bar"})
+            self.assertIn("bar", deps.get("libfoo", set()))
+
+    def test_pkgconfig_symbols_map_to_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            packages_dir = root / "packages"
+
+            p_cam = packages_dir / "libcamera"
+            p_cam.mkdir(parents=True)
+            (p_cam / "libcamera.spec").write_text(
+                "Name: libcamera\nVersion: 1.0\nRelease: 1%{?dist}\n"
+                "Provides: pkgconfig(libcamera)\n"
+            )
+
+            p_pw = packages_dir / "pipewire"
+            p_pw.mkdir(parents=True)
+            (p_pw / "pipewire.spec").write_text(
+                "Name: pipewire\nVersion: 1.0\nRelease: 1%{?dist}\n"
+                "BuildRequires: pkgconfig(libcamera)\n"
+            )
+
+            deps = spec_dependents(root, {"libcamera", "pipewire"})
+            self.assertIn("pipewire", deps.get("libcamera", set()))
+
+    def test_an_empty_package_directive_does_not_crash_the_plan(self) -> None:
+        # `%package` with only whitespace after it, and `%package -n` with no
+        # name, used to raise IndexError out of spec_dependents and take the
+        # prepare job -- and so the whole pipeline -- down with it.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            packages_dir = root / "packages"
+
+            p_foo = packages_dir / "libfoo"
+            p_foo.mkdir(parents=True)
+            (p_foo / "libfoo.spec").write_text(
+                "Name: libfoo\nVersion: 1.0\nRelease: 1%{?dist}\n"
+                "%package \n"
+                "%package -n\n"
+                "%package -n   \n"
+                "%package devel\nSummary: devel\n"
+            )
+
+            p_bar = packages_dir / "bar"
+            p_bar.mkdir(parents=True)
+            (p_bar / "bar.spec").write_text(
+                "Name: bar\nVersion: 1.0\nRelease: 1%{?dist}\n"
+                "BuildRequires: libfoo-devel\n"
+            )
+
+            deps = spec_dependents(root, {"libfoo", "bar"})
+            # The unparseable directives are skipped and the real subpackage is
+            # still mapped, so the edge survives the malformed neighbours.
+            self.assertIn("bar", deps.get("libfoo", set()))
+
+    def test_merge_dependents_combines_multiple_maps(self) -> None:
+        m1 = {"a": {"b"}}
+        m2 = {"a": {"c"}, "d": {"e"}}
+        merged = merge_dependents(m1, m2)
+        self.assertEqual(merged, {"a": {"b", "c"}, "d": {"e"}})
+
+    def test_editing_staged_library_drags_spec_dependents_across_stages(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            packages_dir = root / "packages"
+
+            p_lib = packages_dir / "libbase"
+            p_lib.mkdir(parents=True)
+            (p_lib / "libbase.spec").write_text(
+                "Name: libbase\nVersion: 1.0\nRelease: 1%{?dist}\n"
+                "%package devel\nSummary: devel\n"
+            )
+
+            p_app = packages_dir / "app"
+            p_app.mkdir(parents=True)
+            (p_app / "app.spec").write_text(
+                "Name: app\nVersion: 1.0\nRelease: 1%{?dist}\n"
+                "BuildRequires: libbase-devel\n"
+            )
+
+            config = {
+                "packages": [
+                    {"name": "libbase", "version": "1.0", "stage": 0},
+                    {"name": "app", "version": "1.0", "stage": 2},
+                ]
+            }
+            spec_deps = spec_dependents(root, {"libbase", "app"})
+            reasons = {}
+            build = plan(
+                config,
+                root,
+                published={"libbase": ("1.0", "1.hum1.bfin"), "app": ("1.0", "1.hum1.bfin")},
+                changed={"libbase"},
+                full=False,
+                factory_repo="file:///repo",
+                dependents=spec_deps,
+                reasons=reasons,
+            )
+            self.assertEqual([e["name"] for e in build], ["libbase", "app"])
+            self.assertIn("reverse dependency of libbase", reasons["app"])
+
+
 class StaleTests(unittest.TestCase):
     """A published binary asking for what nothing provides any more rebuilds."""
 
@@ -433,20 +623,6 @@ class StageOutputTests(unittest.TestCase):
         )
 
 
-class HummingbirdOwnershipTests(unittest.TestCase):
-    def test_only_published_overlaps_need_pruning(self) -> None:
-        published = {
-            "openssh": ("10.5p1", "1.hum1.bfin"),
-            "mesa": ("26.1.0", "1.hum1.bfin"),
-        }
-        self.assertEqual(
-            prunable_sources(published, {"openssh", "bootc"}), ["openssh"]
-        )
-
-    def test_cleanup_is_idempotent_after_overlap_is_gone(self) -> None:
-        self.assertEqual(prunable_sources({}, {"openssh"}), [])
-
-
 def icu_primary() -> bytes:
     """Hummingbird as it really is: libicu 77.1 beside 78.3, one package name."""
     body = ""
@@ -502,6 +678,128 @@ class ExcludedExternalTests(unittest.TestCase):
     def test_the_exclusion_is_declared_once_and_names_libicu_77(self) -> None:
         from tools.rebuild_plan import EXCLUDED_EXTERNAL
         self.assertIn(("libicu", "77."), EXCLUDED_EXTERNAL)
+
+
+class GlobalChangeTests(unittest.TestCase):
+    def test_global_workflow_changes_trigger_full_rebuild(self) -> None:
+        is_global, triggers = is_global_change([".github/workflows/rebuild-rpms.yml"])
+        self.assertTrue(is_global)
+        self.assertIn(".github/workflows/rebuild-rpms.yml", triggers)
+
+        is_global, triggers = is_global_change([".github/workflows/build-stage.yml"])
+        self.assertTrue(is_global)
+
+    def test_global_tooling_changes_trigger_full_rebuild(self) -> None:
+        is_global, triggers = is_global_change(["tools/mock_config.py"])
+        self.assertTrue(is_global)
+        self.assertIn("tools/mock_config.py", triggers)
+
+        # Test and planning tool changes do not force full rebuilds
+        is_global, _ = is_global_change(["tools/rebuild_plan.py", "tests/test_rebuild_plan.py"])
+        self.assertFalse(is_global)
+
+    def test_source_policy_tooling_triggers_a_rebuild(self) -> None:
+        # #23 requires a change to global source tooling to select a rebuild.
+        # These two decide what the source bytes of a build are -- which no
+        # recipe diff records -- so an edit to either is a global trigger, and
+        # the tools/ ignore must not shadow them.
+        for path in ("tools/source_pipeline.py", "tools/generated_sources.py"):
+            with self.subTest(path=path):
+                is_global, triggers = is_global_change([path])
+                self.assertTrue(is_global)
+                self.assertIn(path, triggers)
+
+    def test_global_config_changes_trigger_full_rebuild(self) -> None:
+        is_global, triggers = is_global_change(["config/hummingbird.repo"])
+        self.assertTrue(is_global)
+        self.assertIn("config/hummingbird.repo", triggers)
+
+        # upstream-sources.json alone is an inventory change, not global rebuild
+        is_global, _ = is_global_change(["config/upstream-sources.json"])
+        self.assertFalse(is_global)
+
+    def test_ignored_paths_do_not_trigger_rebuild(self) -> None:
+        is_global, _ = is_global_change([
+            "docs/architecture.md",
+            "AGENTS.md",
+            "README.md",
+            ".agents/skills/build-failure-triage/SKILL.md",
+        ])
+        self.assertFalse(is_global)
+
+
+class BuildPlanFormattingTests(unittest.TestCase):
+    def test_format_build_plan_markdown_and_json(self) -> None:
+        build = [{"name": "demo", "stage": 0}, {"name": "sub", "stage": 1}]
+        reasons = {
+            "demo": ["recipe edit"],
+            "sub": ["reverse dependency of demo"],
+        }
+        md, plan_json = format_build_plan(
+            build,
+            reasons,
+            full=False,
+            direct_changes={"demo"},
+            reverse_deps={"sub"},
+            total_inventory=10,
+        )
+        self.assertIn("# Factory Build Plan", md)
+        self.assertIn("**Build Mode:** Incremental", md)
+        self.assertIn("`demo`", md)
+        self.assertIn("`sub`", md)
+        self.assertEqual(plan_json["mode"], "incremental")
+        self.assertEqual(plan_json["total_selected"], 2)
+        self.assertEqual(plan_json["total_inventory"], 10)
+        self.assertEqual(plan_json["stages"]["stage0"], ["demo"])
+        self.assertEqual(plan_json["stages"]["stage1"], ["sub"])
+
+    def test_format_build_plan_reports_stale_separately_from_reverse_deps(self) -> None:
+        # A stale package is published, unedited, and downstream of nothing in
+        # this run: its build root moved under it. Counting it as a reverse
+        # dependency overstated the closure the run's edits produced.
+        build = [
+            {"name": "demo", "stage": 0},
+            {"name": "sub", "stage": 1},
+            {"name": "old", "stage": 1},
+        ]
+        reasons = {
+            "demo": ["recipe edit"],
+            "sub": ["reverse dependency of demo"],
+            "old": ["published build requires libgone.so.1, which nothing provides"],
+        }
+        md, plan_json = format_build_plan(
+            build,
+            reasons,
+            full=False,
+            direct_changes={"demo"},
+            reverse_deps={"sub"},
+            stale_rebuilds={"old"},
+            total_inventory=10,
+        )
+        self.assertEqual(plan_json["reverse_deps"], ["sub"])
+        self.assertEqual(plan_json["stale_rebuilds"], ["old"])
+        self.assertIn("**Reverse dependency closures (1):** sub", md)
+        self.assertIn("**Stale published builds (1):** old", md)
+
+    def test_format_build_plan_full_rebuild(self) -> None:
+        build = [{"name": "demo", "stage": 0}]
+        reasons = {"demo": ["global trigger (tools/rebuild_plan.py)"]}
+        md, plan_json = format_build_plan(
+            build,
+            reasons,
+            full=True,
+            global_triggers=["tools/rebuild_plan.py"],
+            total_inventory=1,
+        )
+        self.assertIn("**Build Mode:** Full Rebuild", md)
+        self.assertIn("tools/rebuild_plan.py", md)
+        self.assertEqual(plan_json["mode"], "full")
+        self.assertEqual(plan_json["global_triggers"], ["tools/rebuild_plan.py"])
+
+    def test_format_build_plan_empty(self) -> None:
+        md, plan_json = format_build_plan([], {}, full=False, total_inventory=10)
+        self.assertIn("No packages require building in this run.", md)
+        self.assertEqual(plan_json["total_selected"], 0)
 
 
 if __name__ == "__main__":

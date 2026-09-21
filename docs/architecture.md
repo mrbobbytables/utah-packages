@@ -70,8 +70,7 @@ Whether to finish that design or supersede it is tracked in
 [#43](https://github.com/projectbluefin/utah-packages/issues/43).
 
 `.github/workflows/packit-srpm-pilot.yml` proves the SRPM path but is
-verification-only and manual-dispatch-only: its full-inventory fan-out is not
-a PR or merge check and its output is not published. Its `discover` job emits the package list from
+verification-only. Its `discover` job emits the package list from
 `tools/packit_workflow.py packages`; its per-package `srpm` matrix has
 `fail-fast: false` and is fanned out over chunks of 250 by
 `tools/packit_workflow.py chunks`. The chunking is not cosmetic: GitHub caps a
@@ -153,7 +152,7 @@ validated 345 source RPMs
 
 | job | verified behavior |
 | --- | --- |
-| `prepare` | Selects the packages that are new, changed, or requested by a full rebuild, then emits five stage lists. A package declaring a stage above 4 has no job to run in, so this fails and names it rather than dropping it. |
+| `prepare` | Selects the packages that are new, changed, stale, or downstream of a change, then emits five stage lists. Selection is the reverse-dependency closure of the edited recipes (`tools/rebuild_plan.py`), so editing a staged library also selects its factory dependants; a change to global build, buildroot or source policy (`.github/workflows/rebuild-rpms.yml`, `build-stage.yml`, `.github/actions/`, `config/`, `tools/mock_config.py`, `tools/source_pipeline.py`, `tools/generated_sources.py`) escalates to a full rebuild. The resulting plan is published as the `factory-build-plan` artifact and the job step summary, with the reason each package was selected. A package declaring a stage above 4 has no job to run in, so this fails and names it rather than dropping it. |
 | `preflight` | Resolves BuildRequires for the selected packages in the real build root and uploads a worklist; it is `continue-on-error`. Its output is advisory: the waves are still driven by the hand-assigned `stage` in config, not by what this resolves. |
 | `rebuild0` through `rebuild4` | Five calls to the reusable `build-stage.yml`, one per wave, each a `fail-fast: false` package matrix. Each later stage downloads the earlier workflow artifacts, creates a local `[stages]` dnf repository with `createrepo_c`, and resolves against it. |
 | `precedence` | Checks that each produced RPM outranks what Fedora 44 and Hummingbird already offer, and reports any name Hummingbird also provides. |
@@ -188,21 +187,6 @@ digest, resolved build-root NEVRAs and disttag. Rebuild planning remains
 authoritative: directly changed and stale packages are excluded from reuse.
 The full rationale and invariants are in
 [`docs/skills/package-build-cache.md`](skills/package-build-cache.md).
-
-### Trigger and merge-queue policy
-
-The full factory runs daily at `06:41 UTC` or by manual dispatch. Pull requests
-and pushes to `main` do not launch it; they run the validation workflow below.
-This deliberately batches multiple merges into one coherent repository build
-instead of flooding the Actions queue with one package matrix per commit.
-
-Merge queue is the next step only after repeated factory runs prove that cache
-hits skip compilation and that successful packages survive a failed run. When
-enabled, merge groups should require the fast validation workflow. After a
-batch merges, run the factory once at the final `main` commit (or use the next
-daily run), then atomically publish that batch. The operational rationale is
-part of the cache contract in
-[`docs/skills/package-build-cache.md`](skills/package-build-cache.md#merge-queue-rollout-and-batching).
 
 It is not a mock build, and this is the most misleading thing about the file:
 `build-stage.yml` installs `mock` and never invokes it, then hand-simulates
