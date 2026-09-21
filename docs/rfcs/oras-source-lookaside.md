@@ -65,8 +65,19 @@ inputs.
 | DNS failure, timeout, connection failure, HTTP 404/410, or HTTP 5xx | Try the next explicitly configured transport. |
 | Bytes received but SHA-512 differs | Reject the source and stop. Do not try another transport. |
 | Configured upstream signature or checksum evidence fails | Reject the source and stop. Do not try another transport. |
-| Invalid source-lock shape, unauthorized response, HTTP 401/403, or malformed URL | Reject the configuration and stop. Do not hide the error with a fallback. |
+| Invalid source-lock shape or malformed URL | Reject the configuration and stop. Do not hide the error with a fallback. |
+| Unauthorized response, HTTP 401/403 | **Required future change.** Reject the configuration and stop. Do not hide the error with a fallback. |
 | ORAS artifact is missing or any OCI/provenance/signature check fails | Reject the source and stop. There is no fourth transport. |
+
+The 401/403 row does not describe today's pipeline. `fetch`
+(`tools/source_pipeline.py`) catches `urllib.error.URLError`, and
+`urllib.error.HTTPError` is a subclass of it, so a 401 or 403 is currently
+retried like a transport failure and then re-raised as a `RuntimeError`, which
+`fetch_with_fallbacks` treats as grounds for trying the next mirror. Making an
+authorization failure stop the run requires distinguishing `HTTPError` status
+codes in `fetch` and raising a non-retriable error that `fetch_with_fallbacks`
+does not absorb. That change, with its tests, is a prerequisite for the first
+`oras` source-lock block and is not delivered by this RFC.
 
 A candidate is written to a temporary path. It is renamed into the build input
 only after all applicable checks pass; every rejected candidate is removed.
@@ -264,8 +275,9 @@ used to bless an unchecked upload.
 ## Fail-closed verification tests
 
 This RFC does not add an ORAS implementation or contact GHCR. The existing
-source-pipeline tests already establish the transport boundary, and the
-fallback-bytes test records the unavailable-upstream demonstration without
+source-pipeline tests already establish the integrity boundary — a fetched
+source that is present but wrong never falls through to another transport — and
+the fallback-bytes test records the unavailable-upstream demonstration without
 network access:
 
 - `SourcePipelineTests.test_uses_upstream_without_touching_fallback` proves
@@ -281,6 +293,9 @@ network access:
 - `SourcePipelineTests.test_rejects_source_overwritten_after_staging`
   proves the build input is re-hashed after the staging boundary.
 
+No existing test covers the 401/403 stop rule, because the pipeline does not
+implement it yet.
+
 Before enabling the first `oras` source-lock block, its implementation PR must
 add deterministic tests for the following cases using a local registry/client
 fixture:
@@ -291,6 +306,7 @@ fixture:
 | Upstream unavailable, Fedora available | The Fedora bytes are accepted; ORAS is not contacted; bytes equal the configured SHA-512. |
 | Upstream and Fedora unavailable | The digest-pinned ORAS object is attempted. |
 | Any successful transport returns the wrong SHA-512 | The run fails and no lower-precedence transport is contacted. |
+| A transport answers HTTP 401 or 403 | The run fails, the error names the authorization failure, and no lower-precedence transport is contacted. |
 | OCI manifest or layer digest differs from its configured digest | The run fails and leaves no accepted source. |
 | Provenance is missing, unsigned, has the wrong subject, or has mismatched package/filename/hash | The run fails and leaves no accepted source. |
 | Source signature/checksum evidence fails | The run fails and does not fall through. |
