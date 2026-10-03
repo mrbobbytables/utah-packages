@@ -41,7 +41,10 @@ dependants for no change in bytes.
 4. No Utah-local divergence: the recipe equals Fedora's tree at the pinned
    commit. Fedora metadata the build never reads (`INERT_FILES`, `.fmf/`,
    `plans/`, `tests/`) may be absent, unless the spec names it; a re-import
-   keeps it absent so the diff shows only Fedora's real change.
+   keeps it absent so the diff shows only Fedora's real change. Local spec
+   edits (including fixes for inherited upstream scriptlet typos) constitute
+   divergence that holds the recipe from automated re-import until reconciled
+   upstream.
 5. Exactly one spec, same file name, on both commits.
 6. `sources`, `Name:`, `Epoch:` and `Version:` unchanged, so the SHA-512 lock
    in `config/upstream-sources.json` still describes the payload. Version

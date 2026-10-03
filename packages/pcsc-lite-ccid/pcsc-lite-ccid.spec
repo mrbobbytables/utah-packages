@@ -58,7 +58,8 @@ cp -p src/openct/LICENSE LICENSE.openct
 
 
 %preun
-%systemd_preun pcscsd.service
+# Upstream Fedora rawhide 8c5a97a carried unit-name typo pcscsd.service (projectbluefin/utah-packages#367)
+%systemd_preun pcscd.service
 
 
 %postun
