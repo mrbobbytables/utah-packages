@@ -42,9 +42,9 @@ dependants for no change in bytes.
    commit. Fedora metadata the build never reads (`INERT_FILES`, `.fmf/`,
    `plans/`, `tests/`) may be absent, unless the spec names it; a re-import
    keeps it absent so the diff shows only Fedora's real change. Local spec
-   edits (including fixes for inherited upstream scriptlet typos) constitute
-   divergence that holds the recipe from automated re-import until reconciled
-   upstream.
+   edits (including fixes for inherited upstream scriptlet typos) are
+   divergence: the recipe stays out of automated re-imports until a human
+   re-imports it by hand.
 5. Exactly one spec, same file name, on both commits.
 6. `sources`, `Name:`, `Epoch:` and `Version:` unchanged, so the SHA-512 lock
    in `config/upstream-sources.json` still describes the payload. Version
