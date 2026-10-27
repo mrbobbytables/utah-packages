@@ -457,7 +457,7 @@ packages = [
     { name = "python3-olefile", pr = 596 },
     { name = "python3-pillow", pr = 596 },
     { name = "usbutils", pr = 596 },
-    { name = "net-snmp-libs", pr = 596 },
+    { name = "net-snmp-libs", pr = 596, published_run = 40511180133, published_nevra = "net-snmp-libs-1:5.9.5.2-10.hum1.bfin.x86_64" },
     { name = "python3-cups", pr = 596 },
     { name = "libraqm", pr = 596 },
     # VPN stack + oath-toolkit/libuser/usermode closure (projectbluefin/utah-packages#585).
@@ -534,7 +534,7 @@ packages = [
     { name = "faad2-libs", pr = 526 },
     { name = "gstreamer1-plugin-dav1d", pr = 526 },
     { name = "gstreamer1-plugins-ugly-free", pr = 526 },
-    { name = "openal-soft", pr = 526 },
+    { name = "openal-soft", pr = 526, published_run = 40511180133, published_nevra = "openal-soft-0:1.24.2-1.hum1.bfin.x86_64" },
     { name = "soundtouch", pr = 526 },
     # Thumbnailers + Disks wave (landing PR #523). libspelling ships as a
     # standalone recipe; papers/gst-thumbnailers deferred to #527.
@@ -600,8 +600,8 @@ packages = [
     { name = "glow", pr = 650 },
     # Runtime dependencies of the GNOME apps imported for Utah (PR #573).
     { name = "libvncserver", pr = 573 },
-    { name = "mod_dnssd", pr = 573 },
-    { name = "mozilla-filesystem", pr = 573 },
+    { name = "mod_dnssd", pr = 573, published_run = 40511180133, published_nevra = "mod_dnssd-0:0.6-37.hum1.bfin.x86_64" },
+    { name = "mozilla-filesystem", pr = 573, published_run = 40511180133, published_nevra = "mozilla-filesystem-0:1.9-39.hum1.bfin.x86_64" },
     { name = "redhat-menus", pr = 573 },
     # sso-mib-libs is a %package subpackage of sso-mib.spec (PR #574).
     { name = "sso-mib-libs", pr = 574 },
@@ -649,7 +649,7 @@ packages = [
     { name = "f2fs-tools", pr = 587 },
     { name = "gamemode", pr = 587 },
     { name = "hdparm", pr = 587 },
-    { name = "lshw", pr = 587 },
+    { name = "lshw", pr = 587, published_run = 40511180133, published_nevra = "lshw-0:B.02.20-13.hum1.bfin.x86_64" },
     { name = "lsof", pr = 587 },
     { name = "man-pages", pr = 587 },
     { name = "mtr", pr = 587 },

@@ -566,6 +566,18 @@ run and all requested binary identities in the reconciliation PR. This closes
 recipe accounting only: a metadata listing does not prove the theme's dependency
 transaction or graphical boot behavior. Keep those acceptance items open in the
 batch issue and hand them to Utah's consumer tracking.
+
+### Long-tail package output reconciliation
+
+When auditing long-tail batch outputs (such as `lshw` through `pam_afs_session`),
+verify which outputs have already been imported and published in the repository's
+primary repodata versus those that remain pending or awaiting publication.
+Published outputs (`lshw`, `mod_dnssd`, `mozilla-filesystem`, `net-snmp-libs`,
+`openal-soft`) record their publication run and published NEVRA in `[resolved]`.
+Recipes merged on main awaiting publication (`mtools`, `neon`) remain tracked until
+published. Remaining pending packages require recipe imports or upstream decisions.
+Partial reconciliation PRs must link the tracking issue with `Refs #<issue>` to keep
+unresolved outputs open.
 For `pam_yubico`, the Fedora source recipe requires `ykclient-devel`,
 `libyubikey-devel`, and `ykpers-devel`; all three source families must precede
 it in the build graph. A recipe and verified source do not prove authentication
