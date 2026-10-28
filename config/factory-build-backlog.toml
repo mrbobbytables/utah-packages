@@ -734,9 +734,9 @@ packages = [
     # #752 adopted #748 and merged its source family.
     { name = "portaudio", commit = "da68d0f0b38c2f8bacf3fbfc6dd13c0b17681134", pr = 752, published_run = 40626803772, published_nevra = "portaudio-0:19.7.0-1.hum1.bfin.x86_64" },
     { name = "python3-pyaudio", pr = 748, published_run = 40626803772, published_nevra = "python3-pyaudio-0:0.2.13-14.hum1.bfin.x86_64" },
-    { name = "udftools", pr = 0 },
-    { name = "uresourced", pr = 0 },
-    { name = "xfsprogs", pr = 0 },
+    { name = "udftools", pr = 782 },
+    { name = "uresourced", pr = 782 },
+    { name = "xfsprogs", pr = 782 },
     # Terminal and VTE emulator outputs (PR #413); publication verified in run 40569848351.
     # vte-profile and vte291-gtk4 are subpackages of vte291.spec.
     # Recipe and publication closure for projectbluefin/utah-packages#484.
