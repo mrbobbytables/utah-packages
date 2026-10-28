@@ -372,7 +372,7 @@ packages = [
     { name = "libpasswdqc", commit = "dfd06b47175b8c94d511c12ac995ecb5e25d7efa", pr = 676, published_run = 40626803772, published_nevra = "libpasswdqc-0:2.0.3-10.hum1.bfin.x86_64" },
     { name = "libdeflate", pr = 695, published_run = 40626803772, published_nevra = "libdeflate-0:1.26-1.hum1.bfin.x86_64" },
     # Recipe import only; hosted build, publication, and runtime proof remain on #502.
-    { name = "libell" },
+    { name = "libell", pr = 802 },
     { name = "gnome-rounded-blur", commit = "f8589ccd95a48a1f26826c8764330c9f7811a09d", pr = 440, published_run = 40151594832, published_nevra = "gnome-rounded-blur-0:1.0.1^20260809gitf3bfcc7-1.hum1.bfin.x86_64" },
     # Disc-reading recipes; publication and runtime proof remain tracked in #475.
     { name = "libudfread", pr = 658 },
