@@ -2,8 +2,8 @@
   "areas": {
     "codecs-media": {
       "already_recipe": 10,
-      "pending": 20,
-      "total": 30
+      "pending": 18,
+      "total": 28
     },
     "dev-tools": {
       "pending": 69,
@@ -48,16 +48,6 @@
   "audit_names_sha256": "48210d268ba97da8da55f883529ee27f38bc48a4d8f3c4fad46913ef8614d07b",
   "audit_source": "https://gist.github.com/hanthor/b9b1e3a7f13c51376b771f97a7409a30",
   "entries": [
-    {
-      "area": "codecs-media",
-      "name": "ImageMagick",
-      "state": "pending"
-    },
-    {
-      "area": "codecs-media",
-      "name": "ImageMagick-libs",
-      "state": "pending"
-    },
     {
       "area": "codecs-media",
       "name": "LCEVCdec",
@@ -1193,11 +1183,11 @@
   "states": {
     "already_recipe": 13,
     "manifest_wants": 1,
-    "pending": 214
+    "pending": 212
   },
   "totals": {
-    "backlog": 228,
-    "resolved": 289,
+    "backlog": 226,
+    "resolved": 291,
     "wontfix": 34
   }
 }
