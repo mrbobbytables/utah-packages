@@ -692,8 +692,8 @@ packages = [
     # Recipe coverage only; hosted build/publication/runtime proof remains in #474.
     { name = "LibRaw", pr = 618 },
     # ImageMagick.spec produces ImageMagick and its %package libs (ImageMagick-libs); recipe coverage only.
-    { name = "ImageMagick", pr = 0 },
-    { name = "ImageMagick-libs", pr = 0 },
+    { name = "ImageMagick", pr = 787 },
+    { name = "ImageMagick-libs", pr = 787 },
     # Recipes imported before this reconciliation (#413, #643); publication is
     # observed in the image's repodata. Runtime proof for the batch remains in #507.
     { name = "simdutf", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40481255792, published_nevra = "simdutf-0:9.0.0-1.hum1.bfin.x86_64" },
