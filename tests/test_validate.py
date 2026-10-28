@@ -158,6 +158,19 @@ class ValidateScriptTests(unittest.TestCase):
         assert result.returncode != 0
         assert "invalid upstream provenance" in result.stderr
 
+    def test_rejects_provenance_naming_a_different_package(self) -> None:
+        # The provenance package field must match the enclosing recipe directory
+        # so downstream gates cannot be satisfied by a mislabeled package field.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.build(root, provenance=RAWHIDE_PROVENANCE)
+            (root / "packages" / "example" / ".hummingbird-upstream.json").write_text(
+                json.dumps({**RAWHIDE_PROVENANCE, "package": "different"})
+            )
+            result = self.run_validate(root)
+        assert result.returncode != 0
+        assert "provenance package does not match its recipe directory" in result.stderr
+
     def test_rejects_a_branch_that_is_neither_rawhide_nor_upstream(self) -> None:
         result = self.check(provenance={**RAWHIDE_PROVENANCE, "branch": "f43"})
         assert result.returncode != 0

@@ -104,6 +104,9 @@ inventoried. Extend `parse_packages`, not the container.
 Every recipe in `packages/<name>/` carries `.hummingbird-upstream.json`, and
 `tools/validate.py` rejects the tree without it:
 
+- The `package` field must match the recipe directory name (`packages/<name>`),
+  ensuring any remote or identity derivation bound to the package name cannot
+  be bypassed by a mislabeled provenance file.
 - **`branch: rawhide`** — the Fedora dist-git snapshot, pinned by full
   40-character `commit` and `tree` SHAs. An abbreviated SHA is not a pin: it
   is ambiguous and it is not what `git` resolved at import.
