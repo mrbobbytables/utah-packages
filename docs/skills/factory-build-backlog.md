@@ -99,6 +99,12 @@ from Fedora. Resolve the binary's actual source package first (the
 `pyaudio` and `python3-pskc` from `python-pskc`; #506 once recorded these as
 "removed from dist-git" because `PyAudio` and `python-libpskc` 404.
 
+For the audited `libell` binary, Fedora Rawhide's source package is named
+`libell`. Do not import the similarly named `ell` source package: its current
+recipe builds an unrelated, header-only EBNF library and does not provide
+`libell`. Check the binary's `sourcerpm` before inferring a source name from a
+shared prefix.
+
 Before importing an audit name, read Utah's current `baselines/triage.toml` and
 pin the decision's commit when reconciling an existing `waived` entry into
 `[wontfix]`. The audit can include deliberately absent X11 client utilities
