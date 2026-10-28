@@ -20,8 +20,8 @@
     "long-tail": {
       "already_recipe": 3,
       "manifest_wants": 1,
-      "pending": 88,
-      "total": 92
+      "pending": 87,
+      "total": 91
     },
     "power": {
       "total": 0
@@ -825,11 +825,6 @@
     },
     {
       "area": "long-tail",
-      "name": "libell",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "libev",
       "state": "pending"
     },
@@ -1178,11 +1173,11 @@
   "states": {
     "already_recipe": 13,
     "manifest_wants": 1,
-    "pending": 211
+    "pending": 210
   },
   "totals": {
-    "backlog": 225,
-    "resolved": 290,
+    "backlog": 224,
+    "resolved": 291,
     "wontfix": 36
   }
 }

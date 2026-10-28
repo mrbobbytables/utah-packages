@@ -105,6 +105,20 @@ recipe builds an unrelated, header-only EBNF library and does not provide
 `libell`. Check the binary's `sourcerpm` before inferring a source name from a
 shared prefix.
 
+If `import_rawhide.py` warns that Fedora dist-git does not recognize blob
+filtering and then fails with `curl 16` in the HTTP/2 framing layer, retry the
+same import with Git's HTTP/1.1 transport:
+
+```sh
+GIT_CONFIG_COUNT=1 \
+GIT_CONFIG_KEY_0=http.version \
+GIT_CONFIG_VALUE_0=HTTP/1.1 \
+python3 tools/import_rawhide.py <package>
+```
+
+This changes only Git's transport protocol; do not change the source origin or
+fall back to Fedora's lookaside.
+
 Before importing an audit name, read Utah's current `baselines/triage.toml` and
 pin the decision's commit when reconciling an existing `waived` entry into
 `[wontfix]`. The audit can include deliberately absent X11 client utilities

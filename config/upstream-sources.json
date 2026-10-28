@@ -5754,6 +5754,13 @@
       "sha512": "06605eabce8635b82e03863c87b515696d08b8a1fc36b746b44b660989613d2ebd6ca1bb13dd0f88244846894dbf5a15169dd443c34dcda64e960fdbd08a8d3b"
     },
     {
+      "name": "libell",
+      "version": "0.83",
+      "url": "https://www.kernel.org/pub/linux/libs/ell/ell-0.83.tar.xz",
+      "filename": "ell-0.83.tar.xz",
+      "sha512": "4cf7f65fb0595158c2719d0b53b6059877f53e701fb708f4e5315f81af0d70a6083799bf1d11f33fede24edbccb78694ea5b598b286dcc60d9fb695261339879"
+    },
+    {
       "name": "iptstate",
       "version": "2.3.0",
       "url": "https://github.com/jaymzh/iptstate/archive/refs/tags/v2.3.0.tar.gz",
