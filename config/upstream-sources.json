@@ -6083,6 +6083,27 @@
       "url": "https://github.com/pallets/click/archive/8.4.2/click-8.4.2.tar.gz",
       "filename": "click-8.4.2.tar.gz",
       "sha512": "2731993c89d7386a8bfd4f51131384a2a67c4ee33e54f92a055b685ba4cf74c854fb5aca0c92e3a24d04bf7725e169edf457d1f18a660b5361aabbbcdd550657"
+    },
+    {
+      "name": "udftools",
+      "version": "2.3",
+      "url": "https://github.com/pali/udftools/releases/download/2.3/udftools-2.3.tar.gz",
+      "filename": "udftools-2.3.tar.gz",
+      "sha512": "17304264388ae53e348d6aa870f0d23c29477344fee848236b46886c086221941872073974f804c0735eafd0cf9f7acdac7988132f03c0a87dba37467b5bda95"
+    },
+    {
+      "name": "uresourced",
+      "version": "0.5.5",
+      "url": "https://gitlab.freedesktop.org/benzea/uresourced/-/archive/v0.5.5/uresourced-v0.5.5.tar.bz2",
+      "filename": "uresourced-v0.5.5.tar.bz2",
+      "sha512": "5e146b74480ac5d77b950f4eac23448ddcc6e775e190c915291d00a12d4a4161ac0d87358c70205a6f5427b98364fe2c620caf46e1fa9dd866b1c8dc1e667148"
+    },
+    {
+      "name": "xfsprogs",
+      "version": "7.2.1",
+      "url": "https://cdn.kernel.org/pub/linux/utils/fs/xfs/xfsprogs/xfsprogs-7.2.1.tar.xz",
+      "filename": "xfsprogs-7.2.1.tar.xz",
+      "sha512": "c8d0779b50cb06df17ef24be48e878649fd5aa5e789806cc965655e93d695fe5751d0e606f288accea6f7c673bf8647b8e8f8e12f420d50cbdede84de79634fc"
     }
   ]
 }

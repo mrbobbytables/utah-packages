@@ -3382,6 +3382,12 @@ packages:
     downstream_package_name: uchardet
     paths:
       - packages/uchardet
+  udftools:
+    specfile_path: udftools.spec
+    upstream_package_name: udftools
+    downstream_package_name: udftools
+    paths:
+      - packages/udftools
   udisks2:
     specfile_path: udisks2.spec
     upstream_package_name: udisks2
@@ -3400,6 +3406,12 @@ packages:
     downstream_package_name: upower
     paths:
       - packages/upower
+  uresourced:
+    specfile_path: uresourced.spec
+    upstream_package_name: uresourced
+    downstream_package_name: uresourced
+    paths:
+      - packages/uresourced
   urw-base35-fonts:
     specfile_path: urw-base35-fonts.spec
     upstream_package_name: urw-base35-fonts
@@ -3682,6 +3694,12 @@ packages:
     downstream_package_name: xeve
     paths:
       - packages/xeve
+  xfsprogs:
+    specfile_path: xfsprogs.spec
+    upstream_package_name: xfsprogs
+    downstream_package_name: xfsprogs
+    paths:
+      - packages/xfsprogs
   xhost:
     specfile_path: xhost.spec
     upstream_package_name: xhost

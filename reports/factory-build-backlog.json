@@ -20,8 +20,8 @@
     "long-tail": {
       "already_recipe": 3,
       "manifest_wants": 1,
-      "pending": 88,
-      "total": 92
+      "pending": 85,
+      "total": 89
     },
     "power": {
       "total": 0
@@ -1095,16 +1095,6 @@
     },
     {
       "area": "long-tail",
-      "name": "udftools",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "uresourced",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "uvg266-libs",
       "state": "pending"
     },
@@ -1116,11 +1106,6 @@
     {
       "area": "long-tail",
       "name": "virtualbox-guest-additions",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "xfsprogs",
       "state": "pending"
     },
     {
@@ -1193,11 +1178,11 @@
   "states": {
     "already_recipe": 13,
     "manifest_wants": 1,
-    "pending": 214
+    "pending": 211
   },
   "totals": {
-    "backlog": 228,
-    "resolved": 289,
+    "backlog": 225,
+    "resolved": 292,
     "wontfix": 34
   }
 }

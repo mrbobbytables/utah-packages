@@ -766,3 +766,13 @@ The `ntfs-3g-system-compression` source produces a plugin for the existing
 `pkgconfig(libntfs-3g)`, so keep the existing source in the factory graph.
 A catalog record for the recipe does not prove the plugin has been built,
 published, or loaded with the driver.
+
+## Hand-locking an import without `rpmspec`
+
+When the import workflow cannot be dispatched, import with
+`tools/import_rawhide.py`, download `Source0`, and confirm its SHA-512 equals
+the digest in the recipe's `sources` before adding the lock entry. Some Fedora
+specs use `http://kernel.org/...`; lock the `https://cdn.kernel.org/...` URL
+instead, since `tools/validate.py` rejects plain-http locks. Then run
+`render_packit_config.py --write` and `render_architecture_counts.py --write`.
+Hosted build evidence is still owed; a lock alone does not resolve a runtime gap.
