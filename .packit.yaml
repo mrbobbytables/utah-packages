@@ -106,6 +106,12 @@ packages:
     downstream_package_name: alsa-utils
     paths:
       - packages/alsa-utils
+  anthy-unicode:
+    specfile_path: anthy-unicode.spec
+    upstream_package_name: anthy-unicode
+    downstream_package_name: anthy-unicode
+    paths:
+      - packages/anthy-unicode
   antiword:
     specfile_path: antiword.spec
     upstream_package_name: antiword
@@ -598,6 +604,12 @@ packages:
     downstream_package_name: gcr3
     paths:
       - packages/gcr3
+  gd:
+    specfile_path: gd.spec
+    upstream_package_name: gd
+    downstream_package_name: gd
+    paths:
+      - packages/gd
   gdk-pixbuf2:
     specfile_path: gdk-pixbuf2.spec
     upstream_package_name: gdk-pixbuf2
@@ -1312,6 +1324,12 @@ packages:
     downstream_package_name: libXScrnSaver
     paths:
       - packages/libXScrnSaver
+  libXaw:
+    specfile_path: libXaw.spec
+    upstream_package_name: libXaw
+    downstream_package_name: libXaw
+    paths:
+      - packages/libXaw
   libXcursor:
     specfile_path: libXcursor.spec
     upstream_package_name: libXcursor
@@ -1942,6 +1960,12 @@ packages:
     downstream_package_name: libosinfo
     paths:
       - packages/libosinfo
+  libotf:
+    specfile_path: libotf.spec
+    upstream_package_name: libotf
+    downstream_package_name: libotf
+    paths:
+      - packages/libotf
   libpcap:
     specfile_path: libpcap.spec
     upstream_package_name: libpcap
