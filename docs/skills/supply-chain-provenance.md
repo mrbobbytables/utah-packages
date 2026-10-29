@@ -160,8 +160,11 @@ verified GNOME release URL into a blanket promotion of all feeds: forge tag
 archives can differ from Fedora's pinned bytes. A digest mismatch must fail
 closed; Fedora fallbacks cover transport failures, not integrity failures.
 
-Some locked files are Fedora-maintained metadata or build macros with no
-separate upstream release. For these exceptions, use Fedora dist-git's raw
+The generator guidance above applies when upstream source can be transformed
+into the locked bytes. For Fedora-maintained metadata and build macros with no
+first-party upstream source, use the separate dist-git exception below.
+
+For these exceptions, use Fedora dist-git's raw
 file URL pinned to the full commit
 (`https://src.fedoraproject.org/rpms/<package>/raw/<commit>/f/<path>`), and
 verify that the fetched bytes match the existing SHA-512. Keep the package on
