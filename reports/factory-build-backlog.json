@@ -10,9 +10,8 @@
       "total": 64
     },
     "fonts-i18n": {
-      "already_recipe": 1,
       "pending": 16,
-      "total": 17
+      "total": 16
     },
     "gnome-apps": {
       "pending": 5,
@@ -528,11 +527,6 @@
       "area": "fonts-i18n",
       "name": "adobe-mappings-pdf",
       "state": "pending"
-    },
-    {
-      "area": "fonts-i18n",
-      "name": "anthy-unicode",
-      "state": "already_recipe"
     },
     {
       "area": "fonts-i18n",
@@ -1097,13 +1091,13 @@
   ],
   "issue": "projectbluefin/utah-packages#308",
   "states": {
-    "already_recipe": 13,
+    "already_recipe": 12,
     "manifest_wants": 1,
-    "pending": 196
+    "pending": 195
   },
   "totals": {
-    "backlog": 210,
-    "resolved": 305,
-    "wontfix": 36
+    "backlog": 208,
+    "resolved": 306,
+    "wontfix": 37
   }
 }
