@@ -260,6 +260,20 @@ against Hummingbird's primary metadata by name, file and SONAME provide:
 `libxml2` (`libxml2.so.16`) all resolve there. That static check is not a
 transaction: home-directory creation still needs a login on an enrolled host.
 
+### Legacy service wrapper waiver
+
+`initscripts-service` comes from the `initscripts` source recipe, but Utah's
+[committed consumer triage](https://github.com/projectbluefin/utah/blob/1bc07242296d039bca80412ec2b0e68579a61d3e/baselines/triage.toml#L384-L386)
+already waives it as a legacy SysV service shim. Reconcile that exact binary
+into `[wontfix]` with the pinned decision instead of importing the parent
+legacy-init suite. This is an existing consumer decision, not a new policy
+exclusion or evidence of publication. The existing `autofs` recipe still
+requires `/sbin/service` in its preun/postun scriptlets; preserve and report
+that dependency when reconciling the waiver rather than silently deleting it
+or claiming runtime closure. Do not extend the waiver to other pending
+long-tail names; each needs its own disposition. Keep the batch issue open
+when other outputs or their build/runtime evidence remain outstanding.
+
 ### Virtual machine guest integration
 
 `spice-vdagent` BuildRequires `spice-protocol` headers. Import the protocol

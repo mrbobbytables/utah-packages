@@ -720,11 +720,6 @@
     },
     {
       "area": "long-tail",
-      "name": "initscripts-service",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "intel-vaapi-driver",
       "state": "pending"
     },
