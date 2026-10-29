@@ -20,8 +20,8 @@
     "long-tail": {
       "already_recipe": 2,
       "manifest_wants": 1,
-      "pending": 78,
-      "total": 81
+      "pending": 77,
+      "total": 80
     },
     "power": {
       "total": 0
@@ -1093,11 +1093,11 @@
   "states": {
     "already_recipe": 12,
     "manifest_wants": 1,
-    "pending": 196
+    "pending": 195
   },
   "totals": {
-    "backlog": 209,
+    "backlog": 208,
     "resolved": 306,
-    "wontfix": 36
+    "wontfix": 37
   }
 }
