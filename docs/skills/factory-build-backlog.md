@@ -831,8 +831,18 @@ in `ghcr.io/projectbluefin/utah-packages:latest` and move them from
 Previously resolved GNOME outputs (`gtkmm4.0`, `pangomm2.48`, `gtksourceview5`,
 `libhandy`, `libspelling`) also populate their observed `published_run` and
 `published_nevra` fields. Remaining outputs without recipes or source locks
-(`imath`, `libmediaart`, `libwnck3`, `rygel`) stay pending in
-`[areas.gnome-apps]`, and the batch issue remains open with `Refs #484`.
+(`imath`, `libmediaart`, `rygel`) stay pending in `[areas.gnome-apps]`, and
+the batch issue remains open with `Refs #484`.
+
+`libwnck3` is the X11 window-list library (GTK 3); Orca `Recommends` it and
+Utah triages it as `planned`. Fedora's source package is `libwnck3` but the
+upstream tarball is `libwnck`: lock
+`download.gnome.org/sources/libwnck/43/libwnck-<version>.tar.xz`, not a
+`libwnck3` path. The Rawhide recipe ships five patches with their `Patch`
+lines commented out (an unmerged upstream MR); import them unchanged and do
+not re-enable them. Its build and runtime dependencies (`gtk3`, `libXres`,
+`startup-notification`) are already factory recipes, so no extra source
+family is needed.
 
 
 ### NTFS system compression plugin
@@ -842,6 +852,19 @@ The `ntfs-3g-system-compression` source produces a plugin for the existing
 `pkgconfig(libntfs-3g)`, so keep the existing source in the factory graph.
 A catalog record for the recipe does not prove the plugin has been built,
 published, or loaded with the driver.
+
+### Perl modules split out of Hummingbird's perl
+
+Fedora splits dual-life core modules such as `perl-Unicode-Normalize` into
+their own source recipes. Hummingbird's `perl` metapackage still requires
+`perl-Unicode-Normalize` but does not ship it, so a full `perl` install needs
+the factory output; check `perl(...)` provides in Hummingbird's primary
+metadata before assuming a module is supplied. The Fedora recipe builds from
+the older CPAN archive (`base_version`) plus an upgrade patch, so its source
+lock pins that CPAN archive while `version` stays the RPM `Version:`. Its
+`-tests` subpackage requires `perl-Test-Harness`, which Hummingbird lacks;
+the audited name is the main package, and runtime acceptance is
+`perl -MUnicode::Normalize=NFD,NFC -e` round-tripping a composed string.
 
 ### ImageMagick recipe (codecs-media, #474)
 

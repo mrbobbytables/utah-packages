@@ -2272,6 +2272,12 @@ packages:
     downstream_package_name: libwmf
     paths:
       - packages/libwmf
+  libwnck3:
+    specfile_path: libwnck3.spec
+    upstream_package_name: libwnck3
+    downstream_package_name: libwnck3
+    paths:
+      - packages/libwnck3
   libx86emu:
     specfile_path: libx86emu.spec
     upstream_package_name: libx86emu
@@ -2746,6 +2752,12 @@ packages:
     downstream_package_name: pdfio
     paths:
       - packages/pdfio
+  perl-Unicode-Normalize:
+    specfile_path: perl-Unicode-Normalize.spec
+    upstream_package_name: perl-Unicode-Normalize
+    downstream_package_name: perl-Unicode-Normalize
+    paths:
+      - packages/perl-Unicode-Normalize
   pinentry:
     specfile_path: pinentry.spec
     upstream_package_name: pinentry
