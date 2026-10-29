@@ -6,8 +6,8 @@
       "total": 27
     },
     "dev-tools": {
-      "pending": 66,
-      "total": 66
+      "pending": 64,
+      "total": 64
     },
     "fonts-i18n": {
       "pending": 17,
@@ -18,10 +18,10 @@
       "total": 5
     },
     "long-tail": {
-      "already_recipe": 3,
+      "already_recipe": 2,
       "manifest_wants": 1,
-      "pending": 84,
-      "total": 88
+      "pending": 79,
+      "total": 82
     },
     "power": {
       "total": 0
@@ -301,16 +301,6 @@
     {
       "area": "dev-tools",
       "name": "lsb_release",
-      "state": "pending"
-    },
-    {
-      "area": "dev-tools",
-      "name": "oddjob",
-      "state": "pending"
-    },
-    {
-      "area": "dev-tools",
-      "name": "oddjob-mkhomedir",
       "state": "pending"
     },
     {
@@ -630,21 +620,6 @@
     },
     {
       "area": "long-tail",
-      "name": "NetworkManager-ssh",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "NetworkManager-ssh-gnome",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "NetworkManager-ssh-selinux",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "OpenCL-ICD-Loader",
       "state": "pending"
     },
@@ -667,11 +642,6 @@
       "area": "long-tail",
       "name": "b43-openfwwf",
       "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "bash-color-prompt",
-      "state": "already_recipe"
     },
     {
       "area": "long-tail",
@@ -746,16 +716,6 @@
     {
       "area": "long-tail",
       "name": "intel-vaapi-driver",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "ipset",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "ipset-libs",
       "state": "pending"
     },
     {
@@ -1131,13 +1091,13 @@
   ],
   "issue": "projectbluefin/utah-packages#308",
   "states": {
-    "already_recipe": 13,
+    "already_recipe": 12,
     "manifest_wants": 1,
-    "pending": 202
+    "pending": 195
   },
   "totals": {
-    "backlog": 216,
-    "resolved": 299,
+    "backlog": 208,
+    "resolved": 307,
     "wontfix": 36
   }
 }

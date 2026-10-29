@@ -2,6 +2,13 @@
   "schema": 1,
   "packages": [
     {
+      "name": "ipset",
+      "version": "7.24",
+      "url": "https://ipset.netfilter.org/ipset-7.24.tar.bz2",
+      "filename": "ipset-7.24.tar.bz2",
+      "sha512": "18ccb49bd38083f0556b11e1d17f43791c52a2b094c9a500b6f770796b17e8e70c3860a628eac2252eb672b1fc9de734d3a0e0823d61dd9be7b4188adc6dd214"
+    },
+    {
       "name": "kyotocabinet",
       "version": "1.2.80",
       "url": "https://dbmx.net/kyotocabinet/pkg/kyotocabinet-1.2.80.tar.gz",
@@ -5135,6 +5142,13 @@
       "sha512": "c61f5edee04475b013afbb91ba11e102cf4c925a0b2e16477473e0de9528d793121c1324f2c4d5ae03e0c8fb00dd9de444130c22e681f7a3408bc9a179ad7509"
     },
     {
+      "name": "NetworkManager-ssh",
+      "version": "1.4.5",
+      "url": "https://github.com/danfruehauf/NetworkManager-ssh/archive/1.4.5.tar.gz",
+      "filename": "NetworkManager-ssh-1.4.5.tar.gz",
+      "sha512": "5c75f2cfa714e3a5b87a8755c39bd279bb1e7556f4743affca90c0c655dce7e7852f2cfc1233ff8c48a0da1f500b59873794269ab088818df24ee58d527b861f"
+    },
+    {
       "name": "vpnc",
       "version": "0.5.3^20241114.git11e15a1",
       "url": "https://github.com/streambinder/vpnc/archive/11e15a143d6a00fb4e532cad271c70b401a6b9ef/vpnc-11e15a1.tar.gz",
@@ -6122,6 +6136,17 @@
       "url": "https://github.com/pallets/click/archive/8.4.2/click-8.4.2.tar.gz",
       "filename": "click-8.4.2.tar.gz",
       "sha512": "2731993c89d7386a8bfd4f51131384a2a67c4ee33e54f92a055b685ba4cf74c854fb5aca0c92e3a24d04bf7725e169edf457d1f18a660b5361aabbbcdd550657"
+    },
+    {
+      "name": "oddjob",
+      "version": "0.34.7",
+      "url": "https://releases.pagure.org/oddjob/oddjob-0.34.7.tar.gz",
+      "filename": "oddjob-0.34.7.tar.gz",
+      "feed": "https://release-monitoring.org/project/384596",
+      "sha512": "df98f3d2ce18de5d2db6d638995c01c80aec51f7ad979b879b2e8d8f7d6c2e464cbff3c70ed9b528399337f8fba31744f955ca17fdad1d4e9193fb0f10ea391a",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/rpms/oddjob/oddjob-0.34.7.tar.gz/sha512/df98f3d2ce18de5d2db6d638995c01c80aec51f7ad979b879b2e8d8f7d6c2e464cbff3c70ed9b528399337f8fba31744f955ca17fdad1d4e9193fb0f10ea391a/oddjob-0.34.7.tar.gz"
+      ]
     },
     {
       "name": "udftools",

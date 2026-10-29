@@ -231,6 +231,21 @@ tracking issue open when publication, runtime dependency resolution, or a
 representative command has not been verified. A reconciliation PR must state
 those remaining checks explicitly; `[resolved]` is not installability proof.
 
+### D-Bus helper services
+
+`oddjob-mkhomedir` is an unconditional subpackage of `oddjob.spec`; one
+`oddjob` import closes both names. Its `Source0` host, `releases.pagure.org`,
+is gone and the project has published no new release location, so the lock
+keeps the pagure URL as primary with the SHA-512-verified Fedora lookaside in
+`fallback_urls` (see
+[dead upstream hosts](supply-chain-provenance.md#dead-upstream-hosts-releasespagureorg)).
+Before relying on the Fedora 44 build root, check the runtime `Requires`
+against Hummingbird's primary metadata by name, file and SONAME provide:
+`dbus`, `dbus-tools` (`/usr/bin/dbus-send`), `psmisc`, `systemd` (provides
+`systemd-sysv`), `pam-libs`, `openldap`, `cyrus-sasl-lib`, `krb5-libs` and
+`libxml2` (`libxml2.so.16`) all resolve there. That static check is not a
+transaction: home-directory creation still needs a login on an enrolled host.
+
 ### Virtual machine guest integration
 
 `spice-vdagent` BuildRequires `spice-protocol` headers. Import the protocol
@@ -834,3 +849,12 @@ specs use `http://kernel.org/...`; lock the `https://cdn.kernel.org/...` URL
 instead, since `tools/validate.py` rejects plain-http locks. Then run
 `render_packit_config.py --write` and `render_architecture_counts.py --write`.
 Hosted build evidence is still owed; a lock alone does not resolve a runtime gap.
+
+## IP set package family
+
+The `ipset` source builds both the command and `ipset-libs`; track both
+outputs from the same recipe. Its optional `ipset-service` subpackage also
+requires `iptables-services`, so check that provider when verifying the full
+built RPM set. Runtime verification needs a network namespace with the kernel
+IP set support and `CAP_NET_ADMIN`: create a set, add and query an address,
+then destroy the set. A version or help command does not exercise that path.

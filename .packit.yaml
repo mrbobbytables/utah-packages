@@ -34,6 +34,12 @@ packages:
     downstream_package_name: NetworkManager-openvpn
     paths:
       - packages/NetworkManager-openvpn
+  NetworkManager-ssh:
+    specfile_path: NetworkManager-ssh.spec
+    upstream_package_name: NetworkManager-ssh
+    downstream_package_name: NetworkManager-ssh
+    paths:
+      - packages/NetworkManager-ssh
   SDL3:
     specfile_path: SDL3.spec
     upstream_package_name: SDL3
@@ -1198,6 +1204,12 @@ packages:
     downstream_package_name: ipp-usb
     paths:
       - packages/ipp-usb
+  ipset:
+    specfile_path: ipset.spec
+    upstream_package_name: ipset
+    downstream_package_name: ipset
+    paths:
+      - packages/ipset
   iptstate:
     specfile_path: iptstate.spec
     upstream_package_name: iptstate
@@ -2542,6 +2554,12 @@ packages:
     downstream_package_name: oath-toolkit
     paths:
       - packages/oath-toolkit
+  oddjob:
+    specfile_path: oddjob.spec
+    upstream_package_name: oddjob
+    downstream_package_name: oddjob
+    paths:
+      - packages/oddjob
   openal-soft:
     specfile_path: openal-soft.spec
     upstream_package_name: openal-soft

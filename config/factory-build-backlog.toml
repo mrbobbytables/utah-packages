@@ -134,8 +134,6 @@ packages = [
     "libsss_nss_idmap",
     "libsss_sudo",
     "lsb_release",
-    "oddjob",
-    "oddjob-mkhomedir",
     "open-vm-tools",
     "open-vm-tools-desktop",
     "python3-anyio",
@@ -221,15 +219,11 @@ packages = [
 consumer_issue = "projectbluefin/utah#396"
 packages = [
     "7zip",
-    "NetworkManager-ssh",
-    "NetworkManager-ssh-gnome",
-    "NetworkManager-ssh-selinux",
     "OpenCL-ICD-Loader",
     "PackageKit-glib",
     "appstream-data",
     "b43-fwcutter",
     "b43-openfwwf",
-    "bash-color-prompt",
     "braille-printer-app",
     "compsize",
     "criu",
@@ -245,8 +239,6 @@ packages = [
     "gvfs-archive",
     "initscripts-service",
     "intel-vaapi-driver",
-    "ipset",
-    "ipset-libs",
     "jbig2dec-libs",
     "kf6-filesystem",
     "kf6-karchive",
@@ -360,6 +352,8 @@ packages = [
     # NILFS filesystem utilities imported for issue #488; publication still requires validation.
     { name = "nilfs-utils", pr = 702 },
     # Recipe imported; hosted build, publication and runtime proof remain in #501.
+    { name = "ipset" },
+    { name = "ipset-libs" },
     { name = "iptstate", pr = 697 },
     { name = "kyotocabinet-libs", pr = 767 },
     # Batch #502 publication: ghcr.io/projectbluefin/utah-packages@sha256:2ff39e76a1473cf0a4299952b951080a79650363b1ac9c3b8e372cadcba5a319
@@ -371,6 +365,15 @@ packages = [
     # Disc-reading recipes; publication and runtime proof remain tracked in #475.
     { name = "libudfread", pr = 658 },
     { name = "libbluray", pr = 658 },
+    # NetworkManager-ssh VPN plugin (main + gnome + selinux subpackages); recipe
+    # import only, hosted build, publication and runtime proof remain outstanding.
+    { name = "NetworkManager-ssh", pr = 770 },
+    { name = "NetworkManager-ssh-gnome", pr = 770 },
+    { name = "NetworkManager-ssh-selinux", pr = 770 },
+    # bash-color-prompt recipe was already imported in #728 (commit e53a1bf5);
+    # record that existing PR and commit to close the catalog gap instead of
+    # re-importing the same source under this PR.
+    { name = "bash-color-prompt", commit = "e53a1bf5c5d30730b49132eab460e60699d5ddfc", pr = 728 },
     # Shader compiler recipe; hosted build and runtime proof remain tracked in #475.
     { name = "libshaderc" },
     # ifuse source import; publication and consumer validation remain tracked in #486.
@@ -742,6 +745,10 @@ packages = [
     { name = "vte-profile", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40569848351, published_nevra = "vte-profile-0:0.84.1-1.hum1.bfin.x86_64" },
     { name = "vte291", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40569848351, published_nevra = "vte291-0:0.84.1-1.hum1.bfin.x86_64" },
     { name = "vte291-gtk4", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40569848351, published_nevra = "vte291-gtk4-0:0.84.1-1.hum1.bfin.x86_64" },
+    # D-Bus helper service and its home-directory creator (#488). oddjob-mkhomedir
+    # is an unconditional subpackage of oddjob.spec; build and runtime evidence pending.
+    { name = "oddjob", pr = 784 },
+    { name = "oddjob-mkhomedir", pr = 784 },
 ]
 
 [wontfix]
