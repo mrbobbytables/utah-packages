@@ -6,22 +6,22 @@
       "total": 29
     },
     "dev-tools": {
-      "pending": 67,
-      "total": 67
+      "pending": 64,
+      "total": 64
     },
     "fonts-i18n": {
-      "pending": 19,
-      "total": 19
+      "pending": 17,
+      "total": 17
     },
     "gnome-apps": {
       "pending": 5,
       "total": 5
     },
     "long-tail": {
-      "already_recipe": 3,
+      "already_recipe": 2,
       "manifest_wants": 1,
-      "pending": 87,
-      "total": 91
+      "pending": 78,
+      "total": 81
     },
     "power": {
       "total": 0
@@ -315,16 +315,6 @@
     },
     {
       "area": "dev-tools",
-      "name": "oddjob",
-      "state": "pending"
-    },
-    {
-      "area": "dev-tools",
-      "name": "oddjob-mkhomedir",
-      "state": "pending"
-    },
-    {
-      "area": "dev-tools",
       "name": "open-vm-tools",
       "state": "pending"
     },
@@ -401,11 +391,6 @@
     {
       "area": "dev-tools",
       "name": "python3-jeepney",
-      "state": "pending"
-    },
-    {
-      "area": "dev-tools",
-      "name": "python3-jmespath",
       "state": "pending"
     },
     {
@@ -570,11 +555,6 @@
     },
     {
       "area": "fonts-i18n",
-      "name": "ibus-chewing",
-      "state": "pending"
-    },
-    {
-      "area": "fonts-i18n",
       "name": "ibus-hangul",
       "state": "pending"
     },
@@ -601,11 +581,6 @@
     {
       "area": "fonts-i18n",
       "name": "kasumi-unicode",
-      "state": "pending"
-    },
-    {
-      "area": "fonts-i18n",
-      "name": "libchewing",
       "state": "pending"
     },
     {
@@ -655,21 +630,6 @@
     },
     {
       "area": "long-tail",
-      "name": "NetworkManager-ssh",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "NetworkManager-ssh-gnome",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "NetworkManager-ssh-selinux",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "OpenCL-ICD-Loader",
       "state": "pending"
     },
@@ -692,11 +652,6 @@
       "area": "long-tail",
       "name": "b43-openfwwf",
       "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "bash-color-prompt",
-      "state": "already_recipe"
     },
     {
       "area": "long-tail",
@@ -775,16 +730,6 @@
     },
     {
       "area": "long-tail",
-      "name": "ipset",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "ipset-libs",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "jbig2dec-libs",
       "state": "pending"
     },
@@ -816,11 +761,6 @@
     {
       "area": "long-tail",
       "name": "kvazaar-libs",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "kyotocabinet-libs",
       "state": "pending"
     },
     {
@@ -1075,16 +1015,6 @@
     },
     {
       "area": "long-tail",
-      "name": "udftools",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "uresourced",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "uvg266-libs",
       "state": "pending"
     },
@@ -1096,11 +1026,6 @@
     {
       "area": "long-tail",
       "name": "virtualbox-guest-additions",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "xfsprogs",
       "state": "pending"
     },
     {
@@ -1171,13 +1096,13 @@
   ],
   "issue": "projectbluefin/utah-packages#308",
   "states": {
-    "already_recipe": 13,
+    "already_recipe": 12,
     "manifest_wants": 1,
-    "pending": 210
+    "pending": 196
   },
   "totals": {
-    "backlog": 224,
-    "resolved": 291,
+    "backlog": 209,
+    "resolved": 306,
     "wontfix": 36
   }
 }
