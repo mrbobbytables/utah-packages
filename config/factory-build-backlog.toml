@@ -152,7 +152,6 @@ packages = [
     "python3-jaraco-context",
     "python3-jaraco-functools",
     "python3-jeepney",
-    "python3-jmespath",
     "python3-keyring",
     "python3-keyring+completion",
     "python3-more-itertools",
@@ -191,14 +190,12 @@ packages = [
     "cldr-emoji-annotation-dtd",
     "ibus-anthy",
     "ibus-anthy-python",
-    "ibus-chewing",
     "ibus-hangul",
     "ibus-libpinyin",
     "ibus-m17n",
     "ibus-typing-booster",
     "kasumi-common",
     "kasumi-unicode",
-    "libchewing",
     "libpinyin",
     "libpinyin-data",
     "m17n-lib",
@@ -257,7 +254,6 @@ packages = [
     "kmod-v4l2loopback",
     "kpartx",
     "kvazaar-libs",
-    "kyotocabinet-libs",
     "libell",
     "libev",
     "libijs",
@@ -310,12 +306,9 @@ packages = [
     "tesseract-tessdata-doc",
     "uavs3d-libs",
     "ublue-os-akmods-addons",
-    "udftools",
-    "uresourced",
     "uvg266-libs",
     "v4l2loopback",
     "virtualbox-guest-additions",
-    "xfsprogs",
 ]
 
 [resolved]
@@ -340,6 +333,9 @@ packages = [
     # Language data recipe; build/publication and consumer proof remain tracked in #494.
     { name = "langtable", pr = 700 },
     { name = "python3-langtable", pr = 700 },
+    # Chewing input-method engine + library recipe for #494; hosted build, publication and runtime proof remain open.
+    { name = "ibus-chewing" },
+    { name = "libchewing" },
     # Recipe import only; build, publication and runtime proof remain on #508.
     { name = "uchardet", pr = 729 },
     # Published boot-screen outputs; recipe #312, source lock #320; runtime proof stays on #505.
@@ -365,6 +361,7 @@ packages = [
     { name = "nilfs-utils", pr = 702 },
     # Recipe imported; hosted build, publication and runtime proof remain in #501.
     { name = "iptstate", pr = 697 },
+    { name = "kyotocabinet-libs", pr = 767 },
     # Batch #502 publication: ghcr.io/projectbluefin/utah-packages@sha256:2ff39e76a1473cf0a4299952b951080a79650363b1ac9c3b8e372cadcba5a319
     # Run: https://github.com/projectbluefin/utah-packages/actions/runs/40626803772
     # Recipe/publication accounting only; dependency transactions and runtime proof remain in #502.
@@ -406,6 +403,7 @@ packages = [
     { name = "python3-six", pr = 613 },
     { name = "python3-h11" },
     { name = "python3-click" },
+    { name = "python3-jmespath", pr = 798 },
     # Chromaprint recipe coverage only; publication and runtime proof remain in #487.
     { name = "libchromaprint", pr = 692 },
     # BSD compatibility library and its digest-library dependency (#487).
@@ -734,6 +732,9 @@ packages = [
     # #752 adopted #748 and merged its source family.
     { name = "portaudio", commit = "da68d0f0b38c2f8bacf3fbfc6dd13c0b17681134", pr = 752, published_run = 40626803772, published_nevra = "portaudio-0:19.7.0-1.hum1.bfin.x86_64" },
     { name = "python3-pyaudio", pr = 748, published_run = 40626803772, published_nevra = "python3-pyaudio-0:0.2.13-14.hum1.bfin.x86_64" },
+    { name = "udftools", pr = 782 },
+    { name = "uresourced", pr = 782 },
+    { name = "xfsprogs", pr = 782 },
     # Terminal and VTE emulator outputs (PR #413); publication verified in run 40569848351.
     # vte-profile and vte291-gtk4 are subpackages of vte291.spec.
     # Recipe and publication closure for projectbluefin/utah-packages#484.
