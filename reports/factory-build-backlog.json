@@ -20,8 +20,8 @@
     "long-tail": {
       "already_recipe": 2,
       "manifest_wants": 1,
-      "pending": 79,
-      "total": 82
+      "pending": 78,
+      "total": 81
     },
     "power": {
       "total": 0
@@ -706,11 +706,6 @@
     {
       "area": "long-tail",
       "name": "gvfs-archive",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "initscripts-service",
       "state": "pending"
     },
     {
