@@ -857,6 +857,17 @@ The `ntfs-3g-system-compression` source produces a plugin for the existing
 A catalog record for the recipe does not prove the plugin has been built,
 published, or loaded with the driver.
 
+### ImageMagick recipe (codecs-media, #474)
+
+`ImageMagick.spec` builds both `ImageMagick` and `ImageMagick-libs` (its
+`%package libs`), so one import resolves both names. It was imported without
+`rpmspec` or a container: the `Source0` SHA-512 in `packages/ImageMagick/sources`
+was checked against the upstream tarball before locking it. Its BuildRequires
+(libheif, libjxl, libuhdr, jasper and others) are separate graph dependencies;
+a catalog record does not prove the build succeeds. The ffmpeg family,
+`LCEVCdec`, `davs2-libs` and `gstreamer1-plugins-good-qt6` stay pending in
+`[areas.codecs-media]`, so `#474` stays open.
+
 ## Hand-locking an import without `rpmspec`
 
 When the import workflow cannot be dispatched, import with
