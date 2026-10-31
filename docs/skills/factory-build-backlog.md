@@ -698,6 +698,40 @@ source lock and validate model loading as well as the Python binding import.
 recognizer or generated model. Do not add a runtime recipe just because a
 BuildRequires is absent from Hummingbird (the build root also uses Fedora).
 
+Qt 6 submodule specs (`qt6-qtdeclarative`, `qt6-qttranslations`,
+`qt6-qtwayland`) define `%global majmin %(echo %{version} | cut -d. -f1-2)` and
+expand `%{majmin}` inside `Source0`,
+which `bootstrap_upstream_sources.py` reports as `needs explicit mapping`
+without `rpmspec`; write the resolved `https://download.qt.io/official_releases/qt/...`
+entry and Fedora lookaside `fallback_urls` directly in
+`config/upstream-sources.json`. Pass `--ref <commit>` to
+`tools/import_rawhide.py` for the `rawhide` ancestor matching the intended
+Qt family. The imported recipes use 6.11.2; do not infer the buildroot's
+selected version from that source pin or an old Hummingbird snapshot.
+
+Qt private libraries use `Qt_6.<minor>_PRIVATE_API` symbol versions. Hummingbird
+can retain several QtBase versions with incompatible private symbols. The
+factory's downstream specs therefore require `qt6-qtbase-devel`, its private
+and static companions where used, the Qt RPM macros, and the other Qt build
+tools/modules at `= %{version}`. Keep those constraints together when updating
+the family. The generated buildroot in `tools/mock_config.py` excludes Fedora's
+`qt6-qtbase` and prefers Hummingbird; a digest-pinned bootstrap image does not
+freeze the remote RPM repositories used to solve BuildRequires. An unavailable
+matching dependency must fail resolution rather than silently select a newer
+Qt minor. The declarative and Wayland runtime requirements derived from
+`%{_qt6_version}` must correspond to that selected QtBase.
+
+Before claiming compatibility, inspect each package's hermetic
+`buildroot_lock.json` for the resolved Qt NEVRAs, then verify the emitted RPMs
+in a Hummingbird-plus-factory install transaction, including
+`qt6-qtwayland-adwaita-decoration`. Record the factory digest and current
+Hummingbird metadata checksums per [repo inspection](repo-inspection.md).
+A green inventory check or Canary with skipped builds supplies neither proof;
+keep all four `[areas.unblockers]` names and its assigned `consumer_issue`
+until the review's build and runtime acceptance requirements are met.
+`qt6-qtwayland.spec` ships the decoration via `%package adwaita-decoration`
+(not the standalone `qadwaitadecorations` package).
+
 ## Diagnosing drift
 
 - `--check` compares the whole live report with the committed snapshot —
