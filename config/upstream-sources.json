@@ -6270,6 +6270,34 @@
       "sha512": "c1676a4b7565d25c2948569005c503a0ca33908de6ed16536767da2c00c634e4ee345bcaf88a01bf6cd2996aaf722faaedff80061ab65ee77e5bc0f494f86a70"
     },
     {
+      "name": "libotf",
+      "version": "0.9.16",
+      "url": "https://download.savannah.gnu.org/releases/m17n/libotf-0.9.16.tar.gz",
+      "filename": "libotf-0.9.16.tar.gz",
+      "sha512": "0f68c45c1224f02dc0f1a8e9915dd9c1c70d71259b4e2f7bbd4fbec6426e58d4a26e4cbf28dbb8ed051ba6f532f99fc4e74b4ddf97a93ec947fa6260c875d0b4"
+    },
+    {
+      "name": "libXaw",
+      "version": "1.0.16",
+      "url": "https://www.x.org/pub/individual/lib/libXaw-1.0.16.tar.xz",
+      "filename": "libXaw-1.0.16.tar.xz",
+      "sha512": "1cabad1a9b06dec7de601b977e844536823ee1a0045244acc42ca6b6107da9b4953736d94898a96cab40845eab77dae21e20e1fa66a3dfc4dedf575dfbca04aa"
+    },
+    {
+      "name": "gd",
+      "version": "2.3.3",
+      "url": "https://github.com/libgd/libgd/releases/download/gd-2.3.3/libgd-2.3.3.tar.xz",
+      "filename": "libgd-2.3.3.tar.xz",
+      "sha512": "aa49d4381d604a4360d556419d603df2ffd689a6dcc10f8e5e1d158ddaa3ab89912f6077ca77da4e370055074007971cf6d356ec9bf26dcf39bcff3208bc7e6c"
+    },
+    {
+      "name": "anthy-unicode",
+      "version": "1.0.0.20260213",
+      "url": "https://github.com/fujiwarat/anthy-unicode/releases/download/1.0.0.20260213/anthy-unicode-1.0.0.20260213.tar.xz",
+      "filename": "anthy-unicode-1.0.0.20260213.tar.xz",
+      "sha512": "895d7f325214ae2174eafed98d3de466d59dd26b58e3220670c804078b94b718ab4a634bf5daddb9f6a0b13ffb9a132460f65ef512fa0af5e08077f85d84227e"
+    },
+    {
       "name": "leptonica",
       "version": "1.87.0",
       "url": "https://github.com/DanBloomberg/leptonica/archive/1.87.0/leptonica-1.87.0.tar.gz",
