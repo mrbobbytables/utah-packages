@@ -109,13 +109,6 @@ packages = [
     "kernel-devel-matched",
     "kernel-tools",
     "kernel-tools-libs",
-    "libcaca",
-    "libsss_autofs",
-    "libsss_certmap",
-    "libsss_idmap",
-    "libsss_nss_idmap",
-    "libsss_sudo",
-    "lsb_release",
     "open-vm-tools",
     "open-vm-tools-desktop",
     "python3-anyio",
@@ -812,6 +805,15 @@ packages = [
     # is an unconditional subpackage of oddjob.spec; build and runtime evidence pending.
     { name = "oddjob", pr = 784 },
     { name = "oddjob-mkhomedir", pr = 784 },
+    # Dev-tools batch (#487) recipe imports; hosted build, publication and runtime proof remain.
+    # libsss_* are unconditional %package subpackages of sssd.spec.
+    { name = "libcaca", pr = 848 },
+    { name = "libsss_autofs", pr = 848 },
+    { name = "libsss_certmap", pr = 848 },
+    { name = "libsss_idmap", pr = 848 },
+    { name = "libsss_nss_idmap", pr = 848 },
+    { name = "libsss_sudo", pr = 848 },
+    { name = "lsb_release", pr = 848 },
 ]
 
 [wontfix]
