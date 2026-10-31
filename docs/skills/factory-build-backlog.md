@@ -479,12 +479,12 @@ Yubico C releases (`libyubikey`, `ykclient`, `ykpers`) still declare `http://ope
 
 By contrast, `yubikey-manager` (`python3-yubikey-manager`) is a `pyproject`
 package whose `[project].dependencies` generate runtime `python3dist(...)`
-`Requires` across multiple backlog areas (`python3-click`, `python3-fido2`,
-`python3-keyring` plus `secretstorage`/`jeepney`/`jaraco` in `dev-tools`, and
-`python3-pyscard`, `python3-pskc` in `long-tail`). Its recipe landed in #839 as
-recipe coverage only (both names moved to `[resolved]`); hosted build,
-publication and runtime proof stay blocked on those Python providers (#489,
-#506) and are tracked on #479.
+`Requires` across multiple backlog areas. `python3-click`, `python3-pyscard`,
+`python3-pskc` and the `jaraco` libraries already have recipes in `[resolved]`;
+`python3-fido2` and `python3-keyring` (with `secretstorage`/`jeepney`) are still
+pending in `dev-tools`. Its recipe landed in #839 as recipe coverage only (both
+names moved to `[resolved]`); hosted build, publication and runtime proof stay
+blocked on those remaining Python providers and are tracked on #479.
 
 The `pam-u2f` source recipe also produces `pamu2fcfg`; its detached
 signature is a separate SHA-512-locked source and its bundled keyring is
