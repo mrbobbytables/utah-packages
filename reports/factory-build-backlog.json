@@ -11,8 +11,8 @@
       "total": 47
     },
     "fonts-i18n": {
-      "pending": 15,
-      "total": 15
+      "pending": 14,
+      "total": 14
     },
     "gnome-apps": {
       "pending": 1,
@@ -397,11 +397,6 @@
     {
       "area": "fonts-i18n",
       "name": "adobe-mappings-pdf",
-      "state": "pending"
-    },
-    {
-      "area": "fonts-i18n",
-      "name": "anthy-unicode",
       "state": "pending"
     },
     {
@@ -804,11 +799,11 @@
   "states": {
     "already_recipe": 12,
     "manifest_wants": 1,
-    "pending": 137
+    "pending": 136
   },
   "totals": {
-    "backlog": 150,
-    "resolved": 364,
+    "backlog": 149,
+    "resolved": 365,
     "wontfix": 37
   }
 }
