@@ -132,6 +132,12 @@ Every recipe in `packages/<name>/` carries `.hummingbird-upstream.json`, and
 - **`branch: upstream`** — imported from the project's own release repository,
   so it carries a non-empty `remote` and no dist-git `commit`/`tree`. Its
   source lock lives in `config/upstream-sources.json` instead.
+- **`branch: master`** — a codec recipe imported from RPM Fusion or
+  negativo17, whose packaging repositories use `master` rather than Fedora's
+  `rawhide`. Its `remote` must be exactly
+  `https://github.com/rpmfusion/<name>.git` or
+  `https://github.com/negativo17/<name>.git`, and like `rawhide` it is pinned
+  by full 40-character `commit` and `tree` SHAs.
 
 Do not hand-edit these files. Re-import; editing provenance makes a recipe
 claim an origin it does not have.
@@ -153,6 +159,19 @@ RPM version: `gcr3` downloads `gcr`, `rest` downloads `librest`, and an RPM
 verified GNOME release URL into a blanket promotion of all feeds: forge tag
 archives can differ from Fedora's pinned bytes. A digest mismatch must fail
 closed; Fedora fallbacks cover transport failures, not integrity failures.
+
+The generator guidance above applies when upstream source can be transformed
+into the locked bytes. For Fedora-maintained metadata and build macros with no
+first-party upstream source, use the separate dist-git exception below.
+
+For these exceptions, use Fedora dist-git's raw
+file URL pinned to the full commit
+(`https://src.fedoraproject.org/rpms/<package>/raw/<commit>/f/<path>`), and
+verify that the fetched bytes match the existing SHA-512. Keep the package on
+`config/fedora-primary-sources.txt`: a digest proves the bytes, not that they
+came from an independent upstream. State the Fedora-only reason for each
+exception in the pull request; remove it from the ratchet only when a real
+upstream release can serve those same locked bytes.
 
 For a bulk migration, use direct archive feeds and the recipe's `Source0`
 as candidate locators, not as proof. A release-monitoring project page is
@@ -214,7 +233,9 @@ When a primary host dies:
 ## A source with no release and a huge archive: pick files, pin each
 
 A recipe can only take one primary source from the lock; a second `sources`
-line is fetched from Fedora's lookaside, so a Utah-only recipe cannot use one.
+line is fetched from a dist-git lookaside — Fedora's by default, or
+`pkgs.rpmfusion.org` when the lock entry sets `lookaside: rpmfusion-free` — so
+a Utah-only recipe cannot use one.
 When the upstream has no release and its commit archive is far larger than
 what the recipe needs, add a `tools/generated_sources.py` generator that
 fetches only the needed files at a pinned commit, checks a SHA-512 per file,

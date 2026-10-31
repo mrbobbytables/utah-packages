@@ -64,6 +64,12 @@ packages:
     downstream_package_name: accountsservice
     paths:
       - packages/accountsservice
+  adcli:
+    specfile_path: adcli.spec
+    upstream_package_name: adcli
+    downstream_package_name: adcli
+    paths:
+      - packages/adcli
   adw-gtk3-theme:
     specfile_path: adw-gtk3-theme.spec
     upstream_package_name: adw-gtk3-theme
@@ -154,6 +160,12 @@ packages:
     downstream_package_name: autofs
     paths:
       - packages/autofs
+  b43-fwcutter:
+    specfile_path: b43-fwcutter.spec
+    upstream_package_name: b43-fwcutter
+    downstream_package_name: b43-fwcutter
+    paths:
+      - packages/b43-fwcutter
   bash-color-prompt:
     specfile_path: bash-color-prompt.spec
     upstream_package_name: bash-color-prompt
@@ -172,6 +184,12 @@ packages:
     downstream_package_name: bc
     paths:
       - packages/bc
+  bcache-tools:
+    specfile_path: bcache-tools.spec
+    upstream_package_name: bcache-tools
+    downstream_package_name: bcache-tools
+    paths:
+      - packages/bcache-tools
   bison:
     specfile_path: bison.spec
     upstream_package_name: bison
@@ -1252,6 +1270,18 @@ packages:
     downstream_package_name: iw
     paths:
       - packages/iw
+  iwd:
+    specfile_path: iwd.spec
+    upstream_package_name: iwd
+    downstream_package_name: iwd
+    paths:
+      - packages/iwd
+  jbig2dec:
+    specfile_path: jbig2dec.spec
+    upstream_package_name: jbig2dec
+    downstream_package_name: jbig2dec
+    paths:
+      - packages/jbig2dec
   jpegxl:
     specfile_path: jpegxl.spec
     upstream_package_name: jpegxl
@@ -1312,6 +1342,12 @@ packages:
     downstream_package_name: lcms2
     paths:
       - packages/lcms2
+  leptonica:
+    specfile_path: leptonica.spec
+    upstream_package_name: leptonica
+    downstream_package_name: leptonica
+    paths:
+      - packages/leptonica
   libICE:
     specfile_path: libICE.spec
     upstream_package_name: libICE
@@ -1630,6 +1666,12 @@ packages:
     downstream_package_name: libei
     paths:
       - packages/libei
+  libell:
+    specfile_path: libell.spec
+    upstream_package_name: libell
+    downstream_package_name: libell
+    paths:
+      - packages/libell
   libepoxy:
     specfile_path: libepoxy.spec
     upstream_package_name: libepoxy
@@ -1876,6 +1918,12 @@ packages:
     downstream_package_name: libmd
     paths:
       - packages/libmd
+  libmediaart:
+    specfile_path: libmediaart.spec
+    upstream_package_name: libmediaart
+    downstream_package_name: libmediaart
+    paths:
+      - packages/libmediaart
   libmediainfo:
     specfile_path: libmediainfo.spec
     upstream_package_name: libmediainfo
@@ -1990,6 +2038,12 @@ packages:
     downstream_package_name: libphonenumber
     paths:
       - packages/libphonenumber
+  libpinyin:
+    specfile_path: libpinyin.spec
+    upstream_package_name: libpinyin
+    downstream_package_name: libpinyin
+    paths:
+      - packages/libpinyin
   libplist:
     specfile_path: libplist.spec
     upstream_package_name: libplist
@@ -2092,6 +2146,12 @@ packages:
     downstream_package_name: libsigc++30
     paths:
       - packages/libsigc++30
+  libslirp:
+    specfile_path: libslirp.spec
+    upstream_package_name: libslirp
+    downstream_package_name: libslirp
+    paths:
+      - packages/libslirp
   libsndfile:
     specfile_path: libsndfile.spec
     upstream_package_name: libsndfile
@@ -2626,6 +2686,12 @@ packages:
     downstream_package_name: openjpeg
     paths:
       - packages/openjpeg
+  openpace:
+    specfile_path: openpace.spec
+    upstream_package_name: openpace
+    downstream_package_name: openpace
+    paths:
+      - packages/openpace
   openpgm:
     specfile_path: openpgm.spec
     upstream_package_name: openpgm
@@ -2638,6 +2704,12 @@ packages:
     downstream_package_name: openrgb
     paths:
       - packages/openrgb
+  opensc:
+    specfile_path: opensc.spec
+    upstream_package_name: opensc
+    downstream_package_name: opensc
+    paths:
+      - packages/opensc
   openvpn:
     specfile_path: openvpn.spec
     upstream_package_name: openvpn
@@ -2674,6 +2746,12 @@ packages:
     downstream_package_name: osinfo-db-tools
     paths:
       - packages/osinfo-db-tools
+  pam-u2f:
+    specfile_path: pam-u2f.spec
+    upstream_package_name: pam-u2f
+    downstream_package_name: pam-u2f
+    paths:
+      - packages/pam-u2f
   pam_yubico:
     specfile_path: pam_yubico.spec
     upstream_package_name: pam_yubico
@@ -2962,6 +3040,24 @@ packages:
     downstream_package_name: python-h11
     paths:
       - packages/python-h11
+  python-jaraco-classes:
+    specfile_path: python-jaraco-classes.spec
+    upstream_package_name: python-jaraco-classes
+    downstream_package_name: python-jaraco-classes
+    paths:
+      - packages/python-jaraco-classes
+  python-jaraco-context:
+    specfile_path: python-jaraco-context.spec
+    upstream_package_name: python-jaraco-context
+    downstream_package_name: python-jaraco-context
+    paths:
+      - packages/python-jaraco-context
+  python-jaraco-functools:
+    specfile_path: python-jaraco-functools.spec
+    upstream_package_name: python-jaraco-functools
+    downstream_package_name: python-jaraco-functools
+    paths:
+      - packages/python-jaraco-functools
   python-jmespath:
     specfile_path: python-jmespath.spec
     upstream_package_name: python-jmespath
@@ -3010,6 +3106,12 @@ packages:
     downstream_package_name: python-pillow
     paths:
       - packages/python-pillow
+  python-pskc:
+    specfile_path: python-pskc.spec
+    upstream_package_name: python-pskc
+    downstream_package_name: python-pskc
+    paths:
+      - packages/python-pskc
   python-psutil:
     specfile_path: python-psutil.spec
     upstream_package_name: python-psutil
@@ -3106,6 +3208,12 @@ packages:
     downstream_package_name: rtkit
     paths:
       - packages/rtkit
+  rtmpdump:
+    specfile_path: rtmpdump.spec
+    upstream_package_name: rtmpdump
+    downstream_package_name: rtmpdump
+    paths:
+      - packages/rtmpdump
   rubberband:
     specfile_path: rubberband.spec
     upstream_package_name: rubberband
@@ -3166,6 +3274,12 @@ packages:
     downstream_package_name: sdl2-compat
     paths:
       - packages/sdl2-compat
+  serd:
+    specfile_path: serd.spec
+    upstream_package_name: serd
+    downstream_package_name: serd
+    paths:
+      - packages/serd
   setools:
     specfile_path: setools.spec
     upstream_package_name: setools
@@ -3202,6 +3316,12 @@ packages:
     downstream_package_name: slang
     paths:
       - packages/slang
+  slirp4netns:
+    specfile_path: slirp4netns.spec
+    upstream_package_name: slirp4netns
+    downstream_package_name: slirp4netns
+    paths:
+      - packages/slirp4netns
   smartmontools:
     specfile_path: smartmontools.spec
     upstream_package_name: smartmontools
