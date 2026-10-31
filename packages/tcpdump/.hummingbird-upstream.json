@@ -1,0 +1,8 @@
+{
+  "package": "tcpdump",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/tcpdump.git",
+  "commit": "a8603299084c618d3c71769d2fa407b591d456ac",
+  "tree": "2a72ff79adf27de25e22698c78cdc7c9c9c10484",
+  "imported_at": "2026-10-24T04:00:46.662339+00:00"
+}

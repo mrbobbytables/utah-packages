@@ -1,0 +1,8 @@
+{
+  "package": "python-pyinotify",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/python-pyinotify.git",
+  "commit": "91c9dbaba97bcf6d6d23bbeabadb5441154295fb",
+  "tree": "c6b8f1be37b06767a47ee4f40df1a331b741d434",
+  "imported_at": "2026-10-24T12:25:44.903205+00:00"
+}

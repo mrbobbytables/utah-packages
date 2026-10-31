@@ -1,0 +1,8 @@
+{
+  "package": "libvarlink",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libvarlink.git",
+  "commit": "1c6ba498075f366c343afc545454cd65b3db9e73",
+  "tree": "993a8fef0887a05bd3f86f634f2fee71c997e988",
+  "imported_at": "2026-10-18T08:53:20.409208+00:00"
+}

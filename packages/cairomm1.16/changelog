@@ -1,0 +1,13 @@
+* Thu May 20 2021 Benjamin A. Beasley <code@musicinmybrain.net> - 1.16.1-1
+- Update to 1.16.1
+
+* Sat Feb 20 2021 Benjamin A. Beasley <code@musicinmybrain.net> - 1.16.0-3
+- Verify source with new strong signatures from upstream
+
+* Wed Feb 17 2021 Benjamin A. Beasley <code@musicinmybrain.net> - 1.16.0-2
+- Working (but weak, dependent on SHA1) source signature verification
+- Tidy up BR’s, including dropping make
+
+* Wed Feb 17 2021 Benjamin A. Beasley <code@musicinmybrain.net> - 1.16.0-1
+- New multi-version cairomm1.16 package to provide the version 1.16 API/ABI;
+  based on the spec file from cairomm-1.14.2-5

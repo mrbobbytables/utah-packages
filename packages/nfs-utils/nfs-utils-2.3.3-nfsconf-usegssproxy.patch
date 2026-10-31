@@ -1,0 +1,12 @@
+diff -up nfs-utils-2.8.5/nfs.conf.orig nfs-utils-2.8.5/nfs.conf
+--- nfs-utils-2.8.5/nfs.conf.orig	2026-02-26 14:40:26.405638930 -0500
++++ nfs-utils-2.8.5/nfs.conf	2026-02-26 14:41:57.226199058 -0500
+@@ -20,7 +20,7 @@
+ # rpc-verbosity=0
+ # use-memcache=0
+ # use-machine-creds=1
+-# use-gss-proxy=0
++use-gss-proxy=1
+ # avoid-dns=1
+ # allowed-enctypes=aes256-cts-hmac-sha384-192,aes128-cts-hmac-sha256-128,camellia256-cts-cmac,camellia128-cts-cmac,aes256-cts-hmac-sha1-96,aes128-cts-hmac-sha1-96
+ # context-timeout=0

@@ -40,3 +40,14 @@ Keep configuration generation in its own workflow step. The gate catalog in
 a mixed `printf`/pytest block is not recognised in the validation workflow.
 Retain `python3 -m pytest tests` so it normalises to the Justfile's `unit-tests`
 gate, even with coverage options.
+
+## Tools that shell out to `rpm`
+
+A tool that reads RPM headers through `subprocess` (for example
+`publish_gate.source_names`) is still unit-testable without `rpm` installed:
+put an executable stand-in named `rpm` first on `PATH` with
+`mock.patch.dict(os.environ, ...)` and let it print each file's first line as
+the header value. `tests/test_publish_assemble_cli.py` drives
+`publish_gate.py assemble` end to end this way, including the chunked queries
+and the fail-closed paths. Prefer it to patching the helper away, which leaves
+the header parsing and the command's own wiring uncovered.

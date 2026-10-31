@@ -1,0 +1,8 @@
+{
+  "package": "mod_dnssd",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/mod_dnssd.git",
+  "commit": "82384b64c79080113e4c1833857d536af10a5f90",
+  "tree": "a1b44d7c67084cdb8d78e8042d7c955da956a211",
+  "imported_at": "2026-10-23T02:03:06.828816+00:00"
+}

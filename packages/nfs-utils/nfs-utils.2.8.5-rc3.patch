@@ -1,0 +1,635 @@
+diff --git a/configure.ac b/configure.ac
+index 6da23915..5cc1e918 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -85,22 +85,22 @@ AC_ARG_ENABLE(nfsv4,
+ 	AC_SUBST(enable_nfsv4)
+ 	AM_CONDITIONAL(CONFIG_NFSV4, [test "$enable_nfsv4" = "yes"])
+ 
+-AC_ARG_ENABLE(nfsv41,
+-	[AS_HELP_STRING([--disable-nfsv41],[disable support for NFSv41 @<:@default=no@:>@])],
+-	enable_nfsv41=$enableval,
+-	enable_nfsv41=yes)
+-	if test "$enable_nfsv41" = yes; then
++AC_ARG_ENABLE(blkmapd,
++	[AS_HELP_STRING([--enable-blkmapd],[enable support for blkmapd @<:@default=no@:>@])],
++	enable_blkmapd=$enableval,
++	enable_blkmapd=no)
++	if test "$enable_blkmapd" = yes; then
+ 		if test "$enable_nfsv4" != yes; then
+-			AC_MSG_WARN([NFS v4 is not enabled. Disabling NFS v4.1])
+-			enable_nfsv41=no
++			AC_MSG_WARN([NFS v4 is not enabled. Disabling blkmapd.])
++			enable_blkmapd=no
+ 		fi
+ 		BLKMAPD=blkmapd
+ 	else
+-		enable_nfsv41=
++		enable_blkmapd=
+ 		BLKMAPD=
+ 	fi
+-	AC_SUBST(enable_nfsv41)
+-	AM_CONDITIONAL(CONFIG_NFSV41, [test "$enable_nfsv41" = "yes"])
++	AC_SUBST(enable_blkmapd)
++	AM_CONDITIONAL(CONFIG_BLKMAPD, [test "$enable_blkmapd" = "yes"])
+ 
+ AC_ARG_ENABLE(gss,
+ 	[AS_HELP_STRING([--disable-gss],[disable client support for rpcsec_gss @<:@default=no@:>@])],
+@@ -262,6 +262,8 @@ AC_ARG_ENABLE(nfsdctl,
+ 		PKG_CHECK_MODULES(LIBNLGENL3, libnl-genl-3.0 >= 3.1)
+ 		PKG_CHECK_MODULES(LIBREADLINE, readline)
+ 		AC_CHECK_HEADERS(linux/nfsd_netlink.h)
++		AC_CHECK_DECLS([NFSD_A_SERVER_MIN_THREADS], , ,
++			       [#include <linux/nfsd_netlink.h>])
+ 
+ 		# ensure we have the pool-mode commands
+ 		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <linux/nfsd_netlink.h>]],
+@@ -398,7 +400,7 @@ else
+   enable_nfsdcltrack="no"
+ fi
+ 
+-if test "$enable_nfsv41" = yes; then
++if test "$enable_blkmapd" = yes; then
+   AC_CHECK_LIB([devmapper], [dm_task_create], [LIBDEVMAPPER="-ldevmapper"], AC_MSG_ERROR([libdevmapper needed]))
+   AC_CHECK_HEADER(libdevmapper.h, , AC_MSG_ERROR([Cannot find devmapper header file libdevmapper.h]))
+   AC_CHECK_HEADER(sys/inotify.h, , AC_MSG_ERROR([Cannot find header file sys/inotify.h]))
+@@ -620,7 +622,6 @@ AC_CHECK_SIZEOF(socklen_t,, [AC_INCLUDES_DEFAULT
+                              # include <sys/socket.h>
+                              #endif])
+ 
+-
+ dnl *************************************************************
+ dnl Export some path names to config.h
+ dnl *************************************************************
+diff --git a/support/nsm/file.c b/support/nsm/file.c
+index 5ec801c3..1e97b5b6 100644
+--- a/support/nsm/file.c
++++ b/support/nsm/file.c
+@@ -394,6 +394,7 @@ _Bool
+ nsm_drop_privileges(const int pidfd)
+ {
+ 	struct stat st;
++	uid_t uid;
+ 
+ 	(void)umask(S_IRWXO);
+ 
+@@ -408,6 +409,16 @@ nsm_drop_privileges(const int pidfd)
+ 		return false;
+ 	}
+ 
++	/*
++	 * Check if we are running as non-root user and we are the owner of
++	 * the monitor directory.  Then there is no reason to drop privileges
++	 * and change groups etc.
++	 */
++	uid = getuid();
++	if (uid != 0 && uid == st.st_uid) {
++		return true;
++	}
++
+ 	if (!prune_bounding_set())
+ 		return false;
+ 
+diff --git a/systemd/Makefile.am b/systemd/Makefile.am
+index 5e481421..9cc940dc 100644
+--- a/systemd/Makefile.am
++++ b/systemd/Makefile.am
+@@ -32,7 +32,7 @@ unit_files += \
+     nfsv4-server.service
+ endif
+ 
+-if CONFIG_NFSV41
++if CONFIG_BLKMAPD
+ unit_files += \
+     nfs-blkmap.service
+ endif
+diff --git a/systemd/nfs.conf.man b/systemd/nfs.conf.man
+index e6a84a97..ecdc4fc9 100644
+--- a/systemd/nfs.conf.man
++++ b/systemd/nfs.conf.man
+@@ -162,6 +162,7 @@ option.
+ .B nfsd
+ Recognized values:
+ .BR threads ,
++.BR min-threads ,
+ .BR host ,
+ .BR scope ,
+ .BR port ,
+@@ -179,7 +180,7 @@ Recognized values:
+ Version and protocol values are Boolean values as described above,
+ and are also used by
+ .BR rpc.mountd .
+-Threads and the two times are integers.
++Threads, min-threads and the two times are integers.
+ .B port
+ and
+ .B rdma
+@@ -301,7 +302,7 @@ Recognized values:
+ 
+ See
+ .BR nfsrahead (5)
+-for deatils.
++for details.
+ 
+ .SH FILES
+ .I /usr/etc/nfs.conf
+diff --git a/systemd/rpc-statd-notify.service b/systemd/rpc-statd-notify.service
+index 962f18b2..821d4ea8 100644
+--- a/systemd/rpc-statd-notify.service
++++ b/systemd/rpc-statd-notify.service
+@@ -2,7 +2,6 @@
+ Description=Notify NFS peers of a restart
+ Documentation=man:sm-notify(8) man:rpc.statd(8)
+ DefaultDependencies=no
+-Wants=network-online.target
+ After=local-fs.target network-online.target nss-lookup.target
+ 
+ # if we run an nfs server, it needs to be running before we
+diff --git a/tools/locktest/Makefile.am b/tools/locktest/Makefile.am
+index e8914655..2fd36971 100644
+--- a/tools/locktest/Makefile.am
++++ b/tools/locktest/Makefile.am
+@@ -2,8 +2,5 @@
+ 
+ noinst_PROGRAMS = testlk
+ testlk_SOURCES = testlk.c
+-testlk_CFLAGS=$(CFLAGS_FOR_BUILD)
+-testlk_CPPFLAGS=$(CPPFLAGS_FOR_BUILD)
+-testlk_LDFLAGS=$(LDFLAGS_FOR_BUILD)
+ 
+ MAINTAINERCLEANFILES = Makefile.in
+diff --git a/tools/locktest/testlk.c b/tools/locktest/testlk.c
+index c9bd6bac..3c2365d1 100644
+--- a/tools/locktest/testlk.c
++++ b/tools/locktest/testlk.c
+@@ -28,6 +28,7 @@ main(int argc, char **argv)
+ 		switch (c) {
+ 		case 'h':
+ 			usage(0);
++			break;
+ 		case 'r':
+ 			cmd = F_SETLK;
+ 			typ = F_RDLCK;
+diff --git a/tools/mountstats/mountstats.man b/tools/mountstats/mountstats.man
+index d5595fc7..b2940f67 100644
+--- a/tools/mountstats/mountstats.man
++++ b/tools/mountstats/mountstats.man
+@@ -47,7 +47,7 @@ mountstats \- Displays various NFS client per-mount statistics
+ .RI [ mountpoint ] ...
+ .P
+ .SH DESCRIPTION
+-.RB "The " mountstats " command displays various NFS client statisitics for each given"
++.RB "The " mountstats " command displays various NFS client statistics for each given"
+ .IR mountpoint .
+ .P
+ .RI "If no " mountpoint " is given, statistics will be displayed for all NFS mountpoints on the client."
+diff --git a/tools/nfs-iostat/nfs-iostat.py b/tools/nfs-iostat/nfs-iostat.py
+index e46b1a83..69d24a11 100755
+--- a/tools/nfs-iostat/nfs-iostat.py
++++ b/tools/nfs-iostat/nfs-iostat.py
+@@ -589,8 +589,8 @@ client are listed.
+ 
+     (options, args) = parser.parse_args(sys.argv)
+     for arg in args[1:]:
+-        if arg in mountstats:
+-            origdevices += [arg]
++        if os.path.normpath(arg) in mountstats:
++            origdevices += [os.path.normpath(arg)]
+         elif not interval_seen:
+             try:
+                 interval = int(arg)
+diff --git a/tools/nfs-iostat/nfsiostat.man b/tools/nfs-iostat/nfsiostat.man
+index 940c0431..104c7ab4 100644
+--- a/tools/nfs-iostat/nfsiostat.man
++++ b/tools/nfs-iostat/nfsiostat.man
+@@ -9,7 +9,7 @@ nfsiostat \- Emulate iostat for NFS mount points using /proc/self/mountstats
+ .SH DESCRIPTION
+ The
+ .B nfsiostat
+-command displays NFS client per-mount statisitics. 
++command displays NFS client per-mount statistics. 
+ .TP 
+ <interval>
+ specifies the amount of time in seconds between each report.
+@@ -106,7 +106,7 @@ This is the number of operations that completed with an error status (status < 0
+ .RE
+ .RE
+ .TP
+-Note that if an interval is used as argument to \fBnfsiostat\fR, then the diffrence from previous interval will be displayed, otherwise the results will be from the time that the share was mounted.
++Note that if an interval is used as argument to \fBnfsiostat\fR, then the difference from previous interval will be displayed, otherwise the results will be from the time that the share was mounted.
+ 
+ .SH OPTIONS
+ .TP
+diff --git a/tools/rpcctl/rpcctl.man b/tools/rpcctl/rpcctl.man
+index 2ee168c8..205cde77 100644
+--- a/tools/rpcctl/rpcctl.man
++++ b/tools/rpcctl/rpcctl.man
+@@ -31,7 +31,7 @@ If \fICLIENT \fRwas provided, then only show information about a single RPC clie
+ .P
+ .SS rpcctl switch \fR- \fBCommands operating on groups of transports
+ .IP "\fBadd-xprt \fISWITCH"
+-Add an aditional transport to the \fISWITCH\fR.
++Add an additional transport to the \fISWITCH\fR.
+ Note that the new transport will take its values from the "main" transport.
+ .IP "\fBset \fISWITCH \fBdstaddr \fINEWADDR"
+ Change the destination address of all transports in the \fISWITCH \fRto \fINEWADDR\fR.
+diff --git a/utils/Makefile.am b/utils/Makefile.am
+index e5cb81e7..bfa12081 100644
+--- a/utils/Makefile.am
++++ b/utils/Makefile.am
+@@ -11,7 +11,7 @@ if CONFIG_NFSV4SERVER
+ OPTDIRS += exportd
+ endif
+ 
+-if CONFIG_NFSV41
++if CONFIG_BLKMAPD
+ OPTDIRS += blkmapd
+ endif
+ 
+diff --git a/utils/exportfs/exports.man b/utils/exportfs/exports.man
+index 39dc30fb..efbc6ef6 100644
+--- a/utils/exportfs/exports.man
++++ b/utils/exportfs/exports.man
+@@ -488,7 +488,7 @@ option becomes handy. It will automatically assign a numerical fsid
+ to exported NFS shares. The fsid and path relations are stored in a SQLite
+ database. If
+ .IR auto-fsidnum
+-is selected, the fsid is also autmatically allocated.
++is selected, the fsid is also automatically allocated.
+ .IR predefined-fsidnum
+ assumes pre-allocated fsid numbers and will just look them up.
+ This option depends also on the kernel, you will need at least kernel version
+diff --git a/utils/gssd/gssd.man b/utils/gssd/gssd.man
+index 4a75b056..f81b24cd 100644
+--- a/utils/gssd/gssd.man
++++ b/utils/gssd/gssd.man
+@@ -190,7 +190,7 @@ name exactly as requested.  e.g. for NFS
+ it is the server name in the "servername:/path" mount request.  Only if this
+ servername appears to be an IP address (IPv4 or IPv6) or an
+ unqualified name (no dots) will a reverse DNS lookup
+-will be performed to get the canoncial server name.
++will be performed to get the canonical server name.
+ 
+ If
+ .B \-D
+@@ -244,7 +244,7 @@ This option specifies a colon separated list of directories that
+ .B rpc.gssd
+ searches for credential files.  The default value is
+ .IR /tmp:/run/user/%U .
+-The literal sequence "%U" can be specified to substitue the UID
++The literal sequence "%U" can be specified to substitute the UID
+ of the user for whom credentials are being searched.
+ .TP
+ .B -M
+@@ -404,7 +404,7 @@ Note that this is unrelated to the functionality that
+ provides on behalf of the NFS server.  For more information, see
+ .BR https://github.com/gssapi/gssproxy/blob/main/docs/NFS.md#nfs-client .
+ .P
+-In addtion, the following value is recognized from the
++In addition, the following value is recognized from the
+ .B [general]
+ section:
+ .TP
+diff --git a/utils/gssd/krb5_util.c b/utils/gssd/krb5_util.c
+index 09625fb9..137cffda 100644
+--- a/utils/gssd/krb5_util.c
++++ b/utils/gssd/krb5_util.c
+@@ -456,12 +456,14 @@ gssd_get_single_krb5_cred(krb5_context context,
+ 	krb5_get_init_creds_opt_set_tkt_life(opts, 5*60);
+ #endif
+ 
++	pthread_mutex_lock(&ple_lock);
+ 	if ((code = krb5_get_init_creds_opt_set_out_ccache(context, opts,
+ 							   ccache))) {
+ 		k5err = gssd_k5_err_msg(context, code);
+ 		printerr(1, "WARNING: %s while initializing ccache for "
+ 			 "principal '%s' using keytab '%s'\n", k5err,
+ 			 pname ? pname : "<unparsable>", kt_name);
++		pthread_mutex_unlock(&ple_lock);
+ 		goto out;
+ 	}
+ 	if ((code = krb5_get_init_creds_keytab(context, &my_creds, ple->princ,
+@@ -470,10 +472,10 @@ gssd_get_single_krb5_cred(krb5_context context,
+ 		printerr(1, "WARNING: %s while getting initial ticket for "
+ 			 "principal '%s' using keytab '%s'\n", k5err,
+ 			 pname ? pname : "<unparsable>", kt_name);
++		pthread_mutex_unlock(&ple_lock);
+ 		goto out;
+ 	}
+ 
+-	pthread_mutex_lock(&ple_lock);
+ 	ple->endtime = my_creds.times.endtime;
+ 	pthread_mutex_unlock(&ple_lock);
+ 
+diff --git a/utils/mount/nfs.man b/utils/mount/nfs.man
+index 94dc29d4..9a461579 100644
+--- a/utils/mount/nfs.man
++++ b/utils/mount/nfs.man
+@@ -557,7 +557,7 @@ If
+ .BR pos " or " positive
+ is specified, the client assumes positive entries are valid
+ until their parent directory's cached attributes expire, but
+-always revalidates negative entires before an application
++always revalidates negative entries before an application
+ can use them.
+ .IP
+ If
+diff --git a/utils/mountd/mountd.man b/utils/mountd/mountd.man
+index a206a3e2..d14c7697 100644
+--- a/utils/mountd/mountd.man
++++ b/utils/mountd/mountd.man
+@@ -55,7 +55,7 @@ The
+ daemon registers every successful MNT request by adding an entry to the
+ .I /var/lib/nfs/rmtab
+ file.
+-When receivng a UMNT request from an NFS client,
++When receiving a UMNT request from an NFS client,
+ .B rpc.mountd
+ simply removes the matching entry from
+ .IR /var/lib/nfs/rmtab ,
+diff --git a/utils/nfsd/nfsd.man b/utils/nfsd/nfsd.man
+index 6f4fc1df..26eef607 100644
+--- a/utils/nfsd/nfsd.man
++++ b/utils/nfsd/nfsd.man
+@@ -43,7 +43,7 @@ NFSv4.1 and later require the server to report a "scope" which is used
+ by the clients to detect if two connections are to the same server.
+ By default Linux NFSD uses the host name as the scope.
+ .sp
+-It is particularly important for high-availablity configurations to ensure
++It is particularly important for high-availability configurations to ensure
+ that all potential server nodes report the same server scope.
+ .TP
+ .B \-p " or " \-\-port  port
+diff --git a/utils/nfsdctl/nfsdctl.8 b/utils/nfsdctl/nfsdctl.8
+index d6992244..a86ffe8e 100644
+--- a/utils/nfsdctl/nfsdctl.8
++++ b/utils/nfsdctl/nfsdctl.8
+@@ -2,12 +2,12 @@
+ .\"     Title: nfsdctl
+ .\"    Author: Jeff Layton
+ .\" Generator: Asciidoctor 2.0.20
+-.\"      Date: 2025-01-09
++.\"      Date: 2026-01-12
+ .\"    Manual: \ \&
+ .\"    Source: \ \&
+ .\"  Language: English
+ .\"
+-.TH "NFSDCTL" "8" "2025-01-09" "\ \&" "\ \&"
++.TH "NFSDCTL" "8" "2026-01-12" "\ \&" "\ \&"
+ .ie \n(.g .ds Aq \(aq
+ .el       .ds Aq '
+ .ss \n[.ss] 0
+@@ -147,6 +147,22 @@ value of 0 will shut down the NFS server. Run this without arguments to
+ get the current number of running threads in each pool.
+ .RE
+ .sp
++.if n .RS 4
++.nf
++.fam C
++These options are specific to the "threads" subcommand:
++
++\-m, \-\-min\-threads=
++    If set to a positive, non\-zero value, then dynamic threading is enabled for
++    nfsd.  In this mode, the traditional "threads" values are treated as a maximum
++    number of threads. This specifies the minimum number of threads per pool. The
++    kernel will start the minimum number and dynamically start and stop threads as
++    needed. If the minimum is larger than the maximum, then dynamic threadis is
++    disabled, and the maximum number is started.
++.fam
++.fi
++.if n .RE
++.sp
+ \fBversion\fP
+ .RS 4
+ Get/set the enabled NFS versions for the server. Run without arguments to
+diff --git a/utils/nfsdctl/nfsdctl.adoc b/utils/nfsdctl/nfsdctl.adoc
+index 0207eff6..e85348e2 100644
+--- a/utils/nfsdctl/nfsdctl.adoc
++++ b/utils/nfsdctl/nfsdctl.adoc
+@@ -84,6 +84,19 @@ Each subcommand can also accept its own set of options and arguments. The
+   value of 0 will shut down the NFS server. Run this without arguments to
+   get the current number of running threads in each pool.
+ 
++[source,bash]
++----
++These options are specific to the "threads" subcommand:
++
++-m, --min-threads=
++    If set to a positive, non-zero value, then dynamic threading is enabled for
++    nfsd.  In this mode, the traditional "threads" values are treated as a maximum
++    number of threads. This specifies the minimum number of threads per pool. The
++    kernel will start the minimum number and dynamically start and stop threads as
++    needed. If the minimum is larger than the maximum, then dynamic threadis is
++    disabled, and the maximum number is started.
++----
++
+ *version*::
+ 
+   Get/set the enabled NFS versions for the server. Run without arguments to
+diff --git a/utils/nfsdctl/nfsdctl.c b/utils/nfsdctl/nfsdctl.c
+index e7a0e124..c906a2c8 100644
+--- a/utils/nfsdctl/nfsdctl.c
++++ b/utils/nfsdctl/nfsdctl.c
+@@ -19,6 +19,7 @@
+ #include <string.h>
+ #include <sched.h>
+ #include <sys/queue.h>
++#include <limits.h>
+ 
+ #include <netlink/genl/family.h>
+ #include <netlink/genl/ctrl.h>
+@@ -323,6 +324,11 @@ static void parse_threads_get(struct genlmsghdr *gnlh)
+ 		case NFSD_A_SERVER_THREADS:
+ 			pool_threads[i++] = nla_get_u32(attr);
+ 			break;
++#if HAVE_DECL_NFSD_A_SERVER_MIN_THREADS
++		case NFSD_A_SERVER_MIN_THREADS:
++			printf("min-threads: %u\n", nla_get_u32(attr));
++			break;
++#endif
+ 		default:
+ 			break;
+ 		}
+@@ -518,7 +524,7 @@ out:
+ }
+ 
+ static int threads_doit(struct nl_sock *sock, int cmd, int grace, int lease,
+-			int pool_count, int *pool_threads, char *scope)
++			int pool_count, int *pool_threads, char *scope, int minthreads)
+ {
+ 	struct genlmsghdr *ghdr;
+ 	struct nlmsghdr *nlh;
+@@ -540,6 +546,10 @@ static int threads_doit(struct nl_sock *sock, int cmd, int grace, int lease,
+ 			nla_put_u32(msg, NFSD_A_SERVER_LEASETIME, lease);
+ 		if (scope)
+ 			nla_put_string(msg, NFSD_A_SERVER_SCOPE, scope);
++#if HAVE_DECL_NFSD_A_SERVER_MIN_THREADS
++		if (minthreads >= 0)
++			nla_put_u32(msg, NFSD_A_SERVER_MIN_THREADS, minthreads);
++#endif
+ 		for (i = 0; i < pool_count; ++i)
+ 			nla_put_u32(msg, NFSD_A_SERVER_THREADS, pool_threads[i]);
+ 	}
+@@ -580,23 +590,49 @@ out:
+ 
+ static void threads_usage(void)
+ {
+-	printf("Usage: %s threads [ pool0_count ] [ pool1_count ] ...\n", taskname);
++	printf("Usage: %s threads { --min-threads=X } [ pool0_count ] [ pool1_count ] ...\n", taskname);
++#if HAVE_DECL_NFSD_A_SERVER_MIN_THREADS
++	printf("    --min-threads= set the minimum thread count per pool to value\n");
++#endif
+ 	printf("    pool0_count: thread count for pool0, etc...\n");
+ 	printf("Omit any arguments to show current thread counts.\n");
+ }
+ 
++#if HAVE_DECL_NFSD_A_SERVER_MIN_THREADS
++static const struct option threads_options[] = {
++	{ "help", no_argument, NULL, 'h' },
++	{ "min-threads", required_argument, NULL, 'm' },
++	{ },
++};
++#define THREADS_OPTSTRING "hm:"
++#else
++#define threads_options help_only_options
++#define THREADS_OPTSTRING "h"
++#endif
++
+ static int threads_func(struct nl_sock *sock, int argc, char **argv)
+ {
+ 	uint8_t cmd = NFSD_CMD_THREADS_GET;
+ 	int *pool_threads = NULL;
++	int minthreads = -1;
+ 	int opt, pools = 0;
+ 
+ 	optind = 1;
+-	while ((opt = getopt_long(argc, argv, "h", help_only_options, NULL)) != -1) {
++	while ((opt = getopt_long(argc, argv, THREADS_OPTSTRING, threads_options, NULL)) != -1) {
+ 		switch (opt) {
+ 		case 'h':
+ 			threads_usage();
+ 			return 0;
++#if HAVE_DECL_NFSD_A_SERVER_MIN_THREADS
++		case 'm':
++			errno = 0;
++			minthreads = strtoul(optarg, NULL, 0);
++			if (minthreads == ULONG_MAX && errno != 0) {
++				fprintf(stderr, "Bad --min-threads value.");
++				return 1;
++			}
++			break;
++#endif
+ 		}
+ 	}
+ 
+@@ -624,7 +660,7 @@ static int threads_func(struct nl_sock *sock, int argc, char **argv)
+ 			}
+ 		}
+ 	}
+-	return threads_doit(sock, cmd, 0, 0, pools, pool_threads, NULL);
++	return threads_doit(sock, cmd, 0, 0, pools, pool_threads, NULL, minthreads);
+ }
+ 
+ /*
+@@ -967,6 +1003,17 @@ static void print_listeners(void)
+ 	}
+ }
+ 
++static bool ipv6_is_enabled(void)
++{
++	int s;
++
++	s = socket(AF_INET6, SOCK_STREAM, 0);
++	if (s < 0)
++		return false;
++	close(s);
++	return true;
++}
++
+ /*
+  * Format is <+/-><netid>:<address>:port
+  *
+@@ -1081,7 +1128,8 @@ static int update_listeners(const char *str)
+ 					continue;
+ 			case AF_INET6:
+ 				if (r6->sin6_port != l6->sin6_port ||
+-				    memcmp(&r6->sin6_addr, &l6->sin6_addr, sizeof(l6->sin6_addr)))
++				    memcmp(&r6->sin6_addr, &l6->sin6_addr, sizeof(l6->sin6_addr)) ||
++				    !ipv6_is_enabled())
+ 					continue;
+ 			default:
+ 
+@@ -1127,6 +1175,11 @@ static int set_listeners(struct nl_sock *sock)
+ 		struct server_socket *sock = &nfsd_sockets[i];
+ 		struct nlattr *a;
+ 
++		if (sock->ss.ss_family == AF_INET6 && !ipv6_is_enabled()) {
++			xlog(L_WARNING, "IPv6 isn't enabled, skip IPv6 "
++					"listener\n");
++			continue;
++		}
+ 		if (sock->ss.ss_family == 0)
+ 			break;
+ 
+@@ -1578,7 +1631,7 @@ static void autostart_usage(void)
+ 
+ static int autostart_func(struct nl_sock *sock, int argc, char ** argv)
+ {
+-	int *threads, grace, lease, idx, ret, opt, pools;
++	int *threads, grace, lease, idx, ret, opt, pools, minthreads;
+ 	struct conf_list *thread_str;
+ 	struct conf_list_node *n;
+ 	char *scope, *pool_mode;
+@@ -1659,9 +1712,10 @@ static int autostart_func(struct nl_sock *sock, int argc, char ** argv)
+ 
+ 	lease = conf_get_num("nfsd", "lease-time", 0);
+ 	scope = conf_get_str("nfsd", "scope");
++	minthreads = conf_get_num("nfsd", "min-threads", 0);
+ 
+ 	ret = threads_doit(sock, NFSD_CMD_THREADS_SET, grace, lease, pools,
+-			   threads, scope);
++			   threads, scope, minthreads);
+ out:
+ 	free(threads);
+ 	return ret;
+diff --git a/utils/statd/simulate.c b/utils/statd/simulate.c
+index 4ed1468e..4ff21698 100644
+--- a/utils/statd/simulate.c
++++ b/utils/statd/simulate.c
+@@ -219,7 +219,7 @@ sim_sm_mon_1_svc (struct status *argp, struct svc_req *rqstp)
+ {
+   static char *result;
+ 
+-  xlog (D_GENERAL, "Recieved state %d for mon_name %s (opaque \"%s\")",
++  xlog (D_GENERAL, "Received state %d for mon_name %s (opaque \"%s\")",
+ 	   argp->state, argp->mon_name, argp->priv);
+   svc_exit ();
+   return ((void *)&result);
+diff --git a/utils/statd/sm-notify.man b/utils/statd/sm-notify.man
+index addf5d3c..2e82c683 100644
+--- a/utils/statd/sm-notify.man
++++ b/utils/statd/sm-notify.man
+@@ -275,7 +275,7 @@ section is
+ .SH SECURITY
+ The
+ .B sm-notify
+-command must be started as root to acquire privileges needed
++command is, generally, started as root to acquire privileges needed
+ to access the state information database.
+ It drops root privileges
+ as soon as it starts up to reduce the risk of a privilege escalation attack.
+@@ -290,6 +290,14 @@ chooses, simply use
+ .BR chown (1)
+ to set the owner of
+ the state directory.
++.PP
++The
++.B sm-notify
++command can also be started by the user ID that owns the state directory.
++That is useful for the situation when it is called from an rpc-stat
++ha-callout program that is already running as the
++non-privileged user.  The non-root user will not have the capabilities
++to drop the root privileges as described above.
+ .SH ADDITIONAL NOTES
+ Lock recovery after a reboot is critical to maintaining data integrity
+ and preventing unnecessary application hangs.

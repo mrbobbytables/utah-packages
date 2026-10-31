@@ -1,0 +1,9 @@
+addFilter('summary-not-capitalized quota_nld')
+addFilter('spelling-error .* (cron|Gettext|netlink)')
+# We do not package any programs as SUID or SGID, thus the programs do not
+# change EUID of EGID. Also the programs do not edit a set of supplementary
+# groups before dropping the priviledges by calling setgid() and setuid().
+# Thus no foreign supplementary groups can leak into the priviledge-lowered
+# program. I.e. the priviledge-lowered program has the same supplementary
+# groups as the user that executed the high-priviledged program.
+addFilter('quota..*: E: missing-call-to-setgroups-before-setuid')

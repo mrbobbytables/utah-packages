@@ -1,0 +1,8 @@
+{
+  "package": "openh264",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/openh264.git",
+  "commit": "619ec8224cab1f5283077ab460461f9416aaf3eb",
+  "tree": "842afe73d9ab0e137d5ce1f12a1ae14bc81fd36f",
+  "imported_at": "2026-10-18T09:01:02.014089+00:00"
+}

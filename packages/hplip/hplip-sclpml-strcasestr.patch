@@ -1,0 +1,12 @@
+diff -up hplip-3.26.6/Makefile.am.sclpml-strcasestr hplip-3.26.6/Makefile.am
+--- hplip-3.26.6/Makefile.am.sclpml-strcasestr	2026-09-22 16:29:49.093383127 +0200
++++ hplip-3.26.6/Makefile.am	2026-09-22 18:02:36.209133647 +0200
+@@ -84,7 +84,7 @@ endif
+ # The following is a interlibrary dependency that must be compiled first.
+ libsane_hpaio_la_LIBADD = libhpip.la libhpmud.la libhpipp.la $(DBUS_LIBS) -lcups -ldl
+ #libsane_hpaio_la_CFLAGS = -DWITH_NONAMESPACES -DSOAP_DEBUG
+-libsane_hpaio_la_CFLAGS = $(DBUS_CFLAGS) -Iprotocol $(SECURITY_CFLAGS)
++libsane_hpaio_la_CFLAGS = $(DBUS_CFLAGS) -Iprotocol $(SECURITY_CFLAGS) -D_GNU_SOURCE
+ libsane_hpaio_la_LDFLAGS += $(SECURITY_LDFLAGS)
+ 
+ if NETWORK_BUILD

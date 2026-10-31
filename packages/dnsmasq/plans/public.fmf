@@ -1,0 +1,7 @@
+summary: Run all beakerlib tests for dnsmasq
+discover:
+  - name: fedora_tests_dnsmasq
+    how: fmf
+    url: https://gitlab.com/redhat/centos-stream/tests/dnsmasq.git
+execute:
+    how: tmt

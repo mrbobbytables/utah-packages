@@ -51,6 +51,10 @@ import subprocess
 
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from tools.package_inventory import load_source_locks
+
 # --- Classification vocabulary -------------------------------------------------
 ALIGNED = "aligned"
 INTENTIONAL_FEDORA = "intentional_fedora"
@@ -1103,12 +1107,6 @@ def _factory_rev(root: Path | None = None) -> str:
         return "unknown"
 
 
-def _load_factory_sources(path: Path) -> dict:
-    data = json.loads(path.read_text())
-    packages = data.get("packages", [])
-    return {p["name"]: p for p in packages}
-
-
 _OVERRIDE_CLASSIFICATIONS = (
     INTENTIONAL_FEDORA,
     INTENTIONAL_HUMMINGBIRD,
@@ -1356,7 +1354,7 @@ def main(argv=None) -> int:
         _verify_checkout(loader, pin["source"]["release_commit"])
     aliases = _aliases(loader)
 
-    factory_sources = _load_factory_sources(args.sources)
+    factory_sources = load_source_locks(args.sources)
     if not args.packages_dir.exists():
         print(f"warning: packages dir not found: {args.packages_dir}", file=sys.stderr)
 

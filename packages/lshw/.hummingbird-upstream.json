@@ -1,0 +1,8 @@
+{
+  "package": "lshw",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/lshw.git",
+  "commit": "a58329afb7ea8854f709d2eb152b4d28d960a614",
+  "tree": "9fabd0f682be0ec68c893f5a3a02a089be619523",
+  "imported_at": "2026-10-24T04:00:26.225614+00:00"
+}

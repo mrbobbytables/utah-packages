@@ -1,0 +1,8 @@
+{
+  "package": "powerstat",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/powerstat.git",
+  "commit": "846f67e5df53f1cbc5a96bbec4f20ed5dab0618e",
+  "tree": "f8d1df215192d1f33f2c3a0332ba4486fe74a4b3",
+  "imported_at": "2026-10-22T22:49:25.857909+00:00"
+}

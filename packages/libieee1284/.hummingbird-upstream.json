@@ -1,0 +1,8 @@
+{
+  "package": "libieee1284",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libieee1284.git",
+  "commit": "f99b044c9008c71e0f4059a3776fcb58abea4138",
+  "tree": "b8cb5caeb0a110e66769761156399672dedb919a",
+  "imported_at": "2026-10-24T04:15:01.935095+00:00"
+}

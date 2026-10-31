@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Utah Packages</title>
+  <meta name="description" content="Every RPM the Utahraptor package factory publishes: rebuilt from upstream releases against Hummingbird, signed, and shipped as one OCI image.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f1f6f8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1016" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="https://projectbluefin.io/favicons/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <nav class="navbar">
+    <a class="brand" href="https://projectbluefin.io/" aria-label="Project Bluefin">
+      <picture>
+        <source srcset="https://projectbluefin.io/brands/bluefin-wordmark-dark.svg" media="(prefers-color-scheme: dark)">
+        <img src="https://projectbluefin.io/brands/bluefin-wordmark-light.svg" alt="bluefin" height="34">
+      </picture>
+    </a>
+    <a class="nav-accent" href="#packages">Packages</a>
+    <div class="nav-links">
+      <a href="https://github.com/projectbluefin/utah-packages">Factory</a>
+      <a href="https://github.com/projectbluefin/utah">Utah</a>
+      <a href="https://hummingbird-project.io/docs/">Hummingbird</a>
+      <a href="https://projectbluefin.io/server/">Bluefin Server</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-top">
+        <span class="hero-tag">Presenting</span>
+        <span class="hero-motto">Every RPM, rebuilt<br>from upstream.</span>
+      </div>
+      <h1 class="hero-title">utah<span>packages</span></h1>
+      <p class="hero-desc">The package factory behind <strong>Utahraptor</strong>. Upstream release tarballs, SHA-512 locked, built in a hermetic mock root against <strong>Hummingbird</strong>.</p>
+      <p class="hero-desc">One signed OCI image. Pinned by digest. No mirrors, no drift.</p>
+    </div>
+  </header>
+
+  <main>
+    <p class="alpha"><span aria-hidden="true">⚠️</span> <strong>Alpha.</strong> Take appropriate precautions.</p>
+
+    <section class="widgets">
+      <div class="release-widget">
+        <h2 class="eyebrow">Published image</h2>
+        <p class="muted">What consumers receive right now — read straight from the registry, not from the recipes.</p>
+        <div class="chip-grid" id="stats">
+          <div class="stat skeleton"></div><div class="stat skeleton"></div><div class="stat skeleton"></div>
+          <div class="stat skeleton"></div><div class="stat skeleton"></div><div class="stat skeleton"></div>
+        </div>
+        <h3 class="group-label">Headliners</h3>
+        <div class="chips" id="headliners"></div>
+        <button class="copy-block" id="copy-from" type="button" title="Copy">
+          <code id="from-line">COPY --from=ghcr.io/projectbluefin/utah-packages@sha256:… /repository /etc/utah-packages</code>
+          <span class="copy-hint">copy</span>
+        </button>
+      </div>
+
+      <div class="release-widget">
+        <h2 class="eyebrow">Shelves</h2>
+        <p class="muted">Source packages by what they are for. Click a shelf to browse it.</p>
+        <div class="shelf-bar" id="shelf-bar" role="img" aria-label="Source packages by category"></div>
+        <ul class="legend" id="legend"></ul>
+        <div class="tooltip" id="tooltip" hidden></div>
+      </div>
+    </section>
+
+    <section id="packages" class="catalog">
+      <div class="toolbar">
+        <label class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 0 1 5.96 12.05l4.25 4.24-1.42 1.42-4.24-4.25A7.5 7.5 0 1 1 10.5 3Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z"/></svg>
+          <input id="q" type="search" placeholder="Search packages, RPMs, summaries, licenses…" autocomplete="off" spellcheck="false">
+          <kbd>/</kbd>
+        </label>
+        <div class="tabs" role="tablist" aria-label="Sort">
+          <button type="button" data-sort="name" class="active">A–Z</button>
+          <button type="button" data-sort="recent">Recent</button>
+          <button type="button" data-sort="size">Size</button>
+          <button type="button" data-sort="rpms">RPMs</button>
+        </div>
+        <div class="tabs view-tabs" role="tablist" aria-label="View">
+          <button type="button" data-view="grid" class="active" aria-label="Grid">▦</button>
+          <button type="button" data-view="table" aria-label="Table">☰</button>
+        </div>
+      </div>
+      <div class="filters" id="filters"></div>
+      <p class="result-count" id="count" aria-live="polite"></p>
+      <div id="results" class="grid"></div>
+      <p class="empty" id="empty" hidden>No package matches. Karl looked everywhere.</p>
+    </section>
+  </main>
+
+  <dialog id="detail" aria-labelledby="detail-name">
+    <div class="window">
+      <div class="window-bar">
+        <span class="window-url" id="detail-url">packages.local</span>
+        <form method="dialog"><button class="win-close" aria-label="Close">✕</button></form>
+      </div>
+      <div class="window-body" id="detail-body"></div>
+    </div>
+  </dialog>
+
+  <footer>
+    <p>Generated <span id="generated">—</span> from <a id="image-link" href="https://github.com/projectbluefin/utah-packages/pkgs/container/utah-packages">ghcr.io/projectbluefin/utah-packages</a>.</p>
+    <p>A <a href="https://projectbluefin.io">Project Bluefin</a> joint. Artwork © Project Bluefin. Built with Hummingbird.</p>
+  </footer>
+</body>
+</html>

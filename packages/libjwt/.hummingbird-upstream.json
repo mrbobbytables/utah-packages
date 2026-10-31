@@ -1,0 +1,8 @@
+{
+  "package": "libjwt",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libjwt.git",
+  "commit": "fc197d5aeeea4631eb2c9d9f7da0ad3f65b02437",
+  "tree": "48dc1af4ebe7955dfa48e17e6072a9deab6d5844",
+  "imported_at": "2026-10-23T03:34:27.081347+00:00"
+}

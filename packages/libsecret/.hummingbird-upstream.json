@@ -2,7 +2,7 @@
   "package": "libsecret",
   "branch": "rawhide",
   "remote": "https://src.fedoraproject.org/rpms/libsecret.git",
-  "commit": "b0cd385f484f0596bc83ab2357704c6ca956580a",
-  "tree": "e6e344c3c6b2028cb2b7cf85ac3f8a342e6432db",
-  "imported_at": "2026-08-30T15:47:29.120537+00:00"
+  "commit": "a72be68853e730ba8ad93bc47531bfcd0ddd3417",
+  "tree": "0c4606f497d01452d108bd4ed1eb91a4dd1a6743",
+  "imported_at": "2026-10-22T22:48:21.757387+00:00"
 }

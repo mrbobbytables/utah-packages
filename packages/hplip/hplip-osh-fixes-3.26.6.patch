@@ -1,0 +1,463 @@
+diff --git a/base/models.py b/base/models.py
+index 8dceb6c..3fbd134 100644
+--- a/base/models.py
++++ b/base/models.py
+@@ -596,7 +596,7 @@ class ModelData:
+                     return self.__cache[model]
+                 else:
+                     hp_model = "hp_"+model
+-                    if self.read_section(self.released_dat, hp_model):
++                    if self.read_section(self.unreleased_dat, hp_model):
+                         return self.__cache[hp_model]
+                     else:
+                         log.debug("%s model not found"%hp_model)
+diff --git a/fax/filters/cdmfax/jetlib.cpp b/fax/filters/cdmfax/jetlib.cpp
+index 88380fe..79677f5 100755
+--- a/fax/filters/cdmfax/jetlib.cpp
++++ b/fax/filters/cdmfax/jetlib.cpp
+@@ -844,7 +844,7 @@ HP_InitFuncPrefix HP_NewStream(HP_SInt32 outBufferMaxSize, unsigned long cookie)
+     pStream = (HP_StreamHandleType) HP_MEMALLOC ((size_t) sizeof(HP_StreamStructType));
+     if (pStream)
+     {
+-        
++        memset(pStream, 0, sizeof(HP_StreamStructType));
+         pStream->HP_OutBufferMaxSize = outBufferMaxSize;
+         if (pStream->HP_OutBufferMaxSize)
+         {                                                         
+@@ -7536,7 +7536,7 @@ HP_StdFuncPrefix HP_M2TIFF_CalcCompression(
+ {
+ 
+     HP_pCharHuge lpfirst;
+-    HP_pCharHuge lpchar;
++    HP_pCharHuge lpchar = NULL;
+     HP_BOOL in_run, FourByteWordPad;
+     register HP_UByte count;
+     register HP_SInt16 state;
+@@ -7672,13 +7672,13 @@ HP_StdFuncPrefix HP_M2TIFF_Compress(
+     )
+ {
+     HP_pCharHuge lpfirst;
+-    HP_pCharHuge lpchar;
++    HP_pCharHuge lpchar = NULL;
+     HP_BOOL in_run,FourByteWordPad;
+     register HP_UByte count;
+     register HP_SInt16 state;
+     HP_pCharHuge   lpEnd;
+     HP_UByte padCount;
+-    
++
+     lpfirst = lpBits;
+     lpEnd = lpBits + inputLen;
+     in_run = FALSE;
+diff --git a/fax/pmlfax.py b/fax/pmlfax.py
+index d85b151..251cc58 100644
+--- a/fax/pmlfax.py
++++ b/fax/pmlfax.py
+@@ -172,7 +172,7 @@ class PMLFaxDevice(FaxDevice):
+         #return self.setPML(pml.OID_DATE_AND_TIME, p.decode('latin-1'))
+ 
+     def uploadLog(self):
+-        if not self.isUloadLogActive():
++        if not self.isUploadLogActive():
+             self.upload_log_thread = UploadLogThread(self)
+             self.upload_log_thread.start()
+             return True
+diff --git a/io/mudext/hpmudext.c b/io/mudext/hpmudext.c
+index b11c3b1..aa10dc6 100644
+--- a/io/mudext/hpmudext.c
++++ b/io/mudext/hpmudext.c
+@@ -247,12 +247,12 @@ static PyObject *set_pml(PyObject *self, PyObject *args)
+     if (!PyArg_ParseTuple(args, "iisis#", &dd, &cd, &oid, &type, &data, &data_size))
+         return NULL;
+ 
+-    if (data_size < INT_MIN)
+-      data_size_asInt = INT_MIN;
+-    else if (data_size > INT_MAX)
+-      data_size_asInt = INT_MAX;
+-    else
+-      data_size_asInt = (int)data_size;
++    if (data_size < 0 || data_size > HPMUD_BUFFER_SIZE)
++    {
++      result = HPMUD_R_INVALID_STATE;
++      return Py_BuildValue("(ii)", result, 0);
++    }
++    data_size_asInt = (int)data_size;
+ 
+     Py_BEGIN_ALLOW_THREADS
+     result = hpmud_set_pml(dd, cd, oid, type, (void *)data, data_size_asInt, &pml_result);
+diff --git a/ip/xjpg_dec.c b/ip/xjpg_dec.c
+index cb855fb..7826466 100644
+--- a/ip/xjpg_dec.c
++++ b/ip/xjpg_dec.c
+@@ -1490,8 +1490,8 @@ static void calc_table (
+         while (TRUE) {
+             do {
+                 huffcode[k++] = code++;
+-            } while (huffsize[k]==siz && k<257);   /* Overflow Detection */
+-            if (huffsize[k] == 0)
++            } while (k<257 && huffsize[k]==siz);   /* Overflow Detection */
++            if (k>=257 || huffsize[k] == 0)
+                 break;   /* all done */
+             do {              /* Shift next code to expand prefix */
+                 code <<= 1;
+diff --git a/pcard/ptest.c b/pcard/ptest.c
+index 8aba73c..9f271f6 100644
+--- a/pcard/ptest.c
++++ b/pcard/ptest.c
+@@ -340,12 +340,15 @@ int main(int argc, char *argv[])
+       {
+       case 'c':
+          strncpy(cmd, optarg, sizeof(cmd));
++         cmd[sizeof(cmd)-1] = '\0';
+          break;
+       case 'p':
+          strncpy(path, optarg, sizeof(path));
++         path[sizeof(path)-1] = '\0';
+          break;
+       case 'u':
+          strncpy(uri, optarg, sizeof(uri));
++         uri[sizeof(uri)-1] = '\0';
+          break;
+       case 'v':
+          verbose++;
+diff --git a/prnt/cupsext/cupsext.c b/prnt/cupsext/cupsext.c
+index 79c6ff1..e687be0 100644
+--- a/prnt/cupsext/cupsext.c
++++ b/prnt/cupsext/cupsext.c
+@@ -822,7 +822,7 @@ PyObject *getFaxModemAttributes(PyObject *self, PyObject *args)
+     ipp_t *response = NULL;       /* IPP response object */
+     ipp_attribute_t *attr = NULL; /* Current IPP attribute */
+     attr_t *attr_list = NULL;
+-    PyObject *dict;
++    PyObject *dict = NULL;
+     PyObject *pyval;
+     int attr_count = 0;
+     int index = 0;
+@@ -931,7 +931,7 @@ PyObject *getStatusAttributes(PyObject *self, PyObject *args)
+     ipp_t *response = NULL;       /* IPP response object */
+     ipp_attribute_t *attr = NULL; /* Current IPP attribute */
+     attr_t *attr_list = NULL;
+-    PyObject *dict;
++    PyObject *dict = NULL;
+     PyObject *pyval;
+     int attr_count = 0;
+     int index = 0;
+diff --git a/prnt/hpcups/Halftoner.cpp b/prnt/hpcups/Halftoner.cpp
+index 85b9baf..12e6208 100644
+--- a/prnt/hpcups/Halftoner.cpp
++++ b/prnt/hpcups/Halftoner.cpp
+@@ -89,6 +89,9 @@ Halftoner::Halftoner
+     int j,k,PlaneSize;
+     originalKData = NULL;
+ 
++    memset(ErrBuff, 0, sizeof(ErrBuff));
++    memset(ColorPlane, 0, sizeof(ColorPlane));
++
+     StartPlane = K;       // most common case
+ 
+     if (ColorPlaneCount == 3)     // CMY pen
+diff --git a/prnt/hpcups/Scaler.cpp b/prnt/hpcups/Scaler.cpp
+index 11192da..b51907b 100644
+--- a/prnt/hpcups/Scaler.cpp
++++ b/prnt/hpcups/Scaler.cpp
+@@ -40,7 +40,6 @@ Scaler::Scaler(unsigned int inputwidth, unsigned int numerator,
+ {
+ 
+     iInputWidth = inputwidth;
+-    rowremainder = remainder;
+     NumInks = iNumInks;
+     vip = bVIP;
+ 
+@@ -54,6 +53,7 @@ Scaler::Scaler(unsigned int inputwidth, unsigned int numerator,
+     float rem = ScaleFactor - (float)factor;
+     rem *= 1000;
+     remainder = (int)rem;
++    rowremainder = remainder;
+ 
+     iOutputWidth = (int) (((float)iInputWidth / (float)denominator) *
+                           (float)numerator);
+diff --git a/prnt/hpcups/genPCLm.cpp b/prnt/hpcups/genPCLm.cpp
+index c505679..99eb8c6 100644
+--- a/prnt/hpcups/genPCLm.cpp
++++ b/prnt/hpcups/genPCLm.cpp
+@@ -1243,10 +1243,15 @@ void PCLmGenerator::writeJobTicket()
+ 	char duplex[256];
+ 	char colorthemes[256];
+ 	strncpy(colorthemes,getColorThemesString(m_pPCLmSSettings->colorTheme),256);
++	colorthemes[255] = '\0';
+ 	strncpy(inputBin,getInputBinString(m_pPCLmSSettings->userInputBin),256);
++	inputBin[255] = '\0';
+ 	strncpy(outputBin,getOutputBin(m_pPCLmSSettings->userOutputBin),256);
++	outputBin[255] = '\0';
+ 	strncpy(orientation,getOrientationString(m_pPCLmSSettings->userOrientation),256);
++	orientation[255] = '\0';
+ 	strncpy(duplex,getDuplexString(currDuplexDisposition),256);
++	duplex[255] = '\0';
+ 
+ 	snprintf(pOutStr,OUT_STR_SIZE,"%%  genPCLm (Ver: %f)\n",PCLM_Ver); writeStr2OutBuff(pOutStr);
+ 	snprintf(pOutStr,OUT_STR_SIZE,"%%============= Job Ticket =============\n"); writeStr2OutBuff(pOutStr);
+@@ -1639,8 +1644,10 @@ int  PCLmGenerator::StartPage(PCLmPageSetup *PCLmPageContent, void **pOutBuffer,
+ 
+ 	}
+ 
+-	if(strlen(PCLmPageContent->mediaSizeName))
++	if(strlen(PCLmPageContent->mediaSizeName)) {
+ 		strncpy(currMediaName,PCLmPageContent->mediaSizeName,256);
++		currMediaName[255] = '\0';
++	}
+ 
+ 	currStripHeight=PCLmPageContent->stripHeight;
+ 	if(!currStripHeight)
+diff --git a/prnt/hpijs/halftoner.cpp b/prnt/hpijs/halftoner.cpp
+index e98399c..bbc0fa1 100644
+--- a/prnt/hpijs/halftoner.cpp
++++ b/prnt/hpijs/halftoner.cpp
+@@ -93,6 +93,9 @@ Halftoner::Halftoner
+     int j,k,PlaneSize;
+     constructor_error = NO_ERROR;
+ 
++    memset(ErrBuff, 0, sizeof(ErrBuff));
++    memset(ColorPlane, 0, sizeof(ColorPlane));
++
+     StartPlane = K;       // most common case
+ 
+     if (ColorPlaneCount == 3)     // CMY pen
+diff --git a/prnt/hpps/hppsfilter.c b/prnt/hpps/hppsfilter.c
+index 4e54015..2ac4752 100644
+--- a/prnt/hpps/hppsfilter.c
++++ b/prnt/hpps/hppsfilter.c
+@@ -82,7 +82,7 @@ static void open_dbg_outfile(char* szjob_id)
+     if (g_savepsfile & SAVE_PS_FILE)
+     {
+         char    sfile_name[FILE_NAME_SIZE] = {0};
+-        sprintf(sfile_name, "%s/%s_%s.out", DBG_TMP_FOLDER,DBG_PSFILE, szjob_id);
++        snprintf(sfile_name, sizeof(sfile_name), "%s/%s_%s.out", DBG_TMP_FOLDER,DBG_PSFILE, szjob_id);
+         g_fp_outdbgps= fopen(sfile_name, "w");
+         chmod(sfile_name, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+     }
+@@ -215,6 +215,12 @@ static char * GetPPDValues()
+         fseek(file_pointer, 0L, SEEK_END );
+         count = ftell(file_pointer);
+         fseek(file_pointer, 0L, SEEK_SET );
++        if (count < 0)
++        {
++           fprintf(stderr, "HP PS filter func = GetPPDValues : ftell failed\n");
++           fclose(file_pointer);
++           return NULL;
++        }
+         /* Alloacting memory for PPD content + NUL terminator */
+         bytes = (char *)malloc(count + 1);
+         if(!bytes)
+diff --git a/prnt/hpps/psbooklet.c b/prnt/hpps/psbooklet.c
+index 3d10bfb..2e237dc 100644
+--- a/prnt/hpps/psbooklet.c
++++ b/prnt/hpps/psbooklet.c
+@@ -248,10 +248,10 @@ void PS_Booklet_Order_Wrapper(char *inputfile, char *outputfile, int order, int
+ 
+ void PS_Nup_Wrapper(char *inputfile, char *outputfile, char *papersize, int nupnumber)
+ {
+-   int horiz, vert, rotate, column, flip, leftright, topbottom;
++   int horiz = 0, vert = 0, rotate = 0, column = 0, flip = 0, leftright = 0, topbottom = 0;
+    int nup = 1;
+    double draw = 0;				/* draw page borders */
+-   double xscale, yscale, scale;				/* page scale */
++   double xscale = 0, yscale = 0, scale = 0;				/* page scale */
+    double uscale = 0;				/* user supplied scale */
+    double ppwid, pphgt;				/* paper dimensions */
+    double margin, border;			/* paper & page margins */
+diff --git a/protocol/hp_ipp.c b/protocol/hp_ipp.c
+index d48cff0..0788edb 100644
+--- a/protocol/hp_ipp.c
++++ b/protocol/hp_ipp.c
+@@ -1051,7 +1051,7 @@ abort:
+ enum HPMUD_RESULT sendUSBFileRequest(char *buf, int size, int fileHandle,raw_ipp *responseptr, char *device_uri)
+ {
+     HPMUD_DEVICE hd = 0;
+-    HPMUD_CHANNEL cd;
++    HPMUD_CHANNEL cd = 0;
+     enum HPMUD_RESULT stat = HPMUD_R_OK;
+     int device_already_open = 0;
+     char fileData[4096] = {0};
+@@ -1527,10 +1527,10 @@ ipp_t *usbDoFileRequest(ipp_t *request, int iFileHandle,char *device_uri, const
+     int bytes = 0;
+ 
+     HPMUD_DEVICE hd = 0;
+-    HPMUD_CHANNEL cd;
++    HPMUD_CHANNEL cd = 0;
+     enum HPMUD_RESULT stat = HPMUD_R_OK;
+     int device_already_open = 0;
+-    
++
+ 
+     /* Open hp device. */
+     if ((stat = hpmud_open_device(device_uri, HPMUD_RAW_MODE, &hd)) != HPMUD_R_OK)
+diff --git a/scan/sane/bb_ledm.c b/scan/sane/bb_ledm.c
+index 43d0623..fe2ad20 100644
+--- a/scan/sane/bb_ledm.c
++++ b/scan/sane/bb_ledm.c
+@@ -1066,18 +1066,18 @@ bugout:
+ int get_size(struct ledm_session* ps)
+ {
+   struct bb_ledm_session *pbb = ps->bb_session;
+-  char buffer[7];
++  char buffer[8];
+   int i=0, tmo=50, len;
+ 
+   if(ps->currentResolution >= 1200) tmo *= 5;
+-  
++
+   while(i < 7)
+-  { 
++  {
+     if(http_read_size(pbb->http_handle, buffer+i, 1, tmo, &len) == 2) return 0;
+     if( i && *(buffer+i) == '\n' && *(buffer+i-1) == '\r') break;
+     i++;
+   }
+-  *(buffer+i+1)='\0';
++  *(buffer+i)='\0';
+   return strtol(buffer, NULL, 16);
+ }
+ 
+diff --git a/scan/sane/common.c b/scan/sane/common.c
+index 3144fcf..b100095 100755
+--- a/scan/sane/common.c
++++ b/scan/sane/common.c
+@@ -287,7 +287,7 @@ char* __attribute__ ((visibility ("hidden"))) itoa(int value, char* str, int rad
+   } while (v);
+   if (neg)
+     str[n++] = '-';
+-    str[n] = '\0';
++  str[n] = '\0';
+  
+   for (p = str, q = p + (n-1); p < q; ++p, --q)
+     c = *p, *p = *q, *q = c;
+diff --git a/scan/sane/ledm.c b/scan/sane/ledm.c
+index aa68dda..2187f2a 100644
+--- a/scan/sane/ledm.c
++++ b/scan/sane/ledm.c
+@@ -472,11 +472,11 @@ const SANE_Option_Descriptor *ledm_get_option_descriptor(SANE_Handle handle, SAN
+ {
+   struct ledm_session *ps = (struct ledm_session *)handle;
+ 
+-  DBG8("sane_hpaio_get_option_descriptor(option=%s)\n", ps->option[option].name);
+-
+   if (option < 0 || option >= LEDM_OPTION_MAX)
+     return NULL;
+ 
++  DBG8("sane_hpaio_get_option_descriptor(option=%s)\n", ps->option[option].name);
++
+   return &ps->option[option];
+ } /* ledm_get_option_descriptor */
+ 
+diff --git a/scan/sane/marvell.c b/scan/sane/marvell.c
+index a6da95f..3cb6aa0 100644
+--- a/scan/sane/marvell.c
++++ b/scan/sane/marvell.c
+@@ -570,11 +570,11 @@ const SANE_Option_Descriptor *marvell_get_option_descriptor(SANE_Handle handle,
+ {
+    struct marvell_session *ps = (struct marvell_session *)handle;
+ 
+-   DBG8("sane_hpaio_get_option_descriptor(option=%s)\n", ps->option[option].name);
+-
+    if (option < 0 || option >= MARVELL_OPTION_MAX)
+       return NULL;
+ 
++   DBG8("sane_hpaio_get_option_descriptor(option=%s)\n", ps->option[option].name);
++
+    return &ps->option[option];
+ }
+ 
+diff --git a/scan/sane/sclpml.c b/scan/sane/sclpml.c
+index 829597b..487d757 100644
+--- a/scan/sane/sclpml.c
++++ b/scan/sane/sclpml.c
+@@ -2152,13 +2152,13 @@ const SANE_Option_Descriptor * sclpml_get_option_descriptor(SANE_Handle handle,
+ {
+     hpaioScanner_t hpaio = ( hpaioScanner_t ) handle;
+ 
+-    DBG(8, "sane_hpaio_get_option_descriptor(option=%s): %s %d\n", hpaio->option[option].name, __FILE__, __LINE__);
+-
+     if( option < 0 || option >= OPTION_LAST )
+     {
+         return 0;
+     }
+ 
++    DBG(8, "sane_hpaio_get_option_descriptor(option=%s): %s %d\n", hpaio->option[option].name, __FILE__, __LINE__);
++
+     return &hpaio->option[option];
+ }
+ 
+@@ -2932,7 +2932,7 @@ SANE_Status sclpml_read(SANE_Handle handle, SANE_Byte *data, SANE_Int maxLength,
+     DWORD dwInputUsed, dwInputNextPos;
+     DWORD dwOutputAvail = maxLength;
+     LPBYTE pbOutputBuf = data;
+-    DWORD dwOutputUsed, dwOutputThisPos;
++    DWORD dwOutputUsed = 0, dwOutputThisPos;
+     WORD wResult;
+ 
+     if (hpaio->user_cancel)  {
+diff --git a/scan/sane/soap.c b/scan/sane/soap.c
+index 143fe65..15dbb3b 100644
+--- a/scan/sane/soap.c
++++ b/scan/sane/soap.c
+@@ -531,11 +531,11 @@ const SANE_Option_Descriptor *soap_get_option_descriptor(SANE_Handle handle, SAN
+ {
+    struct soap_session *ps = (struct soap_session *)handle;
+ 
+-   DBG8("sane_hpaio_get_option_descriptor(option=%s)\n", ps->option[option].name);
+-
+    if (option < 0 || option >= SOAP_OPTION_MAX)
+       return NULL;
+ 
++   DBG8("sane_hpaio_get_option_descriptor(option=%s)\n", ps->option[option].name);
++
+    return &ps->option[option];
+ } /* soap_get_option_descriptor */
+ 
+diff --git a/scan/sane/soapht.c b/scan/sane/soapht.c
+index b9d8f41..b093c64 100644
+--- a/scan/sane/soapht.c
++++ b/scan/sane/soapht.c
+@@ -566,11 +566,11 @@ const SANE_Option_Descriptor *soapht_get_option_descriptor(SANE_Handle handle, S
+ {
+    struct soap_session *ps = (struct soap_session *)handle;
+ 
+-   DBG8("sane_hpaio_get_option_descriptor(option=%s)\n", ps->option[option].name);
+-
+    if (option < 0 || option >= SOAP_OPTION_MAX)
+       return NULL;
+ 
++   DBG8("sane_hpaio_get_option_descriptor(option=%s)\n", ps->option[option].name);
++
+    return &ps->option[option];
+ } /* soapht_get_option_descriptor */
+ 
+diff --git a/scan/scanext/scanext.c b/scan/scanext/scanext.c
+index f1d7b7b..cb34064 100755
+--- a/scan/scanext/scanext.c
++++ b/scan/scanext/scanext.c
+@@ -402,9 +402,9 @@ static PyObject *getOption (_ScanDevice * self, PyObject * args)
+ 
+ static PyObject *setOption (_ScanDevice * self, PyObject * args)
+ {
+-    SANE_Status st;
++    SANE_Status st = SANE_STATUS_INVAL;
+     const SANE_Option_Descriptor *d;
+-    SANE_Int i;
++    SANE_Int i = 0;
+     PyObject *value;
+     int n;
+     multipick = 1;
+diff --git a/upgrade.py b/upgrade.py
+index a3ea6b1..86455dd 100755
+--- a/upgrade.py
++++ b/upgrade.py
+@@ -178,7 +178,7 @@ def download_hplip_installer(path_to_download, hplip_version):
+     log.info("")
+ 
+     if not os.path.exists(hplip_digsig):
+-        log.error("Failed to download %s file."%hplip_package)
++        log.error("Failed to download %s file."%hplip_digsig)
+         return hplip_package, ''
+ 
+     return hplip_package, hplip_digsig

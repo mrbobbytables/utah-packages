@@ -1,0 +1,23 @@
+From 3917c8a6929702be52a9239aa93958e53484bc74 Mon Sep 17 00:00:00 2001
+From: Didier Raboud <odyx@debian.org>
+Date: Fri, 9 Feb 2018 17:46:08 +0100
+Subject: Inheritate CXXFLAGS from the environment, to use dpkg-buildflags'
+
+Last-Update: 2014-01-09
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 6f8e05e..4e6365c 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -89,7 +89,7 @@ AC_SUBST(cups_cflags)
+ warning_flags="-Wall -Wno-unknown-pragmas"
+ debug_flags=""
+ optimization_flags="-O2"
+-CXXFLAGS="${optimization_flags} ${warning_flags} ${debug_flags} ${cups_cflags}"
++CXXFLAGS+=" ${optimization_flags} ${warning_flags} ${debug_flags} ${cups_cflags}"
+ 
+ 
+ AC_CHECK_LIB(cups, cupsMarkOptions, , AC_ERROR([Can't find cups library]))

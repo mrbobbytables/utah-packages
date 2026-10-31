@@ -1,0 +1,8 @@
+{
+  "package": "usermode",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/usermode.git",
+  "commit": "697f37050d1dfee1b79fb4a79dedc912fde8b894",
+  "tree": "6602c793dbbe39be847aa621fae1aae8dbba2843",
+  "imported_at": "2026-10-24T04:05:34.287589+00:00"
+}

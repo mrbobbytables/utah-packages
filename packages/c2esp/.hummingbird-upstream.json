@@ -1,0 +1,8 @@
+{
+  "package": "c2esp",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/c2esp.git",
+  "commit": "60e7ff82d126f89527fc7b3b320e5e7cbde8a051",
+  "tree": "48fdbd3ecc84d6e75e9ecf3d73db35973e0fd594",
+  "imported_at": "2026-10-24T03:59:00.479164+00:00"
+}

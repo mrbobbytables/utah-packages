@@ -1,0 +1,8 @@
+{
+  "package": "mozilla-filesystem",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/mozilla-filesystem.git",
+  "commit": "314271a477cf099277eb9ecf6450d24270ddede4",
+  "tree": "bb1ec0e11aeb671b9b03146e2691794673f1a7ff",
+  "imported_at": "2026-10-23T02:03:05.182561+00:00"
+}

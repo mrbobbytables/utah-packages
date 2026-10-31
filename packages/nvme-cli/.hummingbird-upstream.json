@@ -1,0 +1,8 @@
+{
+  "package": "nvme-cli",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/nvme-cli.git",
+  "commit": "6f6fb2f94c345ce9ad73056408af46ae458b85b1",
+  "tree": "dd7d949a1f0463ed9454ed8bc62e17023cd8f35a",
+  "imported_at": "2026-10-24T04:00:36.622348+00:00"
+}

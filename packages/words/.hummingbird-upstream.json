@@ -1,0 +1,8 @@
+{
+  "package": "words",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/words.git",
+  "commit": "a108813b7595ee025dc1a129ec32a3060bff8370",
+  "tree": "0b44d433c2c7028ff59158586c0dde4c297fdb14",
+  "imported_at": "2026-10-24T04:00:18.616838+00:00"
+}

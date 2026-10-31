@@ -28,6 +28,17 @@ inputs:
     description: Where to extract the repository, relative to the workspace.
     required: false
     default: work/factory
+  signer_ref:
+    description: >
+      The git ref the publishing workflow must have run on when it signed the
+      image (refs/heads/main for latest, the branch's own ref for a branch
+      tag). When empty, a run on refs/heads/main requires refs/heads/main --
+      prepare resolves only latest there, and only publish on main writes
+      latest -- and any other run admits any ref of this repository (the
+      canary signs under refs/pull/N/merge), which still requires the image
+      to carry this repository's own publish signature.
+    required: false
+    default: ''
 
 outputs:
   url:
@@ -45,6 +56,8 @@ runs:
       env:
         IMAGE: ${{ inputs.image }}
         TARGET: ${{ inputs.path }}
+        SIGNER_REF: ${{ inputs.signer_ref }}
+        REPOSITORY: ${{ github.repository }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         set -euo pipefail
@@ -59,6 +72,48 @@ runs:
         echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin \
           || echo "::warning title=ghcr login failed::pulling the factory image anonymously"
         docker pull "$IMAGE"
+        # Every RPM in this image is installed into the build root of every
+        # package this run compiles, with gpgcheck=0, under a privileged
+        # container holding a packages:write token. Freshness is not trust
+        # (docs/skills/repeated-mistakes.md, entry 19): require the digest
+        # actually pulled -- never the mutable tag -- to carry this
+        # repository's own keyless publish signature before anything is
+        # created from it or copied out of it. The same two workflow files
+        # the publish seed check admits have signed every image: the reusable
+        # publish-repository.yml, and rebuild-rpms.yml before publication
+        # moved there. Same cosign release and checksum as canary.yml and
+        # publish-repository.yml; installed under RUNNER_TEMP so the action
+        # needs no sudo and touches nothing on PATH.
+        case "$IMAGE" in
+          *@sha256:*) ;;
+          *) echo "::error::factory image must be pinned by digest, got $IMAGE"; exit 1 ;;
+        esac
+        cosign="$RUNNER_TEMP/load-factory-repo-cosign"
+        curl -fsSL https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-linux-amd64 -o "$cosign"
+        echo "8b24b946dd5809c6bd93de08033bcf6bc0ed7d336b7785787c080f574b89249b  $cosign" | sha256sum -c - >/dev/null
+        chmod 0755 "$cosign"
+        escaped_repository=$(printf '%s' "$REPOSITORY" | sed 's/[.]/[.]/g')
+        # On main the only image prepare ever resolves is latest, and the
+        # publish seed check for that same tag pins its signer to
+        # refs/heads/main; the build roots must not be looser than the seed,
+        # or an image signed from a pull request's own copy of the publish
+        # workflow (canary runs with id-token and packages write) is accepted
+        # here while the seed check later refuses it -- after every planted
+        # RPM has already run as root in the privileged build containers.
+        if [ -z "$SIGNER_REF" ] && [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          SIGNER_REF=refs/heads/main
+        fi
+        if [ -n "$SIGNER_REF" ]; then
+          ref_pattern=$(printf '%s' "$SIGNER_REF" | sed 's/[.]/[.]/g')
+        else
+          ref_pattern='refs/[^@]+'
+        fi
+        echo "factory image signer ref: ${SIGNER_REF:-<any ref of this repository>}"
+        "$cosign" verify "$IMAGE" \
+          --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+          --certificate-identity-regexp "^https://github[.]com/${escaped_repository}/[.]github/workflows/(rebuild-rpms|publish-repository)[.]yml@${ref_pattern}\$" \
+          > /dev/null
+        echo "factory image signature verified: $IMAGE"
         # The image is FROM scratch with one COPY and no entrypoint, so create
         # needs a command it will never run.
         container=$(docker create "$IMAGE" /bin/true)

@@ -1,0 +1,8 @@
+{
+  "package": "dymo-cups-drivers",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/dymo-cups-drivers.git",
+  "commit": "25fce4062bbf8988b4369810c7ee501bfb88f0a5",
+  "tree": "303337fc994c11692aa144529f4a477f9d6d91ad",
+  "imported_at": "2026-10-24T03:59:05.938988+00:00"
+}

@@ -45,6 +45,10 @@ dependants for no change in bytes.
    edits (including fixes for inherited upstream scriptlet typos) are
    divergence: the recipe stays out of automated re-imports until a human
    re-imports it by hand.
+   A hand re-import has to carry the local deltas forward; for example
+   `packages/flatpak` drops Fedora's `flatpak-add-fedora-repos.service`
+   (Fedora OCI remotes; Utah uses Flathub) and bases `%autorelease` at 2
+   ([`repeated-mistakes.md` §6](repeated-mistakes.md#6-a-re-import-silently-reverts-every-local-decision)).
 5. Exactly one spec, same file name, on both commits.
 6. `sources`, `Name:`, `Epoch:`, `Version:` and `Release:` unchanged, so the
    SHA-512 lock in `config/upstream-sources.json` still describes the payload.
@@ -66,6 +70,28 @@ exits non-zero if it changed, and the workflow diffs `.packit.yaml` and
 `config/upstream-sources.json` after running the unit tests and
 `tools/validate.py`.
 
+## Recipes that drift behind Rawhide BuildRequires
+
+A `tools/upstream_bump.py` Version move rewrites only `Version:`, `sources`
+and the lock; it keeps the old recipe's BuildRequires. When the new release
+needs a new build tool, the bumped recipe fails and this tool cannot repair
+it, even after Fedora ships the same version with the fix. libsecret
+(issue #565) is the example: #535 moved it 0.21.7 -> 0.21.8.2 on Fedora's
+0.21.7 recipe, and 0.21.8's `meson.build` needs `dbus-run-session` (via
+`find_program`). The bump made the recipe diverge from the pin (rule 4,
+"factory edited libsecret.spec, sources"). Rule 6 also fired: compared with
+the pin, Fedora's catch-up commit changes `sources` and `Version:`. Rule 7
+fired on the added `/usr/bin/dbus-run-session`, `python3-dbus` and
+`python3-gobject`. Rule 4 alone keeps it out for good.
+
+Fix it by hand. When Koji's Rawhide build has the same Version as the lock,
+run `tools/import_rawhide.py <pkg> --ref <Koji commit> --replace`. Delete the
+`INERT_FILES` the import adds, and confirm `sources` is byte-identical
+(the lock then stays). That puts the recipe back to Fedora's tree, so later
+moves are automated again. Check the `unsafe` lines of a report run for
+`factory edited <pkg>.spec, sources` next to `adds BuildRequires`. That
+pairing is how this drift shows up.
+
 ## Running it locally
 
 ```sh
@@ -84,6 +110,31 @@ gdk-pixbuf2, ilbc, libei, libical, mobile-broadband-provider-info, re2,
 wayland), 81 unsafe and 2 with no Koji Rawhide build (`linux-atm`,
 `malcontent-bootstrap`). Most unsafe moves are Version moves (70) or recipes
 carrying Utah-local edits (48).
+
+## A %check failure Rawhide already patched: re-import, don't skip
+
+When a carried recipe starts failing `%check` because the build root moved
+under it, look at Rawhide's spec before touching the tests: Fedora has often
+hit the same build root first. Hummingbird's libcurl 8.23.0 strips
+credentials from the effective URL, so git 2.55.0 failed t5550.15/16/20 and
+t5541.18 deterministically (issue #565). Rawhide's 2.56.0 recipe
+(`4fe49145479f0f74c07b17e87e7c3fb12952ab80`, Koji `git-2.56.0-1.fc46`)
+carries `git-2.56.0-http-strip-creds-effective-url.patch`. The fix was a hand
+re-import, not a skip pattern:
+
+```sh
+python3 tools/rawhide_reimport.py --package git   # reports why it is unsafe
+python3 tools/import_rawhide.py git --ref <koji-commit> --replace
+```
+
+Pick the Koji-built commit that carries the patch, diff the old recipe
+against Fedora's tree at the old pin first to find Utah-local deltas (git had
+none), and drop the `INERT_FILES` the import adds back (`.gitignore`,
+`.mailmap`). A version move still means a hand lock update: version, URL,
+filename and SHA-512 in `config/upstream-sources.json` from the upstream
+tarball (download and verify; Fedora stays in `fallback_urls`), matching
+`packages/<name>/sources`, and no `dist_bump` to carry because `Release`
+resets with the new `Version`.
 
 ## Changing the rules
 

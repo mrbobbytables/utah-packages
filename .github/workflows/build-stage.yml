@@ -51,6 +51,15 @@ on:
         required: false
         default: ''
         type: string
+      factory_signer_ref:
+        description: >
+          The git ref whose publish must have signed factory_image, as
+          prepare derived it from the tag it resolved: refs/heads/main for
+          latest, this run's own ref for a branch tag or a factory_tag
+          digest. Passed to load-factory-repo as signer_ref.
+        required: false
+        default: ''
+        type: string
       buildroot_digest:
         description: Digest of the build root prepared for this run.
         required: true
@@ -177,6 +186,7 @@ jobs:
         id: factory
         with:
           image: ${{ inputs.factory_image }}
+          signer_ref: ${{ inputs.factory_signer_ref }}
       # Only strictly earlier waves: a same-stage sibling does not exist for
       # this build (repeated mistake 3). This step used to be missing while
       # the download below still read its output, so the pattern was empty

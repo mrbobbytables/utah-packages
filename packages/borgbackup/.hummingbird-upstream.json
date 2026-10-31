@@ -1,0 +1,8 @@
+{
+  "package": "borgbackup",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/borgbackup.git",
+  "commit": "d2613c8484b3a380e535fd9704f9c9de591fa5f1",
+  "tree": "bc24edaf6f69a00a0524540404b6a8054c0456e4",
+  "imported_at": "2026-10-24T03:59:18.297116+00:00"
+}

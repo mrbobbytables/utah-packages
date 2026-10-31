@@ -1,0 +1,8 @@
+{
+  "package": "hdparm",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/hdparm.git",
+  "commit": "8b5576cfb68d153cd974c863660d34fa9386e16e",
+  "tree": "128f5c63626d94fa9ec9247011aa682e63132281",
+  "imported_at": "2026-10-24T03:59:49.038843+00:00"
+}

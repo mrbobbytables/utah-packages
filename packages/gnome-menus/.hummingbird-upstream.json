@@ -1,0 +1,8 @@
+{
+  "package": "gnome-menus",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-menus.git",
+  "commit": "fbeb28e50186e726b579f3a932e69779e2d180ef",
+  "tree": "d0ae7ffc3073653d377f5ef243f019608e65cd53",
+  "imported_at": "2026-10-20T20:24:32.745928+00:00"
+}

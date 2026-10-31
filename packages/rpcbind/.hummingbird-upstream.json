@@ -1,0 +1,8 @@
+{
+  "package": "rpcbind",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/rpcbind.git",
+  "commit": "21e390d3b83324e7439d98ef635be4fce8652524",
+  "tree": "452484541fc7c0d83e18fc46cff51c6c16ecd3aa",
+  "imported_at": "2026-10-18T08:54:10.663513+00:00"
+}

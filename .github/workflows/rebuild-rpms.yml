@@ -205,6 +205,7 @@ jobs:
     outputs:
       buildroot_digest: ${{ steps.buildroot.outputs.digest }}
       factory_image: ${{ steps.factory_image.outputs.image }}
+      factory_signer_ref: ${{ steps.factory_image.outputs.signer_ref }}
       seed_image: ${{ steps.factory_image.outputs.seed }}
       stage0: ${{ steps.matrix.outputs.stage0 }}
       stage1: ${{ steps.matrix.outputs.stage1 }}
@@ -394,26 +395,39 @@ jobs:
                 digest=$(docker image inspect "$ref" \
                   --format '{{index .RepoDigests 0}}' | sed 's/.*@//')
                 echo "$ref -> ${image}@${digest}" >&2
-                echo "${image}@${digest}"
+                echo "${image}@${digest} ${tag}"
                 return
               fi
               echo "no image at $ref" >&2
             done
           }
           # shellcheck disable=SC2086 # candidates is a word list
-          resolved=$(resolve $candidates)
+          read -r resolved matched_tag <<<"$(resolve $candidates)" || true
+          # The ref whose publish signed the tag that matched, exactly as the
+          # publish seed check records it (repeated mistake 19): latest is
+          # only ever published from main; a branch tag, or a tag or digest
+          # handed in through factory_tag (the canary's pass1 digest), only by
+          # this same workflow running on this run's own ref. Every
+          # load-factory-repo call pins its signer to it.
+          case "$matched_tag" in
+            "") signer_ref= ;;
+            latest) signer_ref=refs/heads/main ;;
+            *) signer_ref="$REF" ;;
+          esac
           if [ -z "$resolved" ] && [ -z "$NO_FACTORY" ]; then
             echo "::warning title=no factory image::nothing is published for this ref or main, so nothing can be skipped as already built"
           fi
           if [ -n "$PUBLISH_TAG" ]; then
             test "$PUBLISH_TAG" != latest
-            seed=$(resolve "$PUBLISH_TAG")
+            read -r seed _ <<<"$(resolve "$PUBLISH_TAG")" || true
           else
             seed="$resolved"
           fi
           echo "factory repository: ${resolved:-<none>}"
           echo "publish seed:       ${seed:-<none>}"
+          echo "factory signer ref: ${signer_ref:-<none>}"
           echo "image=${resolved}" >> "$GITHUB_OUTPUT"
+          echo "signer_ref=${signer_ref}" >> "$GITHUB_OUTPUT"
           echo "seed=${seed}" >> "$GITHUB_OUTPUT"
           # The state label (tools/factory_state.py) is what prepare selects
           # against: the inputs every published build was made from.
@@ -427,6 +441,7 @@ jobs:
         id: factory
         with:
           image: ${{ steps.factory_image.outputs.image }}
+          signer_ref: ${{ steps.factory_image.outputs.signer_ref }}
       - id: matrix
         env:
           FULL: ${{ (inputs.full == true || github.event.schedule == '23 1 * * 0') && '1' || '0' }}
@@ -475,6 +490,7 @@ jobs:
         id: factory
         with:
           image: ${{ needs.prepare.outputs.factory_image }}
+          signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       - name: Resolve BuildRequires for packages being built
         env:
           FACTORY_REPO: ${{ steps.factory.outputs.url }}
@@ -602,6 +618,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -624,6 +641,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -646,6 +664,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -668,6 +687,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -690,6 +710,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -712,6 +733,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -734,6 +756,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -756,6 +779,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -778,6 +802,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -800,6 +825,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -822,6 +848,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -844,6 +871,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -866,6 +894,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}
@@ -888,6 +917,7 @@ jobs:
       packages: ${{ matrix.chunk }}
       backend: ${{ inputs.backend || 'hermetic' }}
       factory_image: ${{ needs.prepare.outputs.factory_image }}
+      factory_signer_ref: ${{ needs.prepare.outputs.factory_signer_ref }}
       buildroot_digest: ${{ needs.prepare.outputs.buildroot_digest }}
       cacheable_packages: ${{ needs.prepare.outputs.cacheable }}
       artifact_prefix: ${{ inputs.artifact_prefix }}

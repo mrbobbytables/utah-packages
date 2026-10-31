@@ -1,0 +1,8 @@
+{
+  "package": "ipp-usb",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/ipp-usb.git",
+  "commit": "7dbc996457ded9403c4a77f3cc79cbf9be834a1e",
+  "tree": "22eea57c894a0e3689c02e8fcb1251c6072df573",
+  "imported_at": "2026-10-24T03:58:31.726675+00:00"
+}

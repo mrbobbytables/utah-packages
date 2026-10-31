@@ -1,0 +1,70 @@
+# The package catalog on GitHub Pages: a browsable index of what the
+# published factory image carries, rebuilt whenever a publication may have
+# moved :latest.
+#
+# This is not the Pages RPM mirror that was retired (README, "What it
+# produces"). It serves no RPMs and nothing consumes it; the OCI image stays
+# the only publication. tools/package_index.py reads that image's repodata
+# layer -- a few MiB, never the RPM layer -- so the catalog shows what
+# consumers receive rather than what the recipes say.
+#
+# Pages deploys from the default branch only, which suits a view of :latest:
+# :latest is itself only ever published from main.
+name: Package catalog
+
+on:
+  workflow_run:
+    workflows: [Build verified upstream RPMs]
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - tools/package_index.py
+      - .github/workflows/pages.yml
+  # A publication that a run outside workflow_run made (a dispatch on main
+  # whose completion event was missed) still reaches the site within a day.
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Render the catalog from the published image
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE: ${{ github.repository_owner }}/utah-packages:latest
+        run: |
+          mkdir -p work/pages
+          cp -r site/. work/pages/
+          python3 tools/package_index.py --image "${IMAGE,,}" --output work/pages/packages.json
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: work/pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

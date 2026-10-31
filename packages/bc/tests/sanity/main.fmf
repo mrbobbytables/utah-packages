@@ -1,0 +1,9 @@
+summary: Basic sanity test
+component:
+  - bc
+test: python3 ./runtests.py -v
+framework: shell
+recommend:
+  - bc
+  - python3
+duration: 1m

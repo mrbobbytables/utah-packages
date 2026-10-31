@@ -1,0 +1,13 @@
+diff --git a/backend/gphoto2.c b/backend/gphoto2.c
+index 758829a..386cecb 100644
+--- a/backend/gphoto2.c
++++ b/backend/gphoto2.c
+@@ -586,7 +586,7 @@ get_info (void)
+ 	  folder_list[n] = strdup (val);
+ 	  if (strchr ((const char *) folder_list[n], ' '))
+ 	    {
+-	      *strchr ((const char *) folder_list[n], ' ') = '\0';
++	      *strchr (folder_list[n], ' ') = '\0';
+ 	    }
+ 	}
+       if (n == 0)

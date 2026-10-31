@@ -1,0 +1,14 @@
+diff --git a/setup.py b/setup.py
+index 01bc715..4095091 100755
+--- a/setup.py
++++ b/setup.py
+@@ -30,7 +30,8 @@ else:
+     # the build_ext module in __init__.py) shadows the
+     # build_ext module.
+     module = sys.modules['Cython.Distutils.build_ext']
+-    del module.build_ext
++    if hasattr(module, 'build_ext'):
++        del module.build_ext
+ 
+ import setuptools
+ from setuptools import Extension

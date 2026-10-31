@@ -1,0 +1,8 @@
+{
+  "package": "brltty",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/brltty.git",
+  "commit": "d91de5383dd46c1c1c0ce0c59d4a511b0f5befee",
+  "tree": "4b7fe4888ae77d50f2f7cf3805221ddbb51d74d7",
+  "imported_at": "2026-10-15T19:19:33.176752+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "package": "traceroute",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/traceroute.git",
+  "commit": "eddacc9efa53d3356e51c6e8e2e120bab11356a9",
+  "tree": "476d94a7c7f1b2120b3e76c653d33b49360813a3",
+  "imported_at": "2026-10-24T04:00:39.525756+00:00"
+}

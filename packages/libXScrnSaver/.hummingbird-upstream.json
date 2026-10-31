@@ -1,0 +1,8 @@
+{
+  "package": "libXScrnSaver",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libXScrnSaver.git",
+  "commit": "e24c25645bc60bad781a117ed06b2c0f00c01e6a",
+  "tree": "c0dd0e5c4922c52997e19244da310611dc52fe70",
+  "imported_at": "2026-10-24T04:29:37.451780+00:00"
+}

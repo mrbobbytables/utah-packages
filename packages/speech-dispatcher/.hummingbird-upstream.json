@@ -1,0 +1,8 @@
+{
+  "package": "speech-dispatcher",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/speech-dispatcher.git",
+  "commit": "6804109e267d42f0a6d9973820174a8046a7ce05",
+  "tree": "5a3125edf285eef2fda417f5587fc320c82a2a4c",
+  "imported_at": "2026-10-15T19:19:20.070659+00:00"
+}

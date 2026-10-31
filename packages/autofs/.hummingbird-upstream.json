@@ -1,0 +1,8 @@
+{
+  "package": "autofs",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/autofs.git",
+  "commit": "1e2a140aa8f797d7de0269c9a47f615ad678fca0",
+  "tree": "e174544db2ca2faf792d02ae3456867ac1a0b27b",
+  "imported_at": "2026-10-18T08:54:13.268301+00:00"
+}

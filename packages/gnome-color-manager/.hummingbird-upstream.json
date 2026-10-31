@@ -1,0 +1,8 @@
+{
+  "package": "gnome-color-manager",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-color-manager.git",
+  "commit": "4902f3d3a3fa1d6574e3a79dcf562118d7c741b9",
+  "tree": "12165a88be34099a2ae268c51b6f1d8b957590f2",
+  "imported_at": "2026-10-20T20:24:41.308875+00:00"
+}

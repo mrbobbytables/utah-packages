@@ -1,0 +1,8 @@
+{
+  "package": "tuned",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/tuned.git",
+  "commit": "552f03c0fd7fbd62e62d7a1e89c4fa7bb01a291f",
+  "tree": "ccd80ac59c636dc7caabafbb8195c16272a2f1e2",
+  "imported_at": "2026-10-18T08:53:44.467386+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "package": "gutenprint",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gutenprint.git",
+  "commit": "020741b52725a80bd202b814cbe692e2705f9072",
+  "tree": "4687a21a72dfffa3b74be02aeff174c8a3ae2e85",
+  "imported_at": "2026-10-24T03:58:37.872531+00:00"
+}

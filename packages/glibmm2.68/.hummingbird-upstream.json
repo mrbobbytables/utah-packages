@@ -1,0 +1,8 @@
+{
+  "package": "glibmm2.68",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/glibmm2.68.git",
+  "commit": "928a4ee4b459c304ecbe8965b22e698f17193c03",
+  "tree": "9a6769faab5740dc92e7576e15eed145f571690d",
+  "imported_at": "2026-10-20T18:28:39.906465+00:00"
+}

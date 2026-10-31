@@ -1,0 +1,10 @@
+---
+badfuncs:
+    # Those functions are used in IPv4-only handling functions in dnsmasq.
+    # It handles also IPv6, but in different code paths with different calls.
+    #- inet_addr
+    #- inet_ntoa
+    ignore:
+      - /usr/sbin/dnsmasq
+      - /usr/bin/dhcp_lease_time
+      - /usr/bin/dhcp_release

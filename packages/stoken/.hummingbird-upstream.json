@@ -1,0 +1,8 @@
+{
+  "package": "stoken",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/stoken.git",
+  "commit": "6bb9c4d32b02dc4a0fba0b4816403206a69e44ba",
+  "tree": "fbd849d5bb0d849e2aac1f6e163261be87f9d66d",
+  "imported_at": "2026-10-24T03:57:00.249090+00:00"
+}

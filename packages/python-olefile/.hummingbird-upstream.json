@@ -1,0 +1,8 @@
+{
+  "package": "python-olefile",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/python-olefile.git",
+  "commit": "f118623e29080dc935b641b47829f65fa0d4d1b5",
+  "tree": "1d230e3325507924e6ad6705b2fdd36ebaabca3e",
+  "imported_at": "2026-10-24T12:29:43.265144+00:00"
+}

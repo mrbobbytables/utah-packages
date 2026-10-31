@@ -1,0 +1,8 @@
+{
+  "package": "gnome-backgrounds",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-backgrounds.git",
+  "commit": "7a7d4e0c0e808dba62f065997deb30ab112ece6b",
+  "tree": "a3c1761129915e9229525afe24acbb20668bcaa0",
+  "imported_at": "2026-10-20T20:24:37.146924+00:00"
+}

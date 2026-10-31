@@ -1,0 +1,6 @@
+summary: Test plan with all Fedora tests
+discover:
+       how: fmf
+       url: https://github.com/redhat-performance/tuned.git
+execute:
+       how: tmt

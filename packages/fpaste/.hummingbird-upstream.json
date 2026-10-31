@@ -1,0 +1,8 @@
+{
+  "package": "fpaste",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/fpaste.git",
+  "commit": "ca5a7153ceec2ac6decb47e1fc12841376144dbc",
+  "tree": "298cd8e1bf4d94aa0bd04d0db811681f01fbe6f3",
+  "imported_at": "2026-10-22T23:07:17.686066+00:00"
+}

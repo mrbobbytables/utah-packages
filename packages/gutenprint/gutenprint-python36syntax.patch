@@ -1,0 +1,94 @@
+--- gutenprint-5.2.12/src/cups/cups-genppdupdate.in.python36syntax	
++++ gutenprint-5.2.12/src/cups/cups-genppdupdate.in	
+@@ -287,7 +287,7 @@ def update_ppd (ppd_source_filename):
+     for line in orig_lines:
+         line.rstrip ()
+         if line.find ("*StpLocale:") != -1:
+-            match = re.search ("\*StpLocale:\s*\"(.*)\"$", line)
++            match = re.search (r'\*StpLocale:\s*"(.*)"$', line)
+             if match:
+                 groups = match.groups ()
+                 if len (groups) >= 1:
+@@ -295,26 +295,26 @@ def update_ppd (ppd_source_filename):
+                     orig_locale = locale
+                     valid = 1
+         elif line.startswith ("*LanguageVersion"):
+-            match = re.search ("^\*LanguageVersion:\s*(.*)$", line)
++            match = re.search (r'^\*LanguageVersion:\s*(.*)$', line)
+             if match:
+                 groups = match.groups ()
+                 if len (groups) >= 1:
+                     lingo = groups[0]
+         elif line.startswith ("*StpDriverName:"):
+-            match = re.search ("^\*StpDriverName:\s*\"(.*)\"$", line)
++            match = re.search (r'^\*StpDriverName:\s*"(.*)"$', line)
+             if match:
+                 groups = match.groups ()
+                 if len (groups) >= 1:
+                     driver = groups[0]
+                     valid = 1
+         elif line.find ("*%End of ") != -1 and driver == "":
+-            match = re.search ("^\*%End of\s*(.*).ppd$", line)
++            match = re.search (r'^\*%End of\s*(.*).ppd$', line)
+             if match:
+                 groups = match.groups ()
+                 if len (groups) >= 1:
+                     driver = groups[0]
+         elif line.startswith ("*StpPPDLocation:"):
+-            match = re.search ("^\*StpPPDLocation:\s*\"(.*)\"$", line)
++            match = re.search (r'^\*StpPPDLocation:\s*"(.*)"$', line)
+             if match:
+                 groups = match.groups ()
+                 if len (groups) >= 1:
+@@ -436,7 +436,7 @@ def update_ppd (ppd_source_filename):
+         lines = source_data.rstrip ().split ("\n")
+         source_data = ""
+         for line in lines:
+-            m = re.search ("(\*StpLocale:\s*\")(.*)(\")", line)
++            m = re.search (r'(\*StpLocale:\s*")(.*)(")', line)
+             if m:
+                 groups = m.groups ()
+                 line = groups[0] + orig_locale + groups[2]
+@@ -689,7 +689,7 @@ def get_ppd_data (fh, types, opts, resolutions, defaults, data):
+             line = line.strip ()
+ 
+             if (types or opts) and line.startswith ("*OpenUI"):
+-                m = re.search ("^\*OpenUI\s\*(\w+).*:\s(\w+)",
++                m = re.search (r'^\*OpenUI\s\*(\w+).*:\s(\w+)',
+                                line)
+                 if m:
+                     groups = m.groups ()
+@@ -704,7 +704,7 @@ def get_ppd_data (fh, types, opts, resolutions, defaults, data):
+ 
+                 optionlist = []
+             elif opts and line.startswith ("*%s" % cur_opt):
+-                m = re.search ("^\*%s\s*(\w+)[\/:]" % cur_opt, line)
++                m = re.search (r'^\*%s\s*(\w+)[\/:]' % cur_opt, line)
+                 if m:
+                     groups = m.groups()
+                     if len (groups) >= 1:
+@@ -717,7 +717,7 @@ def get_ppd_data (fh, types, opts, resolutions, defaults, data):
+                     old = s[2]
+                     resolution_map[old] = new
+             elif defaults and line.startswith ("*Default"):
+-                m = re.search ("^\*(\w+):\s*(\w+)", line)
++                m = re.search (r'^\*(\w+):\s*(\w+)', line)
+                 if m:
+                     groups = m.groups ()
+                     key = groups[0]
+@@ -844,13 +844,13 @@ def find_ppd (gutenprintfilename, drivername, lang, region):
+     global debug
+ 
+     key = '^\\*FileVersion:[ 	]*' + file_version
+-    match = re.search (".*/([^/]+\.[0-9]+\.[0-9]+)(\.sim)?(\.ppd)?(\.gz)?$",
++    match = re.search (r'.*/([^/]+\.[0-9]+\.[0-9]+)(\.sim)?(\.ppd)?(\.gz)?$',
+                        gutenprintfilename)
+     if not match:
+         return None
+ 
+     stored_name = match.groups ()[0]
+-    if re.search (".*/([^/]*)(\.sim)(\.ppd)?(\.gz)?$", gutenprintfilename):
++    if re.search (r'.*/([^/]*)(\.sim)(\.ppd)?(\.gz)?$', gutenprintfilename):
+         simplified = ".sim"
+     else:
+         simplified = ""

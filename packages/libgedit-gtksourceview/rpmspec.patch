@@ -1,0 +1,12 @@
+diff --git a/data/language-specs/rpmspec.lang b/data/language-specs/rpmspec.lang
+index 798d755f..4c8ed4b4 100644
+--- a/data/language-specs/default-language-specs/rpmspec.lang
++++ b/data/language-specs/default-language-specs/rpmspec.lang
+@@ -98,6 +98,7 @@
+       <keyword>description</keyword>
+       <keyword>package</keyword>
+       <keyword>prep</keyword>
++      <keyword>generate_buildrequires</keyword>
+       <keyword>build</keyword>
+       <keyword>install</keyword>
+       <keyword>clean</keyword>

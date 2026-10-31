@@ -1,0 +1,8 @@
+{
+  "package": "libuser",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libuser.git",
+  "commit": "8bf972c87a53693da0228cce9369a5dafa9fb6b6",
+  "tree": "ef34c878a323de1596a466bd68dbe165c3ab1ede",
+  "imported_at": "2026-10-24T04:05:30.951654+00:00"
+}

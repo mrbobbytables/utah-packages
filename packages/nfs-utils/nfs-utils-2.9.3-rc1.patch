@@ -1,0 +1,47 @@
+diff --git a/configure.ac b/configure.ac
+index 4ea19715..2ce1e129 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -256,8 +256,6 @@ PKG_CHECK_MODULES(LIBNL3, libnl-3.0 >= 3.1)
+ PKG_CHECK_MODULES(LIBNLGENL3, libnl-genl-3.0 >= 3.1)
+ 
+ AC_CHECK_HEADERS(linux/nfsd_netlink.h)
+-AC_DEFINE([HAVE_NFSD_NETLINK], 1,
+-	  [Define to 1 if nfsd generic netlink support is available])
+ 
+ # ensure the system netlink headers have the latest features
+ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <linux/nfsd_netlink.h>]],
+@@ -279,6 +277,8 @@ AC_ARG_ENABLE(nfsdctl,
+ 	enable_nfsdctl="yes")
+ 	AM_CONDITIONAL(CONFIG_NFSDCTL, [test "$enable_nfsdctl" = "yes" ])
+ 	if test "$enable_nfsdctl" = yes; then
++		AC_DEFINE([HAVE_NFSD_NETLINK], 1,
++	  		[Define to 1 if nfsd generic netlink support is available])
+ 		PKG_CHECK_MODULES(LIBREADLINE, readline)
+ 	fi
+ 
+diff --git a/support/nfs/getport.c b/support/nfs/getport.c
+index 608e185b..6bd2f713 100644
+--- a/support/nfs/getport.c
++++ b/support/nfs/getport.c
+@@ -27,6 +27,7 @@
+ #endif
+ 
+ #include <sys/types.h>
++#include <stddef.h>
+ #include <sys/time.h>
+ #include <unistd.h>
+ #include <fcntl.h>
+diff --git a/utils/statd/monitor.c b/utils/statd/monitor.c
+index c76589ca..76ef16f1 100644
+--- a/utils/statd/monitor.c
++++ b/utils/statd/monitor.c
+@@ -187,6 +187,8 @@ sm_mon_1_svc(struct mon *argp, struct svc_req *rqstp)
+ 	NL_MY_VERS(clnt) = id->my_vers;
+ 	NL_MY_PROC(clnt) = id->my_proc;
+ 	memcpy(NL_PRIV(clnt), argp->priv, SM_PRIV_SIZE);
++	if (existing)
++		free(clnt->dns_name);
+ 	clnt->dns_name = dnsname;
+ 
+ 	/*

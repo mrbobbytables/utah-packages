@@ -14,6 +14,25 @@ inputs decide the output — the recipe, the source archive, and the build root 
 and each of them used to be described by something mutable. This is what pins
 them and what the run publishes about them.
 
+## Choose the container by its job
+
+Binary package builds use the hermetic Mock lane by default (#264), with
+`ghcr.io/projectbluefin/utah-buildroot` pinned in
+[`config/buildroot-image`](../../config/buildroot-image) and refreshed by
+[`refresh-buildroot.yml`](../../.github/workflows/refresh-buildroot.yml).
+Mock resolves each package's BuildRequires, locks the root, then builds
+offline; installing those dependencies in the isolated root is not permission
+to patch the outer container's toolchain at runtime.
+
+The separately digest-pinned `quay.io/packit/packit` image serves SRPM
+generation/import in
+[`packit-srpm-chunk.yml`](../../.github/workflows/packit-srpm-chunk.yml) and
+[`import-rawhide-package.yml`](../../.github/workflows/import-rawhide-package.yml).
+Do not infer the binary build environment from an SRPM workflow's image.
+When repairing container guidance, check both `AGENTS.md` and the execution
+environment section of [`contributing.md`](../contributing.md) so the same
+obsolete single-container rule does not survive in a second entry point.
+
 ## The buildroot lock
 
 [`config/buildroot-lock.json`](../../config/buildroot-lock.json) is the
@@ -104,12 +123,21 @@ inventoried. Extend `parse_packages`, not the container.
 Every recipe in `packages/<name>/` carries `.hummingbird-upstream.json`, and
 `tools/validate.py` rejects the tree without it:
 
+- The `package` field must match the recipe directory name (`packages/<name>`),
+  ensuring any remote or identity derivation bound to the package name cannot
+  be bypassed by a mislabeled provenance file.
 - **`branch: rawhide`** — the Fedora dist-git snapshot, pinned by full
   40-character `commit` and `tree` SHAs. An abbreviated SHA is not a pin: it
   is ambiguous and it is not what `git` resolved at import.
 - **`branch: upstream`** — imported from the project's own release repository,
   so it carries a non-empty `remote` and no dist-git `commit`/`tree`. Its
   source lock lives in `config/upstream-sources.json` instead.
+- **`branch: master`** — a codec recipe imported from RPM Fusion or
+  negativo17, whose packaging repositories use `master` rather than Fedora's
+  `rawhide`. Its `remote` must be exactly
+  `https://github.com/rpmfusion/<name>.git` or
+  `https://github.com/negativo17/<name>.git`, and like `rawhide` it is pinned
+  by full 40-character `commit` and `tree` SHAs.
 
 Do not hand-edit these files. Re-import; editing provenance makes a recipe
 claim an origin it does not have.
@@ -132,6 +160,92 @@ verified GNOME release URL into a blanket promotion of all feeds: forge tag
 archives can differ from Fedora's pinned bytes. A digest mismatch must fail
 closed; Fedora fallbacks cover transport failures, not integrity failures.
 
+The generator guidance above applies when upstream source can be transformed
+into the locked bytes. For Fedora-maintained metadata and build macros with no
+first-party upstream source, use the separate dist-git exception below.
+
+For these exceptions, use Fedora dist-git's raw
+file URL pinned to the full commit
+(`https://src.fedoraproject.org/rpms/<package>/raw/<commit>/f/<path>`), and
+verify that the fetched bytes match the existing SHA-512. Keep the package on
+`config/fedora-primary-sources.txt`: a digest proves the bytes, not that they
+came from an independent upstream. State the Fedora-only reason for each
+exception in the pull request; remove it from the ratchet only when a real
+upstream release can serve those same locked bytes.
+
+For a bulk migration, use direct archive feeds and the recipe's `Source0`
+as candidate locators, not as proof. A release-monitoring project page is
+metadata, not a source archive. Expand recipe macros explicitly and strip
+RPM's `#/local-filename` suffix from the download URL while preserving the
+lock's `filename`. Project names can differ from recipe names, as with
+`gstreamer1-plugins-base` and the upstream `gst-plugins-base` archive.
+
+Stream each candidate primary directly through SHA-512 without using the
+pipeline's fallback path. Promote only exact matches to the existing lock;
+leave mismatches and unavailable archives on the ratchet for separate
+investigation. A successful HTTP response can even be an HTML error page,
+so transport success alone is insufficient. Compare the old and new lock
+objects after editing: only `url` and `fallback_urls` should change in a
+transport-only migration. Preserve all existing fallbacks as well as the
+former primary, and remove exactly the promoted names from the ratchet.
+
+The fixed native Canary set has an additional lookaside-primary contract in
+`tests/test_canary.py`: libical, vulkan-headers, vulkan-loader, and the
+python-typing-inspection perturbation package. Treat their source migration
+as a separate change that also reconciles the Canary's availability contract
+and verifies it on the native runner; do not weaken that test during a bulk
+transport-only migration. Also check candidate hosts against the validator's
+Fedora-host policy before editing: a project's own repository on
+`forge.fedoraproject.org` still counts as Fedora infrastructure.
+
+## Dead upstream hosts: releases.pagure.org
+
+`releases.pagure.org` stopped serving release tarballs around 2026-10-13
+(every path returns 404), and `source-pipeline.yml` failed every run from
+then on because `libosinfo` locked a pagure primary with no `fallback_urls`.
+The libosinfo projects (`libosinfo`, `osinfo-db-tools`, `osinfo-db`) now
+publish release assets on GitLab:
+`https://gitlab.com/libosinfo/<project>/-/releases/v<version>/downloads/<file>`
+(list them with `GET /api/v4/projects/libosinfo%2F<project>/releases/v<version>`).
+Those assets are byte-identical to the old pagure tarballs, so the locked
+SHA-512 did not change; the `/-/archive/` tag tarballs are generated and are
+not the same bytes. `volume_key` also used pagure, but its lock already has the
+Fedora lookaside as primary (ratchet-listed), so it was unaffected.
+
+When a primary host dies:
+
+- Find the project's new release-asset URL, download it, and compare the
+  SHA-512 with the committed lock. Keep the digest; never relock to new bytes
+  to get green.
+- Give every lock a Fedora lookaside entry in `fallback_urls`
+  (`https://src.fedoraproject.org/repo/pkgs/rpms/<pkg>/<file>/sha512/<sha512>/<file>`),
+  verified to serve the same digest. A lock without one turns a host outage
+  into a red pipeline. A host does not have to die for this to bite: on
+  2026-10-27/28 the scheduled source check went red eight times on brief
+  timeouts or 503s from `www.argyllcms.com`, `download.drobilla.net`,
+  `download.samba.org`, and `download.savannah.nongnu.org`, all on locks
+  with no fallback (utah-packages#805). When a rejection reads
+  `all source URLs failed:` with a single URL, add the lookaside fallback;
+  do not re-run until it is green.
+- Leave the recipe's `Source:` line alone: the spec is Fedora's, and the build
+  stages sources from the lock, not from the spec URL.
+
+## A source with no release and a huge archive: pick files, pin each
+
+A recipe can only take one primary source from the lock; a second `sources`
+line is fetched from a dist-git lookaside — Fedora's by default, or
+`pkgs.rpmfusion.org` when the lock entry sets `lookaside: rpmfusion-free` — so
+a Utah-only recipe cannot use one.
+When the upstream has no release and its commit archive is far larger than
+what the recipe needs, add a `tools/generated_sources.py` generator that
+fetches only the needed files at a pinned commit, checks a SHA-512 per file,
+and packs them deterministically (sorted, owner-less, fixed mtime, single xz
+stream). `bluefin-artwork-logos` does this for three files of
+`projectbluefin/artwork`, whose archive carries every wallpaper. Take the
+commit from the spec's `%global commit`, so moving the pin is one spec edit
+plus a new digest table entry, and include the upstream `LICENSE` so the
+package can ship it.
+
 ## Source verification reporting
 
 `tools/source_pipeline.py` records how each accepted source was verified:
@@ -145,6 +259,15 @@ closed; Fedora fallbacks cover transport failures, not integrity failures.
 A checksum is not a signature. `tools/factory_manifest.py` counts each kind and
 names the packages in the checksum-only classes under `source_verification`, so
 the exceptions are a list to shorten rather than a property to grep for.
+
+## The scheduled verification run is never cancelled
+
+`.github/workflows/source-pipeline.yml` runs every 30 minutes over every
+lock. Keep `cancel-in-progress: false` and the job's `timeout-minutes`: with
+cancellation on, a slow-upstream day made each run outlast the cron tick and
+be cancelled by the next, so for hours no run reported a mismatch at all
+(#445). A newer run checks nothing an older one does not, and GitHub keeps
+only one pending run per group, so nothing piles up.
 
 ## FIPS-mode OpenSSL refuses `hashlib.new('md5')`
 

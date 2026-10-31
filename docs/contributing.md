@@ -11,6 +11,20 @@ It imports a recipe, never a binary RPM.
 Name the **source** package, not a binary subpackage: `gnome-desktop3`, not
 `gnome-desktop-4`. Fedora's source package name is often not the one you were
 looking for, which is why searching for the binary finds nothing to fork.
+`perf` is the extreme case: it has no dist-git of its own and is built from
+the `kernel` source package (`%package -n perf` in `kernel.spec`, sharing the
+kernel's version and release), so carrying it means importing the whole kernel
+recipe, not a small tool. `strace` is an ordinary standalone import (see #625);
+the `perf` work in that issue remains separate and unresolved.
+
+Flatpak-first (standing policy): do not import recipes for end-user
+applications Utah already ships as Flatpaks (see the `[flatpak]` app list in
+projectbluefin/utah `contracts/bluefin-desktop.toml` — e.g. Papers,
+Showtime). Factory RPM builds are for system components, drivers,
+thumbnailers, CLI tools, and libraries. The one narrow exception is a
+transitional native payload with no Flatpak-provided equivalent (e.g.
+`totem-video-thumbnailer` until a native GStreamer thumbnailer lands);
+record the exception and its drop condition in the import PR.
 
 Then give it a source. A recipe with no entry in
 `config/upstream-sources.json` is not eligible to build: `tools/validate.py`
@@ -28,34 +42,63 @@ tarball. No upstream URL serves those bytes. Do not lock the lookaside copy as
 `packages/<name>/sources` to the generated digest. Diff the unpacked tree
 against Fedora's archive first: for `gpm` they are identical.
 
-The import pull request carries the recipe plus the four artifacts the
-agreement gate compares (`.packit.yaml`, `config/upstream-sources.json`,
-`reports/import-source-bootstrap.json`, the refreshed
-`docs/architecture.md`), so when the lock step accepts the recipe the pull
-request is born green: `tools/validate.py` passes on the source lock and
-Packit block, and the recipe-count tests match the inventory. Dispatch
+The recipe-set agreement gate compares the package names in `packages/`,
+`.packit.yaml`, and `config/upstream-sources.json`. A separate test compares
+the refreshed `docs/architecture.md` counts with the inventory. The import
+pull request also carries `reports/import-source-bootstrap.json` as a
+diagnostic report; the agreement gate does not compare that report. Dispatch
 `.github/workflows/import-rawhide-package.yml` with the package name (the
-workflow runs the lock, the Packit-regen and the architecture-counts-refresh
-steps on `ubuntu-26.04`, and opens `import/rawhide-<name>`). The lock step fails the workflow, and no pull
-request opens, when `tools/bootstrap_upstream_sources.py --package <name>`
+workflow runs on `ubuntu-26.04` and opens `import/rawhide-<name>`). Source
+bootstrap runs in the pinned `quay.io/packit/packit` image with an isolated
+`--output` and `--report`, without `--merge`. Its accepted candidate, report,
+and recipe are uploaded as the `import-proposal` artifact. A fresh job uses
+`tools/import_proposal.py` to validate that data and merge the candidate into
+the source lock, then regenerates Packit and the architecture counts and runs
+the gates before opening the pull request.
+
+The lock step fails the workflow, and no pull request opens, when bootstrap
 rejects the recipe — for example a `Source0` hosted on Fedora
 infrastructure, a `Source0` that is not a direct HTTP(S) URL, or upstream
-bytes that differ from the pin in `packages/<name>/sources`. Rerun that
-command locally to read the reason in `reports/import-source-bootstrap.json`
-(the workflow does not upload it). Import those recipes by hand: lock the upstream release with Fedora in `fallback_urls` (or as a
-`generate` entry, above), then regenerate `.packit.yaml` and the
-architecture counts as the workflow does. When importing by hand on a
-workstation without `rpmspec`, lock the source in the pinned
+bytes that differ from the pin in `packages/<name>/sources`. The failed lock
+step stops before artifact upload. To investigate, rerun bootstrap in the
+pinned image with `--package <name> --output <candidate-path> --report
+<report-path>` and read that report. Keep the report under the gitignored
+`work/` directory: `reports/import-source-bootstrap.json` is tracked and
+written by the import workflow, so a local diagnostic must not replace it. A
+rejected explicit selection returns nonzero and leaves the source lock
+untouched; read the report before continuing. The report and the source lock
+must name different files, including when using symlinks or hard links. For an
+accepted manual import, use `--merge` to retain the other packages in the
+source lock: a successful run without it replaces the catalog with only the
+selected package. For rejected recipes, lock the upstream release by hand with
+Fedora in `fallback_urls` (or as a `generate` entry, above), then run
+`just regenerate-inventory` to refresh the derived inventory. When importing
+by hand on a workstation without `rpmspec`, lock the source in the pinned
 `quay.io/packit/packit` image as the workflow does. See
 [`repeated-mistakes.md` section 23](skills/repeated-mistakes.md#23-an-import-pull-request-is-a-recipe-not-a-package).
 
 If the imported name (or any `%package` subpackage the recipe builds) is in
 the factory build backlog (`config/factory-build-backlog.toml`), the same
-branch must also move it from its `[areas.<area>]` list to `[resolved]` and
-regenerate `reports/factory-build-backlog.json` with
-`python3 tools/factory_build_backlog.py`; the `factory-build-backlog` gate in
+branch must also move it from its `[areas.<area>]` list to `[resolved]` before
+running `just regenerate-inventory`; the `factory-build-backlog` gate in
 `just check` and CI fails on a stale snapshot. See
 [`factory-build-backlog.md`](skills/factory-build-backlog.md#closing-a-backlog-gap).
+
+For manual imports, removals, and PR recovery, first combine current `main`
+and the PR's recipe, source-lock, and backlog catalog changes, retaining
+independent records and existing publication evidence. Then run:
+
+```sh
+just regenerate-inventory
+```
+
+This writes `.packit.yaml`, refreshes `docs/architecture.md` counts, and
+regenerates `reports/factory-build-backlog.json`, in that order. Never resolve
+generated conflicts by choosing either branch's stale counts or report:
+regenerate from the combined source inventory even if a generated file merged
+without conflicts. Repeating the command with unchanged inputs produces the
+same files. The individual generator commands remain available; `just check`
+only checks for drift and does not repair it.
 
 Build order is solved from the recipe's BuildRequires: a package builds after
 every factory package it BuildRequires, and a merge that changes it rebuilds it
@@ -70,6 +113,20 @@ provenance, and editing it makes the recipe claim an origin it does not have.
 
 Pull requests validate configuration. They cannot publish packages,
 attestations, or image tags.
+
+### Mutter private-API package boundaries
+
+For an add-on that links to Mutter's private Clutter, Cogl, or libmutter APIs,
+keep all three pkg-config dependencies on one Mutter API major and bound the
+version interval (for example `>= 51.0, < 52.0`). A generic `libmutter`
+requirement can silently select a different ABI, while versioned pkg-config
+modules make a Mutter ABI transition fail at configure time. Read the pinned
+`.pc` metadata for the GIR and private-library directories instead of
+hard-coding their locations. RPM's generated SONAME dependencies may already
+express the runtime library requirement, so inspect the built RPM before
+adding a broader package-name `Requires:`. Static extension compatibility
+checks do not establish that a native library builds or loads against the
+pinned Hummingbird root; verify that with the factory build.
 
 ## Updating a carried package from Rawhide
 
@@ -87,25 +144,21 @@ of that pull request for good, so update it by hand on its own branch. See
 Dropping a recipe out of the rebuild set (for example `gcc`, removed because
 Hummingbird ships the identical `gcc-16.2.1` and the factory scope is to build
 what Hummingbird does not -- projectbluefin/utah-packages#69) means editing the
-same four places an import writes to, or the next `just check` fails:
+source inputs and regenerating their derived inventory, or the next
+`just check` fails:
 
 - `config/upstream-sources.json` -- delete the package's entry (the recipe with
   no entry is not eligible to build).
-- `.packit.yaml` -- delete the package's block.
 - `packages/<name>/` -- delete the whole directory (recipe, patches, sources).
 - Any generator special-casing in `tools/generated_sources.py`.
-- `docs/architecture.md` -- regenerate with
-  `python3 tools/render_architecture_counts.py --write` (the import
-  workflow calls the same script, so a deletion done by hand is a
-  one-line change rather than six hand-edits). The set sizes the contract
-  step asserts (`tests/test_architecture_counts.py`) follow the inventory;
-  the inventory reads from `packages/`, so deleting the recipe directory is
-  enough to keep the counts in sync.
 
-If the package (or a subpackage its recipe builds) is a factory build backlog
-name, its auditor state changes too: regenerate
-`reports/factory-build-backlog.json` with `python3 tools/factory_build_backlog.py`
-or the `factory-build-backlog` gate fails.
+Then run `just regenerate-inventory` to remove the Packit block, refresh
+`docs/architecture.md` counts, and regenerate the backlog snapshot from the
+remaining inventory. The set sizes asserted by
+`tests/test_architecture_counts.py` follow `packages/`; no test baseline needs
+to be hand-edited. If the package (or a subpackage its recipe builds) is a
+factory build backlog name, its auditor state changes too, so the report must
+be refreshed even when the catalog itself did not change.
 
 The image manifest (`config/bluefin-packages.toml`) and
 `config/hummingbird-provided-sources.json` are intentionally left alone: the
@@ -175,15 +228,23 @@ Pull request titles follow Conventional Commits (`feat:`, `fix:`, `docs:`,
 
 ## Execution environment
 
-Run package builds, generated-source reproduction, reproducibility probes, and
-environment-sensitive validation in GitHub Actions on GitHub-hosted
-`ubuntu-26.04` runners, inside the digest-pinned `quay.io/packit/packit`
-container. The container is the build environment and owns the toolchain.
+Run package builds in GitHub Actions on GitHub-hosted `ubuntu-26.04` runners
+using the hermetic Mock lane, the default since #264, with the digest-pinned
+`ghcr.io/projectbluefin/utah-buildroot` image. The pin is recorded in
+`config/buildroot-image` and refreshed by `refresh-buildroot.yml`.
 
-Do not install packages into it at runtime, replace the digest with a mutable
-tag, or substitute a generic distro image. If a required capability is
-missing, change the pinned digest deliberately rather than patching the
-container from a workflow step.
+The digest-pinned `quay.io/packit/packit` container is for SRPM
+generation/import only, through `packit-srpm-chunk.yml` and
+`import-rawhide-package.yml`, not binary package builds. Run generated-source
+reproduction, reproducibility probes, and other environment-sensitive
+validation in the corresponding pinned workflow environment.
+
+Each container owns its toolchain. Do not install toolchain packages into it
+at runtime, replace the digest with a mutable tag, or substitute a generic
+distro image. Mock resolving and installing locked BuildRequires into an
+isolated build root is part of the hermetic lane, not a toolchain override.
+If a required capability is missing, change the pinned digest deliberately
+rather than patching the container from a workflow step.
 
 This factory is GitHub Actions' replacement for Copr. Copr,
 Packit-as-a-Service, Koji, Bodhi, Testing Farm, Kubernetes, Argo, a local Zot

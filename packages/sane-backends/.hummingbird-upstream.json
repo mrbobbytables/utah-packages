@@ -1,0 +1,8 @@
+{
+  "package": "sane-backends",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/sane-backends.git",
+  "commit": "12a8bf2b769135b7a09d81f0a6a836674a3fd8a5",
+  "tree": "283fdd0131e6f376d4d788e2d22e43b8682c7533",
+  "imported_at": "2026-10-24T03:58:22.316514+00:00"
+}

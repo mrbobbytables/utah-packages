@@ -1,0 +1,8 @@
+{
+  "package": "gnome-disk-utility",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-disk-utility.git",
+  "commit": "652149e0a00e635b805d98e8abdfbc11f8dabd16",
+  "tree": "422437dd2d76b9400dd216a28274267449ceb912",
+  "imported_at": "2026-10-18T08:54:16.246498+00:00"
+}

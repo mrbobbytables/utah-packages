@@ -1,0 +1,8 @@
+{
+  "package": "gnome-browser-connector",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-browser-connector.git",
+  "commit": "a935a41b9feaf1dd9731f62cdf5bf19442743eb9",
+  "tree": "51ef498cda9fa3b7eb6febac7f3ee6633780475f",
+  "imported_at": "2026-10-20T20:24:34.436593+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "package": "a52dec",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/a52dec.git",
+  "commit": "91e0c997595128c04522658c4ae063082024baa9",
+  "tree": "6132db6bcc6679bfdd0909a92b1658824d4a36ca",
+  "imported_at": "2026-10-24T12:23:49.957096+00:00"
+}

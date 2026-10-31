@@ -15,7 +15,7 @@ only the first:
 
   config/upstream-sources.json  version, url, filename, sha512, sha256_url,
                                 fallback_urls
-  packages/<pkg>/<pkg>.spec     Version:, Release:
+  packages/<pkg>/<pkg>.spec     Version:, Release:, manual %changelog
   packages/<pkg>/sources        SHA512 (<tarball>) = <digest>
 
 A version bump with a stale checksum is rejected by source_pipeline.py -- a
@@ -61,6 +61,7 @@ string rather than restated, so they cannot disagree.
 from __future__ import annotations
 
 import argparse
+from email.utils import formatdate
 import hashlib
 import json
 import os
@@ -95,19 +96,41 @@ LOOKASIDE = "https://src.fedoraproject.org/repo/pkgs/rpms"
 # prerelease filter, applied before is_prerelease() applies this tool's.
 ANITYA_VERSIONS = "https://release-monitoring.org/api/v2/versions/?project_id="
 
-# alpha/beta/rc in any spelling GNOME uses: 51.beta, 51~rc, 1.10.beta.1.
+# alpha/beta/rc in any spelling GNOME uses: 51.beta, 51~rc, 1.10.beta.1, plus
+# the -dev tags of release-less GitLab projects (ModemManager 1.25.95-dev).
 # The trailing context is a lookahead, not part of the match: consuming it made
 # rpm_version("1.10.beta.1") return "1.10~beta1", eating the separator before
 # the point release. Caught by the round-trip test.
-PRERELEASE = re.compile(r"(?:^|[.~-])(alpha|beta|rc)(?=[.~-]|\d|$)", re.IGNORECASE)
+PRERELEASE = re.compile(r"(?:^|[.~-])(alpha|beta|rc|dev)(?=[.~-]|\d|$)", re.IGNORECASE)
 # The same marker with its leading separator, for rewriting that separator to
 # the tilde RPM needs.
-PRERELEASE_SEPARATOR = re.compile(r"[.~-](alpha|beta|rc)(?=[.~-]|\d|$)", re.IGNORECASE)
+PRERELEASE_SEPARATOR = re.compile(r"[.~-](alpha|beta|rc|dev)(?=[.~-]|\d|$)", re.IGNORECASE)
 
 
 def is_prerelease(version: str) -> bool:
-    """True for a GNOME prerelease such as 51.beta, 51~rc or 1.10.beta.1."""
+    """True for a prerelease such as 51.beta, 51~rc, 1.10.beta.1 or 1.25.95-dev."""
     return bool(PRERELEASE.search(version))
+
+
+def is_gnome_prerelease(version: str) -> bool:
+    """is_prerelease(), plus the library scheme's numeric betas and rcs.
+
+    GNOME libraries spell the beta and rc of the next stable as a micro of 90
+    or more on the development minor: at-spi2-core 2.61.90 and gjs 1.89.90 sit
+    in cache.json directly before 2.62.0 and 1.90.0, and carry no marker for
+    is_prerelease() to see. Only the GNOME feed gets this rule: forge projects
+    such as libdrm 2.4.134 or libfprint 1.94.100 ship stables with large
+    micros. The app scheme (GNOME 40+) spells its prereleases with a marker.
+    """
+    if is_prerelease(version):
+        return True
+    parts = tarball_version(version).split(".")
+    return (
+        len(parts) == 3
+        and all(part.isdigit() for part in parts)
+        and int(parts[0]) < 40
+        and int(parts[2]) >= 90
+    )
 
 
 def version_key(version: str) -> tuple[int, ...]:
@@ -121,12 +144,12 @@ def version_key(version: str) -> tuple[int, ...]:
     return tuple(int(part) if part.isdigit() else -1 for part in version.split("."))
 
 
-def newest_stable(versions: list[str]) -> str | None:
+def newest_stable(versions: list[str], prerelease=is_prerelease) -> str | None:
     """The highest non-prerelease in a cache.json version list, or None.
 
     "Not alpha/beta/rc" is not the same as "stable" -- see cycle_final.
     """
-    stable = [v for v in versions if not is_prerelease(v)]
+    stable = [v for v in versions if not prerelease(v)]
     return max(stable, key=version_key) if stable else None
 
 
@@ -152,7 +175,7 @@ def cycle_final(versions: list[str], cycle: str) -> str | None:
     inside = [
         v
         for v in versions
-        if not is_prerelease(v) and release_cycle(tarball_version(v)) == cycle
+        if not is_gnome_prerelease(v) and release_cycle(tarball_version(v)) == cycle
     ]
     return max(inside, key=version_key) if inside else None
 
@@ -542,8 +565,39 @@ def refuse_macro_sources(spec: Path, text: str) -> None:
         )
 
 
+def update_changelog(text: str, version: str) -> str:
+    """Prepend a dated entry to an existing manual changelog, keeping history."""
+    section = re.search(r"(?m)^%changelog[ \t]*(?:\n|$)", text)
+    if section is None or re.search(r"(?m)^[ \t]*%autochangelog\b", text[section.end():]):
+        return text
+    # Never put live macros in history: a later bump would change old entries.
+    # Macro-derived releases cannot be resolved without executing the spec;
+    # record the known version alone in that case.
+    preamble = text[:section.start()]
+    release = re.search(r"(?m)^Release:[ \t]*(\S+)", preamble)
+    # rpmlint expects epoch:version-release when the main package sets Epoch:.
+    main = re.split(r"(?m)^%(?:package|description)\b", preamble, maxsplit=1)[0]
+    epoch = re.search(r"(?m)^Epoch:[ \t]*(\d+)[ \t]*(?:#.*)?$", main)
+    evr = f"{epoch.group(1)}:{version}" if epoch else version
+    if release:
+        literal = release.group(1).replace("%{?dist}", "").replace("%{dist}", "")
+        if literal and "%" not in literal:
+            evr += f"-{literal}"
+    # formatdate is English and UTC regardless of the process locale/timezone.
+    weekday, day, month, year, *_ = formatdate().split()
+    date = f"{weekday.rstrip(',')} {month} {day} {year}"
+    entry = (
+        f"* {date} github-actions[bot] "
+        f"<41898282+github-actions[bot]@users.noreply.github.com> - {evr}\n"
+        f"- Update to {version}\n\n"
+    )
+    end = section.end()
+    separator = "" if text[:end].endswith("\n") else "\n"
+    return text[:end] + separator + entry + text[end:]
+
+
 def rewrite_spec(spec: Path, release: str) -> bool:
-    """Update Version: and reset a literal Release:. True when changed."""
+    """Update Version:, reset a literal Release:, and record manual history."""
     text = spec.read_text()
     wanted = rpm_version(release)
     pattern = VERSION_LINE
@@ -554,7 +608,7 @@ def rewrite_spec(spec: Path, release: str) -> bool:
     if match.group(2) == wanted:
         return False
     text = pattern.sub(lambda m: m.group(1) + wanted, text, count=1)
-    spec.write_text(reset_release(text))
+    spec.write_text(update_changelog(reset_release(text), wanted))
     return True
 
 
@@ -872,7 +926,7 @@ def plan(
             )
             continue
 
-        newest = newest_stable(available)
+        newest = newest_stable(available, prerelease=is_gnome_prerelease)
         if newest is not None and version_key(newest) > version_key(current):
             proposals.append(
                 {

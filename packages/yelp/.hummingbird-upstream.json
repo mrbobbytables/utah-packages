@@ -1,0 +1,8 @@
+{
+  "package": "yelp",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/yelp.git",
+  "commit": "9bfa33c09a7eebb192f79fa95c450ab6f8cd8e20",
+  "tree": "8d04364532dbfbbfa5a0d55bae970cdbd240847e",
+  "imported_at": "2026-10-20T20:25:02.256532+00:00"
+}

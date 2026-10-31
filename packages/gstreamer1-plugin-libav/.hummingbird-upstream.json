@@ -1,0 +1,8 @@
+{
+  "package": "gstreamer1-plugin-libav",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gstreamer1-plugin-libav.git",
+  "commit": "73e9b14bb897b9dbda407c47753953397d289533",
+  "tree": "8810a07a6558499d0548841d11a239aeea09852d",
+  "imported_at": "2026-10-24T03:57:33.646601+00:00"
+}

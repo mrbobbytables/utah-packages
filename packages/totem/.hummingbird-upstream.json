@@ -1,0 +1,8 @@
+{
+  "package": "totem",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/totem.git",
+  "commit": "612398e41ffe11a44d4e528b7a96813dac21f98e",
+  "tree": "e672870528dacfef1ebc03c2608b2db99965ea2c",
+  "imported_at": "2026-10-18T08:54:15.209875+00:00"
+}

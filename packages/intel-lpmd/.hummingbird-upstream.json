@@ -1,0 +1,8 @@
+{
+  "package": "intel-lpmd",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/intel-lpmd.git",
+  "commit": "6bd4eab1f7762849a38eaf1dde0d88186219fb44",
+  "tree": "db3b0ee025aa9f784c9a2cfd423a59cc892e3ce5",
+  "imported_at": "2026-10-22T22:49:27.116705+00:00"
+}

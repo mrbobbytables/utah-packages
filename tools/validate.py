@@ -90,8 +90,15 @@ def check_provenance(path: Path, data: dict) -> None:
     required = {"package", "branch", "remote", "commit", "tree", "imported_at"}
     if set(data) != required:
         raise SystemExit(f"invalid upstream provenance: {path}")
-    if data["branch"] not in ("rawhide", "upstream"):
-        raise SystemExit(f"only rawhide or upstream imports are supported: {path}")
+    if data["package"] != path.parent.name:
+        raise SystemExit(f"provenance package does not match its recipe directory: {path}")
+    if data["branch"] not in ("rawhide", "upstream", "master"):
+        raise SystemExit(f"only rawhide, upstream or codec master imports are supported: {path}")
+    if data["branch"] == "master" and data["remote"] not in (
+        f"https://github.com/rpmfusion/{data['package']}.git",
+        f"https://github.com/negativo17/{data['package']}.git",
+    ):
+        raise SystemExit(f"master imports require an RPM Fusion or negativo17 recipe remote: {path}")
     if data["branch"] == "upstream":
         # Direct-upstream recipes (e.g. liblc3plus, libfreeaptx,
         # pipewire-libs-extra) are imported from the project's own release
@@ -104,12 +111,13 @@ def check_provenance(path: Path, data: dict) -> None:
         if not data.get("remote"):
             raise SystemExit(f"upstream import must name its upstream remote: {path}")
     else:
-        # Fedora dist-git imports pin the exact rawhide snapshot.
+        # Recipe repositories pin an exact snapshot, including codec recipes
+        # whose packaging upstream uses master rather than Fedora's rawhide.
         for key in ("commit", "tree"):
             if not data.get(key):
-                raise SystemExit(f"rawhide import must carry {key}: {path}")
+                raise SystemExit(f"{data['branch']} import must carry {key}: {path}")
             if not FULL_SHA.fullmatch(data[key]):
-                raise SystemExit(f"rawhide import must carry a full {key} SHA: {path}")
+                raise SystemExit(f"{data['branch']} import must carry a full {key} SHA: {path}")
 
 
 def fedora_primary_sources(path: Path) -> list[str]:
@@ -181,6 +189,53 @@ def check_fedora_primary_sources(root: Path) -> None:
             f"primary URL: {', '.join(removed)}\n"
             "Delete those lines. The list only shrinks; a stale entry holds the "
             "slot open for the same package to regress unnoticed."
+        )
+
+
+def plaintext_source_urls(path: Path) -> list[str]:
+    """Lock entries that fetch over plain http://, as "name: url" strings.
+
+    `tools/upstream_bump.py` pins the SHA-512 of whatever bytes the entry's
+    `url` serves at bump time and `planned_entry()` rebuilds the next
+    version's URL from the same base, so the scheme is inherited bump after
+    bump. Over plain http nothing authenticates the server at the one moment
+    the digest is chosen; the bump gate then self-merges that digest and
+    every later build validates against it. `fallback_urls` and `sha256_url`
+    are checked too: a fallback that is consulted only on transport failure
+    is exactly the one an attacker who can cause that failure gets to serve.
+    """
+    if not path.is_file():
+        return []
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        raise SystemExit(f"invalid source lock: {path}")
+    offenders = []
+    for entry in data.get("packages", []):
+        if not isinstance(entry, dict):
+            continue
+        name = entry.get("name") or entry.get("filename") or "<unnamed>"
+        candidates = [entry.get("url"), entry.get("url_template"), entry.get("sha256_url")]
+        fallbacks = entry.get("fallback_urls")
+        if isinstance(fallbacks, list):
+            candidates.extend(fallbacks)
+        for url in candidates:
+            if isinstance(url, str) and url.lower().startswith("http://"):
+                offenders.append(f"{name}: {url}")
+    return sorted(offenders)
+
+
+def check_plaintext_source_urls(root: Path) -> None:
+    """Every URL the source lock fetches from must be https."""
+    offenders = plaintext_source_urls(root / "config" / "upstream-sources.json")
+    if offenders:
+        raise SystemExit(
+            "source lock fetches over plain http://, so the digest it pins is "
+            "whatever the network served:\n"
+            + "\n".join(offenders)
+            + "\nUse https:// (every upstream the lock names serves it); where a "
+            "host truly cannot, keep it out of the lock and add a generator in "
+            "tools/generated_sources.py that verifies the bytes another way."
         )
 
 
@@ -284,6 +339,9 @@ def main(root: Path = Path(".")) -> int:
     # Before the tally too: a lock that builds from the lookaside is a
     # provenance failure whether or not every recipe is otherwise accounted for.
     check_fedora_primary_sources(root)
+    # Same footing: a lock that fetches over plain http pins a digest nobody
+    # authenticated, whatever host it names.
+    check_plaintext_source_urls(root)
     check_sources_digests(root)
     check_bump_review_only(root)
     records = inventory(root)

@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import urllib.error
 
 from tools.upstream_bump import (
@@ -15,6 +16,7 @@ from tools.upstream_bump import (
     cycle_final,
     release_cycle,
     gnome_module,
+    is_gnome_prerelease,
     is_prerelease,
     major,
     newest_stable,
@@ -52,6 +54,13 @@ class VersionSpellingTests(unittest.TestCase):
         for version in ("51.beta", "51~rc", "51.alpha", "1.10.beta.1", "3.12~beta"):
             self.assertTrue(is_prerelease(version), version)
 
+    def test_recognises_a_dev_tag_as_a_prerelease(self) -> None:
+        # ModemManager has no GitLab releases, so its tags are the feed and
+        # 1.25.95-dev (a 1.26 prerelease) was proposed as an update.
+        for version in ("1.25.95-dev", "1.0.dev", "2.0~dev1"):
+            self.assertTrue(is_prerelease(version), version)
+        self.assertFalse(is_prerelease("1.0-devel"))
+
     def test_a_final_release_is_not_a_prerelease(self) -> None:
         for version in ("51.0", "4.23.3", "1.58.2", "49.0"):
             self.assertFalse(is_prerelease(version), version)
@@ -76,6 +85,29 @@ class VersionSpellingTests(unittest.TestCase):
     def test_the_two_spellings_round_trip(self) -> None:
         for version in ("51.beta", "51.0", "1.10.beta.1"):
             self.assertEqual(tarball_version(rpm_version(version)), version)
+
+    def test_a_library_micro_of_90_or_more_is_a_gnome_prerelease(self) -> None:
+        # at-spi2-core 2.61.90 and gjs 1.89.90 are the betas of 2.62.0 and
+        # 1.90.0; gvfs 1.61.91 is an rc. None carries a marker.
+        for version in ("2.61.90", "1.89.90", "1.61.91", "1.89.92"):
+            self.assertTrue(is_gnome_prerelease(version), version)
+            self.assertFalse(is_prerelease(version), version)
+
+    def test_a_gnome_prerelease_still_covers_the_marker_spellings(self) -> None:
+        for version in ("51.beta", "51~rc", "1.10.beta.1"):
+            self.assertTrue(is_gnome_prerelease(version), version)
+
+    def test_a_library_stable_is_not_a_gnome_prerelease(self) -> None:
+        # 1.90.0 is the stable after the 1.89.9x betas; the minor is not the
+        # marker. The app scheme never uses a numeric beta.
+        for version in ("2.62.0", "2.62.1", "1.90.0", "1.58.2", "4.23.3", "51.0.1", "51.0"):
+            self.assertFalse(is_gnome_prerelease(version), version)
+
+    def test_a_numeric_gnome_prerelease_round_trips_unchanged(self) -> None:
+        for version in ("2.61.90", "1.89.90", "1.61.91"):
+            self.assertEqual(rpm_version(version), version)
+            self.assertEqual(tarball_version(rpm_version(version)), version)
+            self.assertEqual(release_cycle(version), ".".join(version.split(".")[:2]))
 
     def test_major_is_the_leading_component(self) -> None:
         self.assertEqual(major("51.0"), "51")
@@ -367,6 +399,83 @@ class SpecRewriteTests(unittest.TestCase):
             spec.write_text("Name: x\n")
             with self.assertRaises(ValueError):
                 rewrite_spec(spec, "51.0")
+
+
+class ManualChangelogTests(unittest.TestCase):
+    def test_prepends_dated_entry_with_reset_release_and_preserves_history(self):
+        history = (
+            "\n* Fri Oct 02 2026 Original Packager <packager@example.org> - 1.0-13\n"
+            "- Previous release\n"
+        )
+        for release, evr in (
+            ("13%{?dist}", "1.1~beta-1"),
+            ("3.2%{?dist} # comment", "1.1~beta-1"),
+            ("0.bootstrap%{?dist}", "1.1~beta-1.bootstrap"),
+            ("3%{dist}", "1.1~beta-1"),
+            ("%autorelease", "1.1~beta"),
+            ("%{baserelease}%{?dist}", "1.1~beta"),
+            ("2%{?pre_tag}%{?dist}", "1.1~beta"),
+        ):
+            with self.subTest(release=release), tempfile.TemporaryDirectory() as tmp:
+                spec = Path(tmp) / "test.spec"
+                spec.write_text(f"Version: 1.0\nRelease: {release}\n%changelog\n{history}")
+                with patch("tools.upstream_bump.formatdate",
+                           return_value="Sun, 25 Oct 2026 00:00:00 -0000"):
+                    self.assertTrue(rewrite_spec(spec, "1.1.beta"))
+                self.assertEqual(
+                    spec.read_text().split("%changelog\n", 1)[1],
+                    "* Sun Oct 25 2026 github-actions[bot] "
+                    "<41898282+github-actions[bot]@users.noreply.github.com> - "
+                    f"{evr}\n- Update to 1.1~beta\n\n{history}",
+                )
+                bumped = spec.read_text()
+                self.assertFalse(rewrite_spec(spec, "1.1.beta"))
+                self.assertEqual(spec.read_text(), bumped)
+                rewrite_spec(spec, "1.2")
+                self.assertTrue(spec.read_text().endswith(bumped.split("%changelog\n", 1)[1]))
+
+    def test_prefixes_main_package_epoch(self):
+        for preamble, evr in (
+            ("Epoch: 1\n", "1:1.1-1"),
+            ("Epoch:\t\t2 # bumped\n", "2:1.1-1"),
+            ("Epoch: %{base_epoch}\n", "1.1-1"),
+            ("%package sub\nEpoch: 3\n", "1.1-1"),
+        ):
+            with self.subTest(preamble=preamble), tempfile.TemporaryDirectory() as tmp:
+                spec = Path(tmp) / "test.spec"
+                spec.write_text(
+                    f"Version: 1.0\n{preamble}Release: 5%{{?dist}}\n%changelog\n"
+                    "* Fri Oct 02 2026 Packager <packager@example.org> - 1:1.0-5\n"
+                    "- Previous release\n"
+                )
+                rewrite_spec(spec, "1.1")
+                self.assertIn(f"> - {evr}\n- Update to 1.1\n\n* Fri", spec.read_text())
+
+    def test_keeps_autochangelog_and_ignores_commented_macro(self):
+        for body, manual in (
+            ("%autochangelog\n", False),
+            ("  %autochangelog\n", False),
+            ("# %autochangelog is not enabled\n", True),
+        ):
+            with self.subTest(body=body), tempfile.TemporaryDirectory() as tmp:
+                spec = Path(tmp) / "test.spec"
+                spec.write_text("Version: 1.0\nRelease: 3%{?dist}\n%changelog\n" + body)
+                rewrite_spec(spec, "1.1")
+                result = spec.read_text().split("%changelog\n", 1)[1]
+                if manual:
+                    self.assertIn("- Update to 1.1\n", result)
+                    self.assertTrue(result.endswith(body))
+                else:
+                    self.assertEqual(result, body)
+
+    def test_populates_empty_manual_section_with_or_without_final_newline(self):
+        for ending in ("\n", "", "  \n"):
+            with self.subTest(ending=ending), tempfile.TemporaryDirectory() as tmp:
+                spec = Path(tmp) / "test.spec"
+                spec.write_text("Version: 1.0\nRelease: 3\n%changelog" + ending)
+                rewrite_spec(spec, "1.1")
+                self.assertRegex(spec.read_text(), r"%changelog *\n\* ")
+                self.assertIn(" - 1.1-1\n- Update to 1.1\n", spec.read_text())
 
 
 class SourcesManifestTests(unittest.TestCase):
@@ -786,6 +895,63 @@ class CyclePolicyTests(unittest.TestCase):
             self.assertFalse(is_prerelease(proposal["latest"]))
 
 
+class LibraryBetaPolicyTests(unittest.TestCase):
+    """A library-scheme .90 beta is never applied as the cycle's final."""
+
+    # The real at-spi2-core index, trimmed: 2.61.90 is the beta of 2.62.0.
+    CACHE = [
+        4,
+        {},
+        {"gnome-shell": ["2.60.1", "2.61.1", "2.61.90", "2.62.0", "2.62.1"]},
+        {},
+    ]
+
+    def test_a_numeric_beta_is_not_proposed_inside_its_cycle(self) -> None:
+        root, tmp = gnome_lock_root("2.61.1")
+        try:
+            proposals = plan(
+                root,
+                only="gnome-shell",
+                opener=fake_opener(
+                    {
+                        "https://download.gnome.org/sources/gnome-shell/cache.json": json.dumps(
+                            self.CACHE
+                        ).encode()
+                    }
+                ),
+            )
+        finally:
+            tmp.cleanup()
+        self.assertEqual(len(proposals), 1)
+        self.assertEqual(proposals[0]["kind"], "review")
+        self.assertEqual(proposals[0]["latest"], "2.62.1")
+
+    def test_cycle_final_skips_the_numeric_beta(self) -> None:
+        self.assertEqual(cycle_final(self.CACHE[2]["gnome-shell"], "2.61"), "2.61.1")
+
+    def test_a_lock_already_on_a_numeric_rc_is_not_moved_backwards(self) -> None:
+        # gvfs is locked at 1.61.91; the cycle's last marker-free micro is
+        # older, so nothing is applied.
+        root, tmp = gnome_lock_root("1.61.91")
+        cache = [4, {}, {"gnome-shell": ["1.61.1", "1.61.91", "1.62.0"]}, {}]
+        try:
+            proposals = plan(
+                root,
+                only="gnome-shell",
+                opener=fake_opener(
+                    {
+                        "https://download.gnome.org/sources/gnome-shell/cache.json": json.dumps(
+                            cache
+                        ).encode()
+                    }
+                ),
+            )
+        finally:
+            tmp.cleanup()
+        for proposal in proposals:
+            self.assertNotIn(proposal.get("kind"), ("final", "update", "relock"))
+
+
 class ReleaseResetTests(unittest.TestCase):
     def test_version_bump_resets_only_literal_releases(self):
         for old, expected in (
@@ -827,7 +993,12 @@ class ReleaseResetTests(unittest.TestCase):
                     package = root / "packages" / "test"
                     package.mkdir(parents=True)
                     spec = package / "test.spec"
-                    spec.write_text("Version: 1.0\nRelease: 1%{?dist}\n")
+                    original = (
+                        "Version: 1.0\nRelease: 1%{?dist}\n%changelog\n"
+                        "* Fri Oct 02 2026 Packager <packager@example.org> - 1.0-1\n"
+                        "- Previous release\n"
+                    )
+                    spec.write_text(original)
                     counter = {"count": 2, "baseline": "1"}
                     entry = {"name": "test", "version": "1.0", "url": url,
                              "filename": "test-1.0.tar.xz", "dist_bump": counter}
@@ -839,8 +1010,10 @@ class ReleaseResetTests(unittest.TestCase):
                     self.assertEqual(written, updated)
                     if version == "1.0":
                         self.assertEqual(written["dist_bump"], counter)
+                        self.assertEqual(spec.read_text(), original)
                     else:
                         self.assertNotIn("dist_bump", written)
+                        self.assertIn(" - 1.1-1\n- Update to 1.1\n", spec.read_text())
                     self.assertIn("Release: 1%{?dist}", spec.read_text())
 
 

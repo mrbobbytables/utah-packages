@@ -1,0 +1,8 @@
+{
+  "package": "tree-pkg",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/tree-pkg.git",
+  "commit": "39646acf042e43f80d789cc6a6285db64c99e3f6",
+  "tree": "9c8ec3b96b3a620bea11484d1873f519a16558ab",
+  "imported_at": "2026-10-24T04:01:57.002632+00:00"
+}

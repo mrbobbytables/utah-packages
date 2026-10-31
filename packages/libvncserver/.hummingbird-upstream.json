@@ -1,0 +1,8 @@
+{
+  "package": "libvncserver",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libvncserver.git",
+  "commit": "bee80f03c3bd74d0a0df15e0feb501d54f935b35",
+  "tree": "e4b33e3d971b2d0d3677cd1a4ccb00c30ab40309",
+  "imported_at": "2026-10-23T02:03:04.486096+00:00"
+}

@@ -1,0 +1,38 @@
+#!/usr/bin/sh
+
+# Send mail
+if which mail >/dev/null 2>&1
+then
+  echo "$SMARTD_FULLMESSAGE" | mail -s "$SMARTD_SUBJECT" "$SMARTD_ADDRESS"
+fi
+
+# Notify desktop user
+MESSAGE="SMART Disk monitor:
+$SMARTD_MESSAGE"
+
+if which notify-send >/dev/null 2>&1
+then
+  loginctl list-sessions --no-legend --no-pager 2>/dev/null | while read -r SESSION_ID SESS_UID USER SEAT LEADER TYPE CLASS TTY IDLE STATE; do
+    SESSION_TYPE=$(loginctl show-session "$SESSION_ID" -p Type --value 2>/dev/null)
+    case "$SESSION_TYPE" in
+      x11|wayland)
+        # Fetch the exact display variable associated with this specific loginctl session
+        if [ "$SESSION_TYPE" = "x11" ]; then
+          DISP_ENV="DISPLAY=$(loginctl show-session "$SESSION_ID" -p Display --value 2>/dev/null)"
+        else
+          # For Wayland, fetch the WAYLAND_DISPLAY value
+          # Fallback to wayland-0 if loginctl doesn't store it natively on older systemd versions
+          WAYLAND_VAL=$(loginctl show-session "$SESSION_ID" -p WaylandDisplay --value 2>/dev/null)
+          DISP_ENV="WAYLAND_DISPLAY=${WAYLAND_VAL:-wayland-0}"
+        fi
+
+        # Deliver via systemd-run using the session-specific display context
+        systemd-run --user --machine="$USER@.host" env "$DISP_ENV" \
+          notify-send -u critical -i drive-harddisk "SMART Disk Monitor" "$MESSAGE" 2>/dev/null || :
+      ;;
+    esac
+  done
+fi
+
+echo "$MESSAGE" | wall -n 2>/dev/null ||:
+

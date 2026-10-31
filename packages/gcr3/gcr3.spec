@@ -3,8 +3,8 @@
 %endif
 
 Name:           gcr3
-Version:        3.41.1
-Release:        13%{?dist}
+Version:        3.41.2
+Release:        1%{?dist}
 Summary:        A library for bits of crypto UI and parsing
 
 # gck/pkcs11n.h is MPL 1.1/GPL 2.0/LGPL 2.1
@@ -127,6 +127,9 @@ rm -rf $RPM_BUILD_ROOT%{_userunitdir}/gcr-ssh-agent.socket
 %{_libdir}/libgcr-base-3.so.1*
 
 %changelog
+* Thu Oct 22 2026 github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com> - 3.41.2-1
+- Update to 3.41.2
+
 * Wed Jul 15 2026 Fedora Release Engineering <releng@fedoraproject.org> - 3.41.1-13
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_45_Mass_Rebuild
 

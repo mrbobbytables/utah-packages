@@ -1,0 +1,22 @@
+diff --git a/perl/Makefile.PL b/perl/Makefile.PL
+index 63e6333..82cedca 100644
+--- a/perl/Makefile.PL
++++ b/perl/Makefile.PL
+@@ -1,3 +1,4 @@
++use lib '.';
+ use strict;
+ use warnings;
+ use ExtUtils::MakeMaker;
+diff --git a/perl/MakefileSubs.pm b/perl/MakefileSubs.pm
+index 804b20e..25c5d67 100644
+--- a/perl/MakefileSubs.pm
++++ b/perl/MakefileSubs.pm
+@@ -126,7 +126,7 @@ sub AddCommonParams {
+ 	# Suppress warnings about old-style function definitions.
+ 	append($Params->{'CCFLAGS'}, '-Wno-old-style-definition');
+ 	# Suppress known Perl header shortcomings.
+-	$Params->{'CCFLAGS'} =~ s/ -W(cast-qual|write-strings)//g;
++	$Params->{'CCFLAGS'} =~ s/ -W(inline|strict-prototypes|write-strings|cast-qual|no-char-subscripts)//g;
+ 	append($Params->{'CCFLAGS'}, '-Wformat');
+     }
+ }

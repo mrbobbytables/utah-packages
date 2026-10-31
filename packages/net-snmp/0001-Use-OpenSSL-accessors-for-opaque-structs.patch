@@ -1,0 +1,177 @@
+From 338d289f1e14650edf0bd7e960272871029131e1 Mon Sep 17 00:00:00 2001
+From: Simo Sorce <simo@redhat.com>
+Date: Fri, 17 Apr 2026 12:47:18 -0400
+Subject: [PATCH] Use OpenSSL accessors for opaque structs
+
+Replaced direct access to `ASN1_STRING` fields with OpenSSL accessor functions
+(e.g., `ASN1_STRING_type`, `ASN1_STRING_length`, `ASN1_STRING_get0_data`) and
+updated `X509_NAME` and `X509_EXTENSION` pointers to `const`. This is required
+to maintain compatibility with newer OpenSSL versions (4.0+) where these
+structures were made opaque.
+
+Co-authored-by: Gemini <gemini@google.com>
+Signed-off-by: Simo Sorce <simo@redhat.com>
+---
+ snmplib/snmp_openssl.c | 74 ++++++++++++++++++++++--------------------
+ 1 file changed, 39 insertions(+), 35 deletions(-)
+
+diff --git a/snmplib/snmp_openssl.c b/snmplib/snmp_openssl.c
+index 4471a7a..658841a 100644
+--- a/snmplib/snmp_openssl.c
++++ b/snmplib/snmp_openssl.c
+@@ -147,7 +147,7 @@ void netsnmp_init_openssl(void) {
+ static char *
+ _cert_get_name(X509 *ocert, int which, char **buf, int *len, int flags)
+ {
+-    X509_NAME       *osubj_name;
++    const X509_NAME *osubj_name;
+     int              space;
+     char            *buf_ptr;
+ 
+@@ -187,7 +187,7 @@ _cert_get_name(X509 *ocert, int which, char **buf, int *len, int flags)
+ char *
+ netsnmp_openssl_cert_get_subjectName(X509 *ocert, char **buf, int *len)
+ {
+-    X509_NAME       *osubj_name;
++    const X509_NAME *osubj_name;
+     int              space;
+     char            *buf_ptr;
+ 
+@@ -233,11 +233,11 @@ netsnmp_openssl_cert_get_commonName(X509 *ocert, char **buf, int *len)
+ void
+ netsnmp_openssl_cert_dump_names(X509 *ocert)
+ {
+-    int              i, onid;
+-    X509_NAME_ENTRY *oname_entry;
+-    ASN1_STRING     *oname_value;
+-    X509_NAME       *osubj_name;
+-    const char      *prefix_short, *prefix_long;
++    int                   i, onid;
++    const X509_NAME_ENTRY *oname_entry;
++    const ASN1_STRING     *oname_value;
++    const X509_NAME       *osubj_name;
++    const char            *prefix_short, *prefix_long;
+ 
+     if (NULL == ocert)
+         return;
+@@ -253,7 +253,7 @@ netsnmp_openssl_cert_dump_names(X509 *ocert)
+         netsnmp_assert(NULL != oname_entry);
+         oname_value = X509_NAME_ENTRY_get_data(oname_entry);
+ 
+-        if (oname_value->type != V_ASN1_PRINTABLESTRING)
++        if (ASN1_STRING_type(oname_value) != V_ASN1_PRINTABLESTRING)
+             continue;
+ 
+         /** get NID */
+@@ -268,7 +268,7 @@ netsnmp_openssl_cert_dump_names(X509 *ocert)
+ 
+         DEBUGMSGT(("9:cert:dump:names",
+                    "[%02d] NID type %d, ASN type %d\n", i, onid,
+-                   oname_value->type));
++                   ASN1_STRING_type(oname_value)));
+         DEBUGMSGT(("9:cert:dump:names", "%s/%s: '%s'\n", prefix_long,
+                    prefix_short, ASN1_STRING_get0_data(oname_value)));
+     }
+@@ -276,7 +276,7 @@ netsnmp_openssl_cert_dump_names(X509 *ocert)
+ #endif /* NETSNMP_FEATURE_REMOVE_CERT_DUMP_NAMES */
+ 
+ static char *
+-_cert_get_extension(X509_EXTENSION  *oext, char **buf, int *len, int flags)
++_cert_get_extension(const X509_EXTENSION *oext, char **buf, int *len, int flags)
+ {
+     int              space;
+     char            *buf_ptr = NULL;
+@@ -327,10 +327,10 @@ out:
+  */
+ /** instead of exposing this function, make helper functions for each
+  * field, like netsnmp_openssl_cert_get_subjectAltName, below */
+-X509_EXTENSION  *
++const X509_EXTENSION  *
+ _cert_get_extension_at(X509 *ocert, int pos, char **buf, int *len, int flags)
+ {
+-    X509_EXTENSION  *oext;
++    const X509_EXTENSION  *oext;
+ 
+     if ((NULL == ocert) || ((buf && !len) || (len && !buf)))
+         return NULL;
+@@ -354,7 +354,7 @@ static char *
+ _cert_get_extension_str_at(X509 *ocert, int pos, char **buf, int *len,
+                            int flags)
+ {
+-    X509_EXTENSION  *oext;
++    const X509_EXTENSION  *oext;
+ 
+     if ((NULL == ocert) || ((buf && !len) || (len && !buf)))
+         return NULL;
+@@ -374,7 +374,7 @@ _cert_get_extension_str_at(X509 *ocert, int pos, char **buf, int *len,
+  */
+ /** instead of exposing this function, make helper functions for each
+  * field, like netsnmp_openssl_cert_get_subjectAltName, below */
+-X509_EXTENSION *
++const X509_EXTENSION *
+ _cert_get_extension_id(X509 *ocert, int which, char **buf, int *len, int flags)
+ {
+     int pos;
+@@ -434,27 +434,31 @@ _extract_oname(const GENERAL_NAME *oname)
+             break;
+ 
+         case GEN_IPADD:
+-            if (oname->d.iPAddress->length == 4) {
+-                sprintf(ipbuf, "%d.%d.%d.%d", oname->d.iPAddress->data[0],
+-                        oname->d.iPAddress->data[1],
+-                        oname->d.iPAddress->data[2],
+-                        oname->d.iPAddress->data[3]);
+-                rtn = strdup(ipbuf);
+-            }
+-            else if ((oname->d.iPAddress->length == 16) ||
+-                     (oname->d.iPAddress->length == 20)) {
+-                char *pos = ipbuf;
+-                int   j;
+-                for(j = 0; j < oname->d.iPAddress->length; ++j) {
+-                    *pos++ = VAL2HEX(oname->d.iPAddress->data[j]);
+-                    *pos++ = ':';
++            {
++                int ipaddr_len = ASN1_STRING_length(oname->d.iPAddress);
++                const unsigned char *ipaddr_data = ASN1_STRING_get0_data(oname->d.iPAddress);
++                if (ipaddr_len == 4) {
++                    sprintf(ipbuf, "%d.%d.%d.%d", ipaddr_data[0],
++                            ipaddr_data[1],
++                            ipaddr_data[2],
++                            ipaddr_data[3]);
++                    rtn = strdup(ipbuf);
++                }
++                else if ((ipaddr_len == 16) ||
++                         (ipaddr_len == 20)) {
++                    char *pos = ipbuf;
++                    int   j;
++                    for(j = 0; j < ipaddr_len; ++j) {
++                        *pos++ = VAL2HEX(ipaddr_data[j]);
++                        *pos++ = ':';
++                    }
++                    *pos = '\0';
++                    rtn = strdup(ipbuf);
+                 }
+-                *pos = '\0';
+-                rtn = strdup(ipbuf);
++                else
++                    NETSNMP_LOGONCE((LOG_WARNING, "unexpected ip addr length %d\n",
++                           ipaddr_len));
+             }
+-            else
+-                NETSNMP_LOGONCE((LOG_WARNING, "unexpected ip addr length %d\n",
+-                       oname->d.iPAddress->length));
+ 
+             break;
+         default:
+@@ -485,7 +489,7 @@ netsnmp_openssl_cert_get_subjectAltNames(X509 *ocert, char **buf, int *len)
+ void
+ netsnmp_openssl_cert_dump_extensions(X509 *ocert)
+ {
+-    X509_EXTENSION  *extension;
++    const X509_EXTENSION  *extension;
+     const char      *extension_name;
+     char             buf[SNMP_MAXBUF], *buf_ptr = buf, *str, *lf;
+     int              i, num_extensions, buf_len, nid;
+-- 
+2.53.0
+

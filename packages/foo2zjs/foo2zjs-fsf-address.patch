@@ -1,0 +1,455 @@
+diff --git a/README b/README
+index 9ee23bb..d83300a 100644
+--- a/README
++++ b/README
+@@ -212,7 +212,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/README.in b/README.in
+index 76c6966..b203234 100644
+--- a/README.in
++++ b/README.in
+@@ -212,7 +212,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/crd/zjs/prolog.ps b/crd/zjs/prolog.ps
+index 4b87922..8ca6d28 100644
+--- a/crd/zjs/prolog.ps
++++ b/crd/zjs/prolog.ps
+@@ -16,7 +16,7 @@
+ %
+ % You should have received a copy of the GNU General Public License
+ % along with this program; if not, write to the Free Software
+-% Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ %
+ 
+ % setup initial clipping,
+diff --git a/crd/zjs/screen1200.ps b/crd/zjs/screen1200.ps
+index 12e00bf..1dc1be0 100644
+--- a/crd/zjs/screen1200.ps
++++ b/crd/zjs/screen1200.ps
+@@ -14,7 +14,7 @@
+ %
+ % You should have received a copy of the GNU General Public License
+ % along with this program; if not, write to the Free Software
+-% Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ %
+ 
+ <<
+diff --git a/foo2ddst-wrapper.in b/foo2ddst-wrapper.in
+index f4e20e8..17e501d 100755
+--- a/foo2ddst-wrapper.in
++++ b/foo2ddst-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2hbpl2-wrapper.in b/foo2hbpl2-wrapper.in
+index ec770b0..8933960 100755
+--- a/foo2hbpl2-wrapper.in
++++ b/foo2hbpl2-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2hbpl2.c b/foo2hbpl2.c
+index dcfcb63..439518e 100644
+--- a/foo2hbpl2.c
++++ b/foo2hbpl2.c
+@@ -43,7 +43,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/foo2hiperc-wrapper.in b/foo2hiperc-wrapper.in
+index adcc98d..882a086 100755
+--- a/foo2hiperc-wrapper.in
++++ b/foo2hiperc-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2hiperc.c b/foo2hiperc.c
+index 100d1aa..731b1d9 100644
+--- a/foo2hiperc.c
++++ b/foo2hiperc.c
+@@ -32,7 +32,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/foo2hp.c b/foo2hp.c
+index 297635d..bde134e 100644
+--- a/foo2hp.c
++++ b/foo2hp.c
+@@ -26,7 +26,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/foo2hp2600-wrapper.in b/foo2hp2600-wrapper.in
+index c63e183..b5f997d 100755
+--- a/foo2hp2600-wrapper.in
++++ b/foo2hp2600-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2lava-wrapper.in b/foo2lava-wrapper.in
+index 3f0ba6a..601686e 100755
+--- a/foo2lava-wrapper.in
++++ b/foo2lava-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2lava.c b/foo2lava.c
+index dbaef38..247e96b 100644
+--- a/foo2lava.c
++++ b/foo2lava.c
+@@ -42,7 +42,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/foo2oak-wrapper.in b/foo2oak-wrapper.in
+index 033eade..2955ac0 100755
+--- a/foo2oak-wrapper.in
++++ b/foo2oak-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2oak.c b/foo2oak.c
+index 22aa625..11ba8c9 100644
+--- a/foo2oak.c
++++ b/foo2oak.c
+@@ -37,7 +37,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/foo2qpdl-wrapper.in b/foo2qpdl-wrapper.in
+index 2d9993b..5f4b399 100755
+--- a/foo2qpdl-wrapper.in
++++ b/foo2qpdl-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2qpdl.c b/foo2qpdl.c
+index 5d641d7..63c3712 100644
+--- a/foo2qpdl.c
++++ b/foo2qpdl.c
+@@ -47,7 +47,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/foo2slx-wrapper.in b/foo2slx-wrapper.in
+index 0a3f143..06e684d 100755
+--- a/foo2slx-wrapper.in
++++ b/foo2slx-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2slx.c b/foo2slx.c
+index 60952b1..cec0320 100644
+--- a/foo2slx.c
++++ b/foo2slx.c
+@@ -26,7 +26,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/foo2xqx-wrapper.in b/foo2xqx-wrapper.in
+index d79471d..2ee5938 100755
+--- a/foo2xqx-wrapper.in
++++ b/foo2xqx-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2xqx.c b/foo2xqx.c
+index ab61791..fcc0dbc 100644
+--- a/foo2xqx.c
++++ b/foo2xqx.c
+@@ -38,7 +38,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/foo2zjs-wrapper.in b/foo2zjs-wrapper.in
+index 37c8998..3d6d239 100755
+--- a/foo2zjs-wrapper.in
++++ b/foo2zjs-wrapper.in
+@@ -14,7 +14,7 @@
+ #*
+ #* You should have received a copy of the GNU General Public License
+ #* along with this program; if not, write to the Free Software
+-#* Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #*
+ #* Authors: Rick Richardson <rick.richardson@comcast.net>
+ 
+diff --git a/foo2zjs.c b/foo2zjs.c
+index 86976f6..0f99cc7 100644
+--- a/foo2zjs.c
++++ b/foo2zjs.c
+@@ -53,7 +53,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ If you want to use this program under different license conditions,
+ then contact the author for an arrangement.
+diff --git a/gipddecode.c b/gipddecode.c
+index a325710..6c12336 100644
+--- a/gipddecode.c
++++ b/gipddecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/
+diff --git a/hbpldecode.c b/hbpldecode.c
+index fdb2812..b38424a 100644
+--- a/hbpldecode.c
++++ b/hbpldecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Authors: Rick Richardson <rick.richardson@comcast.net>
+  * 	    Peter Korf <peter@niendo.de> (HBPL version 2)
+diff --git a/hipercdecode.c b/hipercdecode.c
+index 50cea78..2d695da 100644
+--- a/hipercdecode.c
++++ b/hipercdecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/
+diff --git a/lavadecode.c b/lavadecode.c
+index 040e8e8..6678375 100644
+--- a/lavadecode.c
++++ b/lavadecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/
+diff --git a/msexpand b/msexpand
+index fe39f44..785c583 100755
+--- a/msexpand
++++ b/msexpand
+@@ -16,7 +16,7 @@
+ #
+ #    You should have received a copy of the GNU General Public License
+ #    along with this program; if not, write to the Free Software
+-#    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ #
+ # Microsoft compress file structure:
+ # Uses a 12 bit (4k) sliding window Lempel Ziv variant.
+diff --git a/oakdecode.c b/oakdecode.c
+index a52ff6b..6c7d452 100644
+--- a/oakdecode.c
++++ b/oakdecode.c
+@@ -26,7 +26,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/
+diff --git a/opldecode.c b/opldecode.c
+index 6aebd33..35ab018 100644
+--- a/opldecode.c
++++ b/opldecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/
+diff --git a/osx-hotplug/osx-hplj-hotplug.m b/osx-hotplug/osx-hplj-hotplug.m
+index 4665553..5566390 100644
+--- a/osx-hotplug/osx-hplj-hotplug.m
++++ b/osx-hotplug/osx-hplj-hotplug.m
+@@ -17,7 +17,7 @@ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+ 
+ */
+ 
+diff --git a/qpdldecode.c b/qpdldecode.c
+index d6336df..347baae 100644
+--- a/qpdldecode.c
++++ b/qpdldecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/
+diff --git a/slxdecode.c b/slxdecode.c
+index 069dead..e4b5879 100644
+--- a/slxdecode.c
++++ b/slxdecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/
+diff --git a/xqxdecode.c b/xqxdecode.c
+index 72c14e1..2b613d8 100644
+--- a/xqxdecode.c
++++ b/xqxdecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/
+diff --git a/zjsdecode.c b/zjsdecode.c
+index 05ac22d..3b3d95d 100644
+--- a/zjsdecode.c
++++ b/zjsdecode.c
+@@ -17,7 +17,7 @@
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 USA.
+  *
+  * Author: Rick Richardson <rick.richardson@comcast.net>
+ b*/

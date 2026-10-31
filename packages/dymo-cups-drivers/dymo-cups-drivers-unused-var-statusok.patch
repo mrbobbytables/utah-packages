@@ -1,0 +1,32 @@
+From d7ef90a48c61c898a3d69f353673d81d7540c892 Mon Sep 17 00:00:00 2001
+From: Matthias Bock <mail@matthiasbock.net>
+Date: Thu, 22 Mar 2018 18:39:59 +0100
+Subject: [PATCH] Fixed #4: Commented out unsed variable StatusOK
+
+---
+ src/lw/LabelWriterLanguageMonitor.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/lw/LabelWriterLanguageMonitor.cpp b/src/lw/LabelWriterLanguageMonitor.cpp
+index f366bd2..00222e9 100644
+--- a/src/lw/LabelWriterLanguageMonitor.cpp
++++ b/src/lw/LabelWriterLanguageMonitor.cpp
+@@ -121,7 +121,7 @@ CLabelWriterLanguageMonitor::CheckStatusAndReprint()
+     
+     byte    Status      = 0;
+     time_t  BeginTime   = time(NULL);
+-    bool    StatusOK    = ReadStatus(Status);
++//    bool    StatusOK    = ReadStatus(Status);
+ 
+     // request status while good or bad condition or timeout
+     int i = 0;
+@@ -131,7 +131,8 @@ CLabelWriterLanguageMonitor::CheckStatusAndReprint()
+       && (difftime(time(NULL), BeginTime) < ReadStatusTimeout_))
+     {
+       fprintf(stderr, "DEBUG: CLabelWriterLanguageMonitor::CheckStatusAndReprint() 2 %i\n", i);
+-      StatusOK = ReadStatus(Status);
++//      StatusOK =
++      ReadStatus(Status);
+       //usleep(100000);
+       i++;
+     }     

@@ -1,0 +1,8 @@
+{
+  "package": "pinentry",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/pinentry.git",
+  "commit": "5925b9a70559e697b7fc7b6560689266b264a5ac",
+  "tree": "4d8d1eeeed99a7dd6547e2f169e7acba2bf361a5",
+  "imported_at": "2026-10-18T08:54:14.227002+00:00"
+}

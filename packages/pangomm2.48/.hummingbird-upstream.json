@@ -1,0 +1,8 @@
+{
+  "package": "pangomm2.48",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/pangomm2.48.git",
+  "commit": "073b928434e57ca4117dcb5de55be17029c55986",
+  "tree": "d123d70c919fd32b74336b36d1470bb72b65eb00",
+  "imported_at": "2026-10-20T18:44:26.191330+00:00"
+}

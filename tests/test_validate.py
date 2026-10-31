@@ -70,6 +70,7 @@ class ValidateScriptTests(unittest.TestCase):
         buildroot_lock=DEFAULT_BUILDROOT_LOCK,
         buildroot_pin=DEFAULT_BUILDROOT_PIN,
         source_urls=None,
+        source_fallbacks=None,
         fedora_baseline=None,
         review_only=None,
         sources_files=None,
@@ -92,6 +93,8 @@ class ValidateScriptTests(unittest.TestCase):
         for entry in locks:
             if entry["name"] in (source_urls or {}):
                 entry["url"] = source_urls[entry["name"]]
+            if entry["name"] in (source_fallbacks or {}):
+                entry["fallback_urls"] = list(source_fallbacks[entry["name"]])
         (root / "config" / "upstream-sources.json").write_text(
             json.dumps({"packages": locks})
         )
@@ -134,6 +137,28 @@ class ValidateScriptTests(unittest.TestCase):
         assert result.returncode == 0, result.stderr
         assert "validated 1 source RPMs" in result.stdout
 
+    def test_x265_check_failure_cannot_be_made_advisory(self) -> None:
+        for tail, expected in (("|| :", 1), ("|| true", 1), ("|| exit $?", 0)):
+            with self.subTest(tail=tail):
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    self.build(root, packages=("x265",))
+                    (root / "packages" / "x265" / "x265.spec").write_text(
+                        "Name: x265\n%check\n"
+                        "for i in 8 10 12; do\n"
+                        "    if [ -d ${i}bit ]; then\n"
+                        "        pushd ${i}bit\n"
+                        f"        test/TestBench {tail}\n"
+                        "        popd\n"
+                        "    fi\n"
+                        "done\n%files\n"
+                    )
+                    result = self.run_validate(root)
+                    self.assertEqual(result.returncode, expected, result.stderr)
+                    if expected:
+                        self.assertIn("test/TestBench", result.stderr)
+                        self.assertNotIn("validated 1 source RPMs", result.stdout)
+
     def test_accepts_an_upstream_import_with_no_dist_git_snapshot(self) -> None:
         result = self.check(provenance=UPSTREAM_PROVENANCE)
         assert result.returncode == 0, result.stderr
@@ -155,10 +180,58 @@ class ValidateScriptTests(unittest.TestCase):
         assert result.returncode != 0
         assert "invalid upstream provenance" in result.stderr
 
-    def test_rejects_a_branch_that_is_neither_rawhide_nor_upstream(self) -> None:
+    def test_rejects_provenance_naming_a_different_package(self) -> None:
+        # The master remote guard derives the permitted repository from the
+        # package field, so that field must be bound to the recipe directory.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.build(root, provenance=RAWHIDE_PROVENANCE)
+            (root / "packages" / "example" / ".hummingbird-upstream.json").write_text(
+                json.dumps({
+                    **RAWHIDE_PROVENANCE, "package": "different", "branch": "master",
+                    "remote": "https://github.com/rpmfusion/different.git",
+                })
+            )
+            result = self.run_validate(root)
+        assert result.returncode != 0
+        assert "provenance package does not match its recipe directory" in result.stderr
+
+    def test_rejects_an_unsupported_recipe_branch(self) -> None:
         result = self.check(provenance={**RAWHIDE_PROVENANCE, "branch": "f43"})
         assert result.returncode != 0
-        assert "only rawhide or upstream imports are supported" in result.stderr
+        assert "only rawhide, upstream or codec master imports are supported" in result.stderr
+
+    def test_accepts_pinned_codec_recipe_repositories(self) -> None:
+        for owner in ("rpmfusion", "negativo17"):
+            with self.subTest(owner=owner):
+                result = self.check(provenance={
+                    **RAWHIDE_PROVENANCE, "branch": "master",
+                    "remote": f"https://github.com/{owner}/example.git",
+                })
+                assert result.returncode == 0, result.stderr
+
+    def test_rejects_unpinned_codec_recipe_snapshots(self) -> None:
+        for field, value in (("commit", ""), ("tree", "abc1234")):
+            with self.subTest(field=field):
+                result = self.check(provenance={
+                    **RAWHIDE_PROVENANCE, "branch": "master", field: value,
+                    "remote": "https://github.com/rpmfusion/example.git",
+                })
+                assert result.returncode != 0
+                assert "master import must carry" in result.stderr
+
+    def test_rejects_master_from_an_unrecognized_recipe_repository(self) -> None:
+        for remote in (
+            "https://github.com/other/example.git",
+            "https://github.com/rpmfusion/different.git",
+            "https://github.com/negativo17.example.org/example.git",
+        ):
+            with self.subTest(remote=remote):
+                result = self.check(provenance={
+                    **RAWHIDE_PROVENANCE, "branch": "master", "remote": remote,
+                })
+                assert result.returncode != 0
+                assert "master imports require" in result.stderr
 
     def test_rejects_an_upstream_import_that_carries_a_commit(self) -> None:
         result = self.check(provenance={**UPSTREAM_PROVENANCE, "commit": "a" * 40})
@@ -343,6 +416,47 @@ class ValidateScriptTests(unittest.TestCase):
         )
         assert result.returncode != 0
         assert "takes its payload from Fedora" in result.stderr
+
+    def test_rejects_a_source_lock_that_fetches_over_plain_http(self) -> None:
+        # upstream_bump.py pins the SHA-512 of whatever the primary url serves
+        # at bump time and the gate self-merges it, so without TLS the digest
+        # authenticates nothing but the network path of one runner.
+        result = self.check(
+            source_urls={"example": "http://w1.fi/releases/example-1.tar.gz"},
+        )
+        assert result.returncode != 0
+        assert "fetches over plain http://" in result.stderr
+        assert "example: http://w1.fi/releases/example-1.tar.gz" in result.stderr
+
+    def test_rejects_a_plain_http_fallback_url(self) -> None:
+        # A fallback consulted only on transport failure is the URL an
+        # attacker who can cause that failure gets to serve.
+        result = self.check(
+            source_urls={"example": "https://example.org/example-1.tar.gz"},
+            source_fallbacks={"example": ["http://mirror.example.org/example-1.tar.gz"]},
+        )
+        assert result.returncode != 0
+        assert "fetches over plain http://" in result.stderr
+        assert "mirror.example.org" in result.stderr
+
+    def test_names_every_plain_http_entry_at_once(self) -> None:
+        result = self.check(
+            packages=("example", "second"),
+            source_urls={
+                "example": "http://example.org/example-1.tar.gz",
+                "second": "HTTP://second.org/second-1.tar.gz",
+            },
+        )
+        assert result.returncode != 0
+        offenders = [line for line in result.stderr.splitlines() if line.startswith(("example:", "second:"))]
+        assert len(offenders) == 2
+
+    def test_accepts_an_https_url_with_https_fallbacks(self) -> None:
+        result = self.check(
+            source_urls={"example": "https://example.org/example-1.tar.gz"},
+            source_fallbacks={"example": ["https://mirror.example.org/example-1.tar.gz"]},
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
 
     def test_accepts_a_review_only_list_of_locked_packages(self) -> None:
         result = self.check(review_only=("example",))

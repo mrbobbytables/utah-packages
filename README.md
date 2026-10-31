@@ -41,6 +41,11 @@ A GitHub Pages mirror used to be published alongside it. It was removed: it
 could only deploy from `main`, nothing consumed it, and the OCI image is the
 contract.
 
+GitHub Pages now serves a **package catalog** instead: a searchable index of
+every source package and RPM in `:latest`, read from the image's repodata
+layer. It is a view, not a repository — it serves no RPMs. See
+[`docs/skills/package-catalog.md`](docs/skills/package-catalog.md).
+
 The image is also the factory's own memory. `prepare` pulls it, extracts the
 repository, and skips every recipe the listing already carries at the same
 version and release -- then drags along whatever published package depends on
@@ -66,7 +71,10 @@ source entry cannot build.
 The RPM workflow locks source checksums, rebuilds each package in staged
 matrix jobs, creates repodata, keylessly signs `repomd.xml` using GitHub
 OIDC/Cosign, and publishes the result as an OCI image. Pull requests from
-forks never publish RPMs or images.
+forks never publish RPMs or images on their own; a maintainer can run Canary on
+a reviewed fork pull request, which builds the fork's code and publishes a
+`utah-packages:canary-…` image (see
+[docs/skills/lane-validation.md](docs/skills/lane-validation.md)).
 
 The build does **not** currently run in Mock, despite installing it. See
 *Agreed direction* in [docs/architecture.md](docs/architecture.md).

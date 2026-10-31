@@ -1,0 +1,8 @@
+{
+  "package": "sonic",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/sonic.git",
+  "commit": "e390ed7263534ccb123cf306b40eb26ef26ac8f2",
+  "tree": "6616d70adb714e764d4abdc8157b778054a12888",
+  "imported_at": "2026-10-15T18:51:42.210004+00:00"
+}

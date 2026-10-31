@@ -1,0 +1,8 @@
+{
+  "package": "python-pyudev",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/python-pyudev.git",
+  "commit": "264df1496da43f91e5ddb26b3acadb81c08905c1",
+  "tree": "8b02a9f562ae7b47e51cf170cb2fa72e96dd8380",
+  "imported_at": "2026-10-24T12:24:19.495013+00:00"
+}

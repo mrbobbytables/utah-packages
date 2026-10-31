@@ -1,0 +1,98 @@
+diff -up gutenprint-5.3.3/src/main/gutenprint-internal.h.postscriptdriver gutenprint-5.3.3/src/main/gutenprint-internal.h
+--- gutenprint-5.3.3/src/main/gutenprint-internal.h.postscriptdriver	2018-01-28 03:32:45.000000000 +0100
++++ gutenprint-5.3.3/src/main/gutenprint-internal.h	2019-11-06 12:13:29.936061606 +0100
+@@ -54,6 +54,8 @@ extern void stpi_init_printer(void);
+ #define BUFFER_FLAG_FLIP_X	0x1
+ #define BUFFER_FLAG_FLIP_Y	0x2
+ extern stp_image_t* stpi_buffer_image(stp_image_t* image, unsigned int flags);
++extern stp_list_t *stp_paths_copy_with_prefix(stp_list_t* list,
++					      const char *prefix);
+ 
+ #define STPI_ASSERT(x,v)						\
+ do									\
+diff -up gutenprint-5.3.3/src/main/module.c.postscriptdriver gutenprint-5.3.3/src/main/module.c
+--- gutenprint-5.3.3/src/main/module.c.postscriptdriver	2019-05-25 16:34:21.000000000 +0200
++++ gutenprint-5.3.3/src/main/module.c	2019-11-06 12:13:29.936061606 +0100
+@@ -159,12 +159,20 @@ int stp_module_load(void)
+     }
+   else
+     {
++      const char *prefix = getenv("DESTDIR");
+ #ifdef USE_LTDL
+       stp_path_split(dir_list, getenv("LTDL_LIBRARY_PATH"));
+       stp_path_split(dir_list, lt_dlgetsearchpath());
+ #else
+       stp_path_split(dir_list, PKGMODULEDIR);
+ #endif
++      if (prefix)
++	{
++	  stp_list_t *prefix_list;
++	  prefix_list = stp_paths_copy_with_prefix(dir_list, prefix);
++	  stp_list_destroy(dir_list);
++	  dir_list = prefix_list;
++	}
+     }
+ #ifdef USE_LTDL
+   file_list = stp_path_search(dir_list, ".la");
+diff -up gutenprint-5.3.3/src/main/path.c.postscriptdriver gutenprint-5.3.3/src/main/path.c
+--- gutenprint-5.3.3/src/main/path.c.postscriptdriver	2019-05-25 16:34:21.000000000 +0200
++++ gutenprint-5.3.3/src/main/path.c	2019-11-06 12:29:30.709190171 +0100
+@@ -154,6 +154,17 @@ stp_generate_path(const char *path)
+     return NULL;
+   stp_list_set_freefunc(dir_list, stp_list_node_free_data);
+   stp_path_split(dir_list, path);
++  if (!strncmp(PKGXMLDATADIR, path, strlen(path)))
++  {
++    const char *prefix = getenv("DESTDIR");
++    if (prefix)
++    {
++      stp_list_t *prefix_list;
++      prefix_list = stp_paths_copy_with_prefix(dir_list, prefix);
++      stp_list_destroy(dir_list);
++      dir_list = prefix_list;
++    }
++  }
+   return dir_list;
+ }
+ 
+@@ -262,6 +273,40 @@ stp_path_split(stp_list_t *list, /* List
+     }
+ }
+ 
++/*
++ * Split a PATH-type string (colon-delimited) into separate
++ * directories.
++ */
++stp_list_t *
++stp_paths_copy_with_prefix(stp_list_t *list,   /* List to add prefix to */
++			   const char *prefix) /* Prefix to add */
++{
++  stp_list_t *new_list;
++  stp_list_item_t *item;
++  int prefixlen = strlen (prefix);
++  if (!(new_list = stp_list_create()))
++    return NULL;
++
++  item = stp_list_get_start (list);
++  while (item)
++    {
++      const char *data;
++      char *new_data;
++      int len;
++      data = stp_list_item_get_data (item);
++      len = strlen (data);
++      new_data = (char *) stp_malloc(prefixlen + 1 + len + 1);
++      strncpy(new_data, prefix, prefixlen);
++      new_data[prefixlen] = '/';
++      strcpy(new_data + prefixlen + 1, data);
++      stp_list_item_create(new_list, NULL, new_data);
++
++      item = stp_list_item_next (item);
++    }
++
++  return new_list;
++}
++
+ /* Adapted from GNU libc <dirent.h>
+    These macros extract size information from a `struct dirent *'.
+    They may evaluate their argument multiple times, so it must not

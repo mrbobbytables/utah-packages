@@ -1,0 +1,8 @@
+{
+  "package": "libutempter",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libutempter.git",
+  "commit": "8cd2cefb9ef87574da6fbe925fcd1b7ccd391506",
+  "tree": "8808bd384d25558957c3acac6c80a0af1998a0e1",
+  "imported_at": "2026-10-24T12:24:30.945394+00:00"
+}

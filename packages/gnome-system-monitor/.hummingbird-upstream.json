@@ -1,0 +1,8 @@
+{
+  "package": "gnome-system-monitor",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-system-monitor.git",
+  "commit": "7e2795c496ee472ddee048347b621aab115bae86",
+  "tree": "1c4346fa495a17e7fa4ae7caa702a028e9a6efc0",
+  "imported_at": "2026-10-20T17:26:53+00:00"
+}

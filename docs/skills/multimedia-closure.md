@@ -143,10 +143,34 @@ contract is the measurement that will show it, not the work it measures.
   consumers resolve; a transaction naming the literal string does not. Record
   it under `[equivalent]` with the reason, never under `[built]`.
 - **Check the family version before importing a plugin.** Fedora's
-  `gstreamer1-plugin-libav` requires `gstreamer1-devel >= %{version}` and is a
-  release ahead of the gstreamer1 family pinned here, so importing it alone
-  adds a BuildRequires nothing satisfies — [`repeated-mistakes.md`](repeated-mistakes.md)
-  #2, a package and its family pinned separately.
+  `gstreamer1-plugin-libav` requires `gstreamer1-devel >= %{version}`, and
+  Rawhide head is a release ahead of the gstreamer1 family pinned here, so
+  importing head adds a BuildRequires nothing satisfies —
+  [`repeated-mistakes.md`](repeated-mistakes.md) #2, a package and its family
+  pinned separately. Import the dist-git commit whose `Version:` equals the
+  pin instead (`git log` the dist-git repo; libav at 1.28.6 is the "Rebuilt
+  for FFmpeg 9" commit 73e9b14, as ugly-free is at 207f329) rather than
+  bumping the whole family for one plugin.
+- **Camera RAW support is not FireWire transport.** `LibRaw` supplies
+  `libraw.so` and `libraw_r.so` for decoding camera image files; it is not
+  `libraw1394`, the FireWire library needed by the `libavc1394` family.
+  Resolve these as separate source families, even when they share a media
+  backlog batch. LibRaw's default recipe enables JPEG, LCMS, zlib and
+  OpenMP, and emits `LibRaw`, `LibRaw-devel`, `LibRaw-static` and
+  `LibRaw-samples`; its upstream release is served directly under
+  `https://www.libraw.org/data/`. `libavc1394` BuildRequires
+  `libraw1394-devel`, and its devel package requires it too, so import and
+  publish `libraw1394` first. These recipes do not enable the disabled
+  FireWire feature in ffmpeg or establish hardware functionality; both need
+  separate validation. Fedora's imported manifests for these two older
+  releases use MD5: compare upstream bytes to that pin, then record their
+  SHA-512 digests in `sources` and the source lock.
+- **Recipe reconciliation is not runtime closure.** A `[resolved]` backlog
+  record required by an import tracks recipe coverage only. Keep the batch
+  issue open until the hosted build, published binary identities,
+  factory-plus-Hummingbird dependency transaction and representative payload
+  checks exist. In particular, `already_recipe` for ffmpeg libraries does
+  not replace checking those binaries in current primary metadata.
 - **"Present in the factory repository" means published, not committed.**
   `tools/multimedia_closure.py --repodata <dir>` reads a published
   repository's `primary.xml` and fills in each requirement's NEVRA, epoch
@@ -196,4 +220,112 @@ formatting and single-quoted attributes do not change which file is read.
 
 When another recipe lands during review, refresh Packit inventory and architecture counts after merging main; keep both the multimedia and backlog gates in the combined Justfile.
 
+`reports/multimedia-closure.json` records locked upstream versions for codec recipes. Any automated workflow that bumps upstream version locks (`.github/workflows/bump-upstream-sources.yml`) must regenerate `reports/multimedia-closure.json` and include it in `add-paths` so validation tests pass and the refreshed report is committed alongside the lock bump.
+
 Stack concurrent recipe imports when they edit the same generated inventory reports; regenerate against the combined recipes and retarget the dependent PR only after its prerequisite merges to main.
+
+## Importing the codec tail
+
+Fedora does not carry every full-codec source. Query the packaging repositories
+in RPM Fusion (`https://github.com/rpmfusion/<source>.git`) and negativo17
+(`https://github.com/negativo17/<source>.git`) before declaring a binary
+unavailable. Use `tools/import_rawhide.py --branch master --remote-template`
+with the appropriate URL template: its snapshot writer records the actual
+branch, commit and tree. Validation accepts `master` only for those recipe
+owners and a remote whose repository name matches the source package; full
+commit and tree hashes remain mandatory. Never relabel that provenance as
+Fedora `rawhide` or a direct-upstream import to pass validation.
+
+Upstream archives still supply the payload. A packaging snapshot script may
+repack a VCS checkout even when the same commit has a first-party archive.
+For x264, lock the full VideoLAN commit archive, adjust the unpack directory,
+and retain the packaging repository's matching `version.h` and patches. The
+default bootstrap build emits the encoder library without the optional GPAC
+and FFmpeg CLI demuxers, breaking the FFmpeg build dependency cycle and
+avoiding an RPM Fusion-only runtime package. Its assembly tests still run.
+
+Inspect every `Source` entry, including test data, before registering a recipe.
+A valid primary archive does not cover a missing auxiliary archive. Keep the
+output pending until every payload has a verified fetch path; do not remove
+its tests or import a second source recipe under the binary name. A moved
+backlog entry records recipe availability, while publication, dependency
+resolution and a representative runtime command require separate evidence.
+
+RPM Fusion's auxiliary lookaside is `pkgs.rpmfusion.org`, not Fedora's host
+or the binary download mirror. For vvdec's `bitstreams.tar.xz`, set
+`lookaside: "rpmfusion-free"` on the source lock. This selects the fixed HTTPS
+lookaside template only for auxiliary files; the primary archive still comes
+from upstream, and each auxiliary file must match its SHA-512 `sources` pin.
+The test archive is required by `%check`; do not disable tests to avoid it.
+
+### Test failure propagation is not build evidence
+
+Read imported `%check` bodies before trusting their green builds. Every test
+that runs must propagate failure: an unconditional `|| :` or `|| true` after
+a test runner makes the result advisory, not successful. In x265, run
+`test/TestBench` without a success fallback in every built 8-, 10- and 12-bit
+directory; a failure in an earlier directory must not be hidden by a later
+`popd` or a passing variant. Keep tests for architectures that build only the
+8-bit library rather than requiring absent high-depth directories.
+
+`tools/check_suppressed_tests.py`, called by `tools/validate.py`, ratchets
+known direct test-command success fallbacks as well as `tests_nonfatal`
+definitions. Its exact inherited counts preserve already-carried main
+exceptions, not permission to add more. Probe commands (`test -f`, `grep`),
+failure-log reads and help/version queries are not test execution. The
+tripwire does not interpret arbitrary shell or RPM control flow; review
+wrappers, compound commands and conditional fallbacks separately.
+
+A clean guard or unit-test run proves this failure-propagation boundary, not
+that x265 or any other named codec builds. Require a hosted package build
+against the pinned environment for each named recipe before claiming build
+success, and separate publication, installability and representative codec
+execution evidence from both the guard result and the recipe build.
+
+## Shader compiler dependency order
+
+The audited `libshaderc` binary comes from the `shaderc` source recipe,
+not a separate source of that name. Its unbundled build needs `glslang-devel`,
+`spirv-headers-devel` and `spirv-tools-devel`. The existing `spirv-tools`
+recipe also needs `spirv-headers-devel`; register the missing source recipes
+and let their BuildRequires establish build order. Match glslang's Vulkan SDK
+version to the carried SPIR-V tools SDK (1.4.357.0 here), rather than
+importing a newer Rawhide head independently. The selected SPIR-V headers
+commit matches shaderc's upstream `DEPS`; Fedora temporarily changed its
+package version for that same commit and reverted it, so use its earlier
+1.5.5 recipe instead of the reverted version bump. This alignment is a
+preflight, not proof that the unbundled combination builds: the Fedora shaderc recipe
+already disables its upstream tests when unbundled. Verify the hosted build
+and compile a representative shader with `glslc`, then validate its SPIR-V
+output after installation from the permitted repositories.
+
+## Disc-reading dependency order
+
+`libbluray` 1.4.0 uses the external `libudfread-devel >= 1.2.0` and removes
+its bundled copy during preparation. Import and lock both source recipes;
+let the BuildRequires graph place `libudfread` first rather than assigning a
+stage. The VideoLAN `libudfread` tag archive and `libbluray` release archive
+match their Fedora `sources` SHA-512 pins. Keep the Blu-ray recipe's Java
+navigation support and utility subpackages when checking build dependencies;
+a successful library source download proves neither those builds nor runtime
+closure. A lane against the published factory needs `libudfread` published
+before it can build `libbluray`.
+
+## FireWire camera library
+
+`libdc1394` provides camera-control libraries and tools. Its Fedora recipe
+requires `libraw1394-devel`, supplied by the existing `libraw1394` recipe;
+the BuildRequires graph orders the builds. Its upstream SourceForge archive
+matches the Fedora SHA-512 source manifest. A recipe and source lock do not
+prove that the package builds, publishes, or controls a camera: verify the
+hosted build and exercise a compatible device after installation.
+
+## FireWire streaming library
+
+`libiec61883` BuildRequires `libraw1394-devel`, so the existing
+`libraw1394` recipe must build first. The upstream 1.2.0 gzip archive
+and Fedora lookaside archive have different compressed hashes but unpack
+to identical file trees; lock the upstream bytes and update the source
+manifest to match. Fedora's channel-allocation patch preserves its fallback
+when the IRM cannot be reached, allowing capture to proceed. A recipe does not
+prove streaming or hardware support; verify the behavior with a device.

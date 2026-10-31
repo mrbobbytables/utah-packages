@@ -1,0 +1,8 @@
+{
+  "package": "gnome-tour",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-tour.git",
+  "commit": "e95a49fca8a97d0232cdeb18b027455c6922699f",
+  "tree": "09357c53a71c4ca8164da721d3d4d2c094ee9578",
+  "imported_at": "2026-10-20T20:24:35.444498+00:00"
+}

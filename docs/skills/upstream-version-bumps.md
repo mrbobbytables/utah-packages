@@ -14,6 +14,22 @@ macro-only releases (`%autorelease`, `%{baserelease}`, `%{samba_release}`)
 alone because their expanded value cannot be inferred from the recipe.
 A no-op version rewrite must preserve the release.
 
+When the version changes, prepend a dated entry to an existing manual
+`%changelog`, preserving the old history. Leave `%autochangelog` sections
+alone, and do not add entries on same-version relocks or repeated applies.
+Record the RPM spelling of the new version and the reset literal release
+without `%{?dist}` or `%{dist}`, prefixed with the main package's literal `Epoch:` as
+`epoch:version-release` so rpmlint sees coherent history. If the release still depends on macros, record the known
+version alone: executing macros is outside this rewrite's scope, and leaving
+live macros in history would make later bumps change old entries. Use an
+English UTC date and the automation identity; a bump must not attribute its
+new entry to the packager who wrote the previous one. Cover manual history,
+automatic history, and both feed paths in `tests/test_upstream_bump.py`.
+A fix to this rewrite only reaches later bumps: specs already bumped keep the
+stale history until backfilled. Backfill through `update_changelog` itself,
+dated by the commit that changed `Version:`, so the entry matches what a bump
+writes today (projectbluefin/utah-packages#604).
+
 Retire the package's `dist_bump` entry when applying a new upstream version,
 for both GNOME and forge feeds. Its baseline records only the release, so a
 reset from `1` to `1` cannot invalidate it automatically: without removal the
@@ -120,9 +136,74 @@ the reference when Fedora has one. Seen so far:
   patch (libayatana-appindicator 0.6.0 needed Rawhide's gapi metadata patch
   for its mono bindings).
 
+- A new test can need a new build tool too. sso-mib 0.10.2's `client-app`
+  test runs a private bus with GTestDBus, which spawns `dbus-daemon`, so
+  `%check` aborted with `Error spawning dbus-daemon` (gate run 40032133559).
+  BuildRequire `dbus-daemon`, as ModemManager already does.
+
 Verify a fix with `rebuild-rpms.yml` dispatched on the `fix/recipe-<name>`
 ref with `packages=["<name>"]`; a non-main ref publishes only a
 branch-named tag.
+
+## A consumer that needs the next cycle
+
+The scheduled bump never crosses a release cycle (`plan()`, `cycle_final`),
+so a library locked on a GNOME development series stays there after the
+stable series ships. gtk4 sat at 4.23.4 (cycle 4.23) while 4.24.0 and 4.24.1
+were out; every run printed `needs review gtk4: 4.23.4 -> 4.24.1 (crosses a
+release cycle or a major)` and applied nothing, until nautilus 51.1 failed
+meson configure with `gtk4 ... found 4.23.4 but need: '>= 4.24.0'` (#565).
+Nothing in RPM metadata warned: nautilus's spec still says
+`pkgconfig(gtk4) >= 4.22.0`, so the BuildRequires resolved and only meson
+knew the real floor.
+
+How to spot it: a configure failure naming a factory library's *locked*
+version below a `>=` floor, or a `needs review` line for a library whose
+locked minor is odd (GNOME's development series) once the even minor has
+a final. Compare the consumer's `meson.build` floor with the lock, not its
+spec. Move it on one package with the repo's own tool, which then does the
+download, digest, spec, `sources` and fallback in one step:
+
+```sh
+python3 tools/upstream_bump.py --package gtk4 --cycle 4.24          # report
+python3 tools/upstream_bump.py --package gtk4 --cycle 4.24 --apply
+```
+
+Then check the new tarball against GNOME's `.sha256sum`, and that the
+lookaside fallback URL actually serves the same bytes. If Rawhide's recipe at
+the new version differs only by `Version:` and `sources`, re-pin provenance
+with `tools/import_rawhide.py <pkg> --ref <Koji-built commit> --replace`
+(take the commit from Koji's `getBuild().source`) and delete the inert
+files it extracts (`.gitignore`, `.packit.yaml`, `monitoring.toml`): a version
+bump alone leaves `.hummingbird-upstream.json` on the old commit, which
+`rawhide_reimport.py` then reports as factory divergence and never
+re-imports again. gtk4's 4.23.4 bump had done exactly that (pin at the 4.23.3
+commit); after the 4.24.1 re-pin the tool reports it `current`.
+
+## Soname-coupled bumps
+
+The gate builds each bumped recipe on its own, against the published
+factory, so it cannot move a library and its consumer together. When a
+library release changes its soname, both have to move in one hand pull
+request, and the build graph orders the consumer after the library (a
+`pkgconfig()` BuildRequires is an edge through the published provides).
+Version arithmetic does not catch this (#576): libjwt 1.12.1 -> 1.18.3 is
+not a major bump, but it moves the soname to `libjwt.so.2`, and the recipe
+packages `*.so.1*`.
+
+Before you couple two bumps, read the consumer's `build.log` from the gate's
+`gate-check-s0-<name>` artifact. The sso-mib 0.10.2 hold in #575 looked like
+a libjwt problem. Its log shows `libjwt found: YES 1.12.1` and a clean link.
+The real failure was the `%check` `dbus-daemon` failure listed above, so
+sso-mib moved on its own. Then check Koji's Rawhide build of the library
+(`getLatestBuilds` on the `rawhide` target's tag). On 2026-10-24 Fedora
+still shipped libjwt 1.12.1, and there was no compat package.
+
+A `bump-holds.json` entry blocks only one exact version, and the trim can
+lose it. The libjwt hold that #575's commit message names never reached
+`main`. A soname move needs a consumer rebuild for every newer release, so
+the library goes on `config/bump-review-only.txt` with the reason, the same
+way as libcdio.
 
 ## The bump gate
 
@@ -154,7 +235,8 @@ Constraints that shaped it, so they are not rediscovered:
 - Fail closed: no named packages, a build that was skipped or cancelled, a
   missing output, a bumped package that was not selected, or any failure
   blocks the merge. The diff from main may touch only
-  `config/upstream-sources.json`, `config/bump-holds.json` and `packages/**`.
+  `config/upstream-sources.json`, `config/bump-holds.json`,
+  `reports/multimedia-closure.json` and `packages/**`.
 - Review-only packages never self-merge. A bump pins the SHA-512 of
   whatever the forge serves, and the gate merges it once it builds, so the
   forge is the only party vouching for the bytes. `config/bump-review-only.txt`

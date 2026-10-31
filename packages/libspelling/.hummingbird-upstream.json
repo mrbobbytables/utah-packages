@@ -1,0 +1,8 @@
+{
+  "package": "libspelling",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libspelling.git",
+  "commit": "e170640107a953181a0c7e019fb0e424db8e189a",
+  "tree": "8145a7c70ea3709ae170c3bd1872ba01f3ffe20f",
+  "imported_at": "2026-10-18T12:48:21.890179+00:00"
+}

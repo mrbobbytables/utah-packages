@@ -1,0 +1,8 @@
+{
+  "package": "python-msgpack",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/python-msgpack.git",
+  "commit": "bea846c1df475887d022f96780a04bd046ca483d",
+  "tree": "3aec1f386734fe0e5144b3f29b976f40193288df",
+  "imported_at": "2026-10-24T04:55:33.902156+00:00"
+}

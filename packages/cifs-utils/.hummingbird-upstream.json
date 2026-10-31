@@ -1,0 +1,8 @@
+{
+  "package": "cifs-utils",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/cifs-utils.git",
+  "commit": "7d394f53deee72d404af69ff3e3a77d5950b99ba",
+  "tree": "6f85a15f14b09059a97f036eb654b177dc41fd41",
+  "imported_at": "2026-10-18T08:54:03.599575+00:00"
+}

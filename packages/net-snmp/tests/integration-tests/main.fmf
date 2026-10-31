@@ -1,0 +1,16 @@
+summary: Test snmpd
+description: ''
+contact: Susant Sahani<susant@redhat.com>
+component:
+  - net-snmp
+test: ./runtest.sh
+framework: beakerlib
+recommend:
+  - net-snmp
+  - net-snmp-utils
+  - iproute
+  - python3
+  - python3-pyroute2
+duration: 5m
+extra-summary: /CoreOS/net-snmp
+extra-task: /CoreOS/net-snmp

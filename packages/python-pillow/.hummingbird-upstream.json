@@ -1,0 +1,8 @@
+{
+  "package": "python-pillow",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/python-pillow.git",
+  "commit": "5cffeafe011c49628ee457a9ddf75bc95da0444b",
+  "tree": "4f90b86e9033a2bf9959228d6ce2794c07fed36f",
+  "imported_at": "2026-10-24T12:24:35.872784+00:00"
+}

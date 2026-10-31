@@ -149,6 +149,21 @@ feature for the same reason. When a feature is declined, decline every
 feature that pulls the same unresolvable dependency in the same commit, not
 one per run.
 
+Not every local decision is a bcond. The factory's flatpak drops Fedora's
+`flatpak-add-fedora-repos.service` (Source1, its install line, scriptlets and
+`%files` entry): it adds Fedora's OCI flatpak remotes on first boot, and
+Bluefin/Utah ships Flathub only. A hand re-import of `packages/flatpak` must
+diff for that unit and leave it out, along with the `%autorelease -b 2` that
+records the drop.
+
+A declined runtime dependency is a local decision too. Utah declined
+`adobe-source-code-pro-fonts` and `open-sans-fonts`
+(`config/factory-build-backlog.toml`), and wayland's `book` bcond made
+`wayland-doc` Require both, so the factory's wayland sets `%bcond book 0`
+(issue #612). A re-import restores Fedora's `%{undefined rhel}`; keep it off.
+When a font or other runtime package is declined, grep `packages/*/*.spec`
+for `Requires:` on it in the same commit.
+
 ## 7. Repinning a digest that upstream garbage-collects is not a fix
 
 **What happened.** `quay.io/fedora/fedora:44` and `quay.io/packit/packit`
@@ -426,6 +441,29 @@ reads `$DOCKER_CONFIG/config.json`, not podman's own auth file, so a
 "Publish the repository" step hit the same split; see its comment on
 `DOCKER_CONFIG`).
 
+The seed is not the only consumer. The same image is extracted by
+`.github/actions/load-factory-repo` in `prepare` and in every `build-stage`
+job, where its RPMs are installed into each build root with `gpgcheck=0`
+inside a privileged container holding a `packages: write` token -- so a
+planted RPM's scriptlets ran as root in CI long before the seed check could
+refuse the image at publish time. The action therefore runs the same
+`cosign verify` (same two signer files, same OIDC issuer) on the digest it
+pulled before `docker create`. Its `signer_ref` input pins the ref the way
+the seed check does, and every caller passes it (#540): prepare's
+`factory_image` step records which candidate tag matched and derives the
+signer exactly as the seed check derives `current_ref` -- `latest` gives
+`refs/heads/main` (also on a `bump/*` run of the bump gate, which reads
+`latest`), anything else (the run's branch tag, or a tag or digest named by
+`factory_tag`, such as the canary's pass1 digest under `refs/pull/N/merge`)
+gives the run's own `github.ref`. It leaves prepare as the `factory_signer_ref`
+output, which preflight's loader and every `build-stage.yml` wave forward.
+Derive the signer from the tag that resolved, never from the run's ref
+alone: a branch run that fell back to `latest` holds an image signed on
+`main`, not on the branch. The action's own empty default (`refs/heads/main`
+on `main`, any ref of this repository elsewhere) is only a backstop for a
+caller added without it. `tests/test_factory_witness.py` holds the order, the
+identity, every call site, and runs the derivation for each tag shape.
+
 ## 20. Bypassing the source-lock contract with direct JSON parsing
 
 **What happened.** `prepare` originally ran an inline heredoc that parsed
@@ -439,8 +477,17 @@ planning time.
 **Rule.** Every factory tool and workflow step must consume
 `tools.package_inventory.source_locks` or `inventory` rather than parsing
 `config/upstream-sources.json` directly from the working tree. (Historical reads
-across git ranges, such as `git show ${base_sha}:...`, remain raw JSON.) The lock
-file is parsed and validated in exactly one place.
+across git ranges, such as `git show ${base_sha}:...`, remain raw JSON, and so do
+the tools that rewrite the document itself.) The lock file is parsed and
+validated in exactly one place.
+
+**It recurred.** After this rule was written, three more read-only tools grew
+their own `{entry["name"]: entry ...}` reader — `rawhide_reimport.load_locks`,
+`audit_gnome_build_meta._load_factory_sources` and `package_index.inventory` —
+each letting the last duplicate win. They now call `source_locks` /
+`load_source_locks`, and `tests/test_source_lock_readers.py` feeds each one a
+duplicated lock and expects the shared refusal. A new read-only consumer adds a
+case there.
 
 ## 21. `continue-on-error` on a matrix job leaves a red check run on the Checks API
 
@@ -492,12 +539,38 @@ missing Packit config: plymouth") and in eleven count tests (`401 != 402`),
 failing Canary, Unit tests and Package factory configuration on every open
 pull request.
 
+**Also.** `7231f42` moved the source-lock step into the packit container
+with `--cap-drop=ALL`. That drops `CAP_DAC_OVERRIDE` too, so the container's
+root could not write the runner-owned `/output` directory, and every import
+failed with "Permission denied: /output/candidate.json" until the container
+ran as the runner user (`--user "$(id -u):$(id -g)"`), which also keeps the
+untrusted spec expansion off uid 0. A hardening change to a
+dispatch-only workflow needs one real dispatch before it merges: nothing
+else exercises it, and this one sat broken for nine days.
+
+**Also.** The first `main` build of the screen-reader stack (#466) failed
+liblouis and brltty the same way: a documentation BuildRequires
+(`texlive-xetex`, `linuxdoc-tools`) drags TeX Live, whose xetex requires
+Fedora's `libicuuc.so.77`, and the root excludes ICU 77 by default. The two
+fixes differ by whether the package itself links ICU. liblouis does not, so
+it opts in with `"buildroot_icu77": true`, as libvdpau does. brltty links
+ICU, so admitting ICU 77 would ship a brltty the consumer set rejects; it
+drops `linuxdoc-tools` instead (configure then skips the manuals). Before
+reaching for `buildroot_icu77`, check the package's own `libicu-devel`.
+
 **Rule.** Before merging an import, finish it on the import branch:
 
 - Lock the source with `tools/bootstrap_upstream_sources.py --package <name>
   --merge`. It needs `rpmspec`; run it inside the pinned
   `quay.io/packit/packit` image (digest in `packit-srpm-chunk.yml`) when the
   host has none. Add the Fedora lookaside as `fallback_urls`, never as `url`.
+  An explicit rejection must leave the existing lock byte-for-byte unchanged
+  (or absent) while writing its diagnostic report and returning nonzero.
+  The report and source lock must be distinct files; reject path aliases
+  before processing a recipe so the report cannot overwrite the lock.
+  Check that path with and without `--merge`: omitting the flag used to empty
+  the catalog before reporting the rejection (#520). A successful command
+  without `--merge` still replaces the catalog, so keep the flag for imports.
 - Regenerate `.packit.yaml` with `python3 tools/render_packit_config.py
   --write`.
 - Refresh the counts in `docs/architecture.md` with
@@ -505,6 +578,75 @@ pull request.
   (`tests/test_architecture_counts.py`) reads the inventory directly, so the
   four `tests/` files that used to carry the count no longer track it.
 - `just check` green on the import branch, not after merge.
+
+Several imports for one feature (the #447 screen-reader stack: orca,
+speech-dispatcher, espeak-ng, brltty, liblouis and their libraries) land as
+one branch that merges each `import/rawhide-<name>` in turn. Every bot branch
+appends to the same end of `config/upstream-sources.json`, so each merge
+conflicts there: resolve it as the union of both sides' `packages` (an entry
+present on both sides must be identical), keeping `json.dumps(..., indent=2)`
+formatting. Do not hand-resolve `.packit.yaml` or the counts in
+`docs/architecture.md`; after the last merge rerun
+`render_packit_config.py --write` and `render_architecture_counts.py --write`,
+because each bot branch counted only itself (+1) and git can merge those
+identical edits silently into a stale count. Then move every imported name
+and subpackage from the backlog in the same branch. Run the full test suite
+on the combined branch, not only per import: an edge between two of the
+imports appears only once both recipes exist. orca BuildRequires brltty's
+`brlapi-devel`, and brltty BuildRequires `libicu-devel`, so
+`tests/test_icu_staging.py` (which still reads hand `stage` values, unlike
+`build_graph.py`) failed until orca got `"stage": 1`, as ptyxis and vte291
+did in #413; the stage count in `docs/architecture.md` then needs another
+`render_architecture_counts.py --write`.
+
+A Fedora `sources` file that pins by MD5 (`<md5>  file`, libao) fails both
+the bot's lock step and `tools/validate.py` (`check_sources_digests`). Import
+it by hand: download the upstream release, confirm its MD5 equals Fedora's
+pin (the same bytes), repin `sources` to `SHA512 (file) = <hex>`, and lock
+the upstream URL with Fedora in `fallback_urls`. Old lookaside uploads exist
+only under the `/md5/<md5>/` path (the `/sha512/` path 404s), so the fallback
+uses that form; verify it serves the same bytes.
+
+Two more ways the bot import fails, both seen on 2026-10-22:
+
+- **Plain-http `Source0`** (powertop, brltty before it). The lock step
+  accepts it and copies the URL verbatim, then the propose job's
+  `tools/validate.py` rejects the lock ("source lock fetches over plain
+  http://"). The bootstrap download already proved the bytes match Fedora's
+  `sources`, so lock the same URL as `https://` with the Fedora
+  `/sha512/` lookaside in `fallback_urls`, and leave the spec's `Source0`
+  alone: the build stages from the lock.
+- **"needs explicit mapping: 1"** (fpaste). The workflow does not upload the
+  report, so rerun the bootstrap locally to read the `rejected` reason; for
+  fpaste the `Source0` URL 404s because pagure.io, its host, was sunset in
+  2026. Find where the project went (fpaste: Codeberg) and compare
+  bytes. A forge tag archive is not Fedora's tarball: fpaste's lookaside copy
+  is a hand-made `fpaste-<v>/` tarball, while Codeberg's archive has the
+  `fpaste/` prefix, a pax commit comment and a `.gitignore`. When no upstream
+  serves Fedora's bytes, unpack both, and if the trees agree, add a generator
+  to `tools/generated_sources.py` (with tests), repin `sources` to the
+  generated digest, and lock it as a `generate` entry
+  ([`contributing.md`](../contributing.md)). Do not add a Fedora fallback to
+  that entry: it would serve different bytes.
+
+Three more import findings from the tuned/powertop runtime-provider wave
+(2026-10-24, utah#388):
+
+- **A retired Rawhide recipe is not the provider.** `python-inotify` is a
+  `dead.package` ("Obsoleted by python3-pyinotify"); the import succeeds and
+  leaves only that file. Read the replacement recipe: `python-pyinotify`
+  carries `Provides: python3-inotify`, so import it and close the
+  `python3-inotify` backlog name with it.
+- **Same tarball, different compression.** kernel.org's
+  `python-linux-procfs-0.7.4.tar.xz` differs from Fedora's lookaside copy,
+  but the decompressed tars are byte-identical (compare `xz -dc | sha256sum`).
+  Lock the upstream xz and repin `sources` to its digest instead of locking
+  the lookaside as primary and growing `config/fedora-primary-sources.txt`.
+- **Find the missing runtime Requires from repodata, not from the spec.**
+  Resolve each published RPM's `rpm:requires` against the provides of the
+  factory primary plus Hummingbird primary
+  ([`repo-inspection.md`](repo-inspection.md)); a spec's conditionals hide the
+  answer. Rich `(x if y)` deps are not missing providers.
 
 The daily re-import of carried recipes (`tools/rawhide_reimport.py`, the
 `bump` job in `detect-rawhide-updates.yml`) cannot repeat this: it only
@@ -561,6 +703,31 @@ triggered bot heads; then bind that context to GitHub Actions in the ruleset
 and verify both failing and passing candidates. Requiring the existing
 bot-only job globally strands ordinary PRs. See the operator procedure in
 [`architecture.md`](../architecture.md#checks-versus-merge-requirements).
+
+## Only runtime dependencies have to exist in Hummingbird or the factory
+
+The build root is Fedora 44 plus `public-hummingbird`
+([`targeting-hummingbird.md`](../targeting-hummingbird.md)), so a recipe's
+`BuildRequires` on `bison`, `flex`, `texinfo`, `asciidoc`, `libappstream-glib`
+or `sequoia-sqv` resolve from Fedora at build time and need no import. Checking
+BuildRequires against the Hummingbird primary metadata alone wrongly marks
+those recipes as blocked, and answering by editing the spec (dropping man
+pages or signature checks) trades shipped behavior for a problem that does not
+exist. Check the *binary* `Requires` of the built RPMs against Hummingbird and
+the published factory image instead.
+
+Two import quirks from the dev-tools wave (utah#392):
+
+- Fedora renamed the `tree` source package to `tree-pkg` (`packages/tree/` only
+  holds `dead.package`). Import `tree-pkg`; the binary package is still `tree`,
+  so the backlog entry is `tree`.
+- `lsof`'s Source0 is the Linux-only `-rh` repack (`upstream2downstream.sh`) and
+  `words`' only copy is a 2006 Wayback tarball. Neither has a verbatim upstream
+  URL, so they lock Fedora's lookaside (sha512 path for lsof, md5 path for
+  words) and sit in `config/fedora-primary-sources.txt`. Never run
+  `bootstrap_upstream_sources.py` without `--merge` on a populated lock: the
+  default output path is `config/upstream-sources.json` itself and the run
+  replaces the whole lock with the one candidate.
 
 ## Quick checks before pushing a fix
 

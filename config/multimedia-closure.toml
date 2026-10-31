@@ -205,6 +205,33 @@ switched off. RPM Fusion's ffmpeg is the same source with the full codec set,
 which is what `ffmpeg`, `ffmpeg-libs` and `libavcodec` are mapped to.
 """
 
+[parity.gstreamer1-plugin-libav]
+status = "fedora-restricted"
+reason = """
+Imported from src.fedoraproject.org/rpms/gstreamer1-plugin-libav (singular
+`plugin`) at the gstreamer1 family version pinned here (1.28.6, Rawhide commit
+73e9b14), not at Rawhide head, so its `gstreamer1-devel >= %{version}` resolves
+against this factory's gstreamer1. It is built against this factory's
+`ffmpeg-free-devel`, so the bridge exposes only the codecs Fedora's `-free`
+ffmpeg carries: its spec passes `--disable-decoder="h264,hevc,vc1,vvc"`, so
+the bridge has no native `avdec_h264`/`avdec_h265`.
+`[upstream_spec_sources]` names RPM Fusion's `gstreamer1-libav`, built against
+the full-codec ffmpeg, which is the parity #230 tracks and which needs the
+factory's ffmpeg moved to the RPM Fusion spec first.
+"""
+
+[parity.gstreamer1-plugins-ugly-free]
+status = "fedora-restricted"
+reason = """
+Imported from src.fedoraproject.org/rpms/gstreamer1-plugins-ugly-free at the
+gstreamer1 family version pinned here (1.28.6, Rawhide commit 207f329), not at
+Rawhide head, so its `gstreamer1-devel >= %{version}` resolves against this
+factory's gstreamer1. It is the free subset under the exact name Bluefin asks
+for; `[upstream_spec_sources]` names RPM Fusion's gstreamer1-plugins-ugly, the
+full set including the patent-encumbered plugins, which is the parity #230
+tracks.
+"""
+
 [built]
 # requirement = the factory source recipe under `packages/` that emits a binary
 # of exactly this name.
@@ -227,7 +254,19 @@ mesa-vulkan-drivers = "mesa"
 gstreamer1-plugins-bad-free = "gstreamer1-plugins-bad-free"
 gstreamer1-plugins-bad-free-libs = "gstreamer1-plugins-bad-free"
 gstreamer1-plugins-base = "gstreamer1-plugins-base"
+# `gstreamer1-plugin-dav1d` is not a dist-git repository under its own name;
+# the binary is the `%package -n` subpackage of the rust-gst-plugin-dav1d
+# source, which builds its Rust `dav1d` crate dependency bundled by default.
+gstreamer1-plugin-dav1d = "rust-gst-plugin-dav1d"
 gstreamer1-plugins-good = "gstreamer1-plugins-good"
+# Fedora's free subset under the exact name Bluefin asks for, imported at the
+# gstreamer1 family version pinned here (1.28.6), not at Rawhide head.
+gstreamer1-plugins-ugly-free = "gstreamer1-plugins-ugly-free"
+# Fedora's dist-git `gstreamer1-plugin-libav` (singular `plugin`), imported at the
+# gstreamer1 family version pinned here (1.28.6, the "Rebuilt for FFmpeg 9"
+# Rawhide commit 73e9b14), not at Rawhide head (1.28.8), and built against this
+# factory's ffmpeg-free-devel.
+gstreamer1-plugin-libav = "gstreamer1-plugin-libav"
 # Behind `%bcond openh264 %{defined fedora}` in the bad-free recipe, and the
 # build root is Fedora 44 paired with Hummingbird, so it is defined. The
 # BuildRequires it needs, pkgconfig(openh264), comes from the factory's own
@@ -304,50 +343,6 @@ negativo17's `libfdk-aac` is the complete Fraunhofer FDK AAC library, sourced fr
 RPM Fusion's fdk-aac spec. Fedora ships `fdk-aac-free`, the subset with patent-encumbered
 profiles removed, built by `packages/fdk-aac-free`. Decoding comes from the FFmpeg
 libraries above; encoding uses fdk-aac-free.
-"""
-
-[exception.gstreamer1-plugin-libav]
-reason = """
-The GStreamer-to-FFmpeg bridge. Two specs carry that bridge and
-`[upstream_spec_sources]` names the one Bluefin installs today: RPM Fusion's
-`gstreamer1-libav`, built against RPM Fusion's full-codec ffmpeg. The closing
-path planned here is the *other* one, Fedora's dist-git
-`gstreamer1-plugin-libav` (singular `plugin`), built against this factory's
-ffmpeg, which is Fedora's `-free` flavour -- so the import closes the
-requirement by name and lands at `fedora-restricted` parity, not at the named
-upstream. Declare that in `[parity]` when the recipe arrives; closing the
-codec gap too means moving this factory's ffmpeg to the RPM Fusion spec first.
-Fedora's recipe is at 1.28.7 and carries
-`BuildRequires: gstreamer1-devel >= %{version}`, while this factory's
-gstreamer1 family is pinned at 1.28.6, so importing it today would add a
-BuildRequires nothing in the build root satisfies --
-`docs/skills/repeated-mistakes.md` #2, a package and the family it is released
-with pinned separately. Bump gstreamer1, gstreamer1-plugins-base,
-gstreamer1-plugins-good and gstreamer1-plugins-bad-free to 1.28.7 in one
-change, then import this at a stage above ffmpeg's.
-"""
-
-[exception.gstreamer1-plugins-ugly-free]
-reason = """
-GStreamer's `ugly` plugin set. `[upstream_spec_sources]` names RPM Fusion's
-`gstreamer1-plugins-ugly`, the full set including the patent-encumbered
-plugins, because that is the repository Bluefin installs from. The closing
-path planned here is Fedora's dist-git `gstreamer1-plugins-ugly-free`, the
-free subset under the exact name Bluefin asks for, at the gstreamer1 family
-version -- so, as with gstreamer1-plugin-libav, the import closes the
-requirement by name at `fedora-restricted` parity rather than at the named
-upstream, and wants a `[parity]` entry saying so. No recipe here yet; it is
-import-ready once that family moves, and it has to move with
-gstreamer1-plugin-libav.
-"""
-
-[exception.gstreamer1-plugin-dav1d]
-reason = """
-The AV1 decoder plugin. It is neither a subpackage of any recipe here nor a
-dist-git repository under its own name, so resolving its source is the first
-step, and it needs Fedora's dav1d in the factory underneath it. Nothing in
-Utah's desktop transaction requires it today; it is listed so the count of what
-`@multimedia` asks for is honest.
 """
 
 [exception.alsa-ucm]

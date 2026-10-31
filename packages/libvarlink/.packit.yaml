@@ -1,0 +1,22 @@
+# See the documentation for more information:
+# https://packit.dev/docs/configuration/
+
+specfile_path: libvarlink.spec
+
+# add or remove files that should be synced
+files_to_sync:
+    - libvarlink.spec
+    - .packit.yaml
+
+# name in upstream package repository/registry (e.g. in PyPI)
+upstream_package_name: libvarlink
+upstream_project_url: https://github.com/varlink/libvarlink
+
+copy_upstream_release_description: true
+
+# downstream (Fedora) RPM package name
+downstream_package_name: libvarlink
+
+dist_git_branches:
+  rawhide:
+    fast_forward_merge_into: [fedora-branched]

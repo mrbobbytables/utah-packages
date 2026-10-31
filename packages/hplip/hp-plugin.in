@@ -1,0 +1,63 @@
+#!/usr/bin/bash
+
+# get version from base hplip rpm
+VER=$(@bindir@/rpm -q hplip --queryformat='%{version}')
+
+if test "x$VER" = "x"
+then
+  @bindir@/echo "Version was not acquired - exiting..."
+  exit 1
+fi
+
+# plugin name
+PLUGIN_FILE="hplip-${VER}-plugin.run"
+
+download()
+{
+  SOURCE="$1"
+
+  @bindir@/curl -f --user-agent 'Mozilla/5.0 (compatible; hplip-plugin/1.0)' --create-dirs -O  --output-dir ~/.hplip --location "${SOURCE}"
+}
+
+# link to the plugin and HP's detached signature for it
+PLUGIN_SOURCE="https://www.openprinting.org/download/printdriver/auxfiles/HP/plugins/${PLUGIN_FILE}"
+
+# HP signs every plugin. HPLIP's own hp-plugin verifies it against this key
+# (fingerprint 82FFA7C6AA7411D934BDE173AC69536A2CF3A243, base/validation.py);
+# the package ships it as a keyring so nothing is fetched from a keyserver.
+KEYRING="@HPLIP_PLUGIN_KEYRING@"
+
+# create a hidden hplip dir to store a file indicating the plugin version after successful install
+# the directory can be used by other hplip tools, so we don't have to remove it if the failure happens
+if [ ! -d ~/.hplip ]
+then
+  @bindir@/mkdir ~/.hplip || (@bindir@/echo "Cannot create the ~/.hplip dir, exiting" && exit 1)
+fi
+
+@bindir@/rm -f ~/.hplip/${PLUGIN_FILE} ~/.hplip/${PLUGIN_FILE}.asc &> /dev/null
+
+download ${PLUGIN_SOURCE}
+download ${PLUGIN_SOURCE}.asc
+
+# Never run a plugin whose signature does not verify.
+if ! @bindir@/gpgv --keyring "${KEYRING}" ~/.hplip/${PLUGIN_FILE}.asc ~/.hplip/${PLUGIN_FILE}
+then
+  @bindir@/echo "The plugin is missing or its signature from HP does not verify - not running it, exiting..."
+  @bindir@/rm -f ~/.hplip/${PLUGIN_FILE} ~/.hplip/${PLUGIN_FILE}.asc &> /dev/null
+  exit 1
+fi
+
+@bindir@/bash ~/.hplip/${PLUGIN_FILE}
+
+if [ $? -ne 0 ]
+then
+  @bindir@/echo "Plugin installation failed, exiting..."
+  @bindir@/rm -f ~/.hplip/${PLUGIN_FILE} ~/.hplip/${PLUGIN_FILE}.asc &> /dev/null
+  exit 1
+fi
+
+@bindir@/rm -f ~/.hplip/${PLUGIN_FILE} ~/.hplip/${PLUGIN_FILE}.asc &> /dev/null
+@bindir@/rm -f ~/.hplip/plugin-installed-* &> /dev/null
+@bindir@/touch ~/.hplip/plugin-installed-$VER
+
+exit 0

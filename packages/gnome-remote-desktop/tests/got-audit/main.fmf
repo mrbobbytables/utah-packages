@@ -1,0 +1,10 @@
+summary: Audit the GOT for signs of tampering
+description: |
+  Pointers in the server process GOT will be checked to ensure that
+  each function pointer's value is within a shared object file
+  that exports a symbol of that name, and that no shared object
+  files export conflicting symbols.
+contact: Gordon Messmer <gordon.messmer@gmail.com>
+require+:
+  - gdb-gef           # needed to test got-audit
+  - gnome-remote-desktop

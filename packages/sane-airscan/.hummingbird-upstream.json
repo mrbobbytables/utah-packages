@@ -1,0 +1,8 @@
+{
+  "package": "sane-airscan",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/sane-airscan.git",
+  "commit": "9c8d594314571997ac057bf1c5bc8180c2afc9b0",
+  "tree": "51edc69ec8a417e77cb8d1e2e372001d96041bb4",
+  "imported_at": "2026-10-24T03:58:27.659658+00:00"
+}

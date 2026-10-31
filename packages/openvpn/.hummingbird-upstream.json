@@ -1,0 +1,8 @@
+{
+  "package": "openvpn",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/openvpn.git",
+  "commit": "f46be18f1ee832437b1aa8c55daf9aa3a1ed01de",
+  "tree": "fbc9e360ea78e1dffd02ad0c10e1dee12093f44b",
+  "imported_at": "2026-10-18T08:53:49.141639+00:00"
+}

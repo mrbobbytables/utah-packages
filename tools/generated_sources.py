@@ -10,8 +10,28 @@ that no upstream publishes verbatim:
 - tailscale: a go-vendored bundle (packages/tailscale/create-vendor-tarball.sh)
 - gpm: the upstream release with doc/specs removed, because those PDFs carry
   unclear licensing (the recipe's own comment above its Source line)
-- python-pydantic-core: the PyPI sdist plus its Cargo.lock dependencies
-  vendored, because neither Fedora 44 nor Hummingbird ships Rust crate RPMs
+- hplip: the upstream release with `locatedriver` removed (a license-related
+  removal the recipe's `hplip-repack.sh` performs by hand, documented by the
+  comment above the spec's Source0 line)
+- freerdp: the upstream release without
+  `winpr/libwinpr/crt/unicode_builtin.c` (a file whose license Fedora does
+  not allow; the recipe's `freerdp_download_and_repack.sh` deletes it by hand,
+  documented by the comment above the spec's Source0 line)
+- openal-soft: the upstream release with the bundled fmt tree and the
+  non-free utils HRTF datasets removed (packages/openal-soft/make_tarball.sh)
+- fpaste: the upstream Codeberg tag archive under the `fpaste-<version>/`
+  prefix the recipe's `%autosetup` expects. The recipe's Source0 host
+  (pagure.io) was sunset in 2026 and the project publishes no release
+  tarball; Fedora's lookaside copy is a hand-made tarball of the same tree
+- bluefin-artwork-logos: the Bluefin logo SVGs and the license from
+  projectbluefin/artwork at a pinned commit. The repository publishes no
+  release, and its archive carries every wallpaper (well over 100 MB) for
+  three small files, so each file is fetched at the commit, SHA-512-checked,
+  and packed into one archive
+- libslirp, rtmpdump: `git archive` of an upstream tag at a pinned commit.
+  Neither project publishes a release file; Fedora's tarballs are a GitLab
+  tag archive and a hand-run `git archive`, whose tar streams this
+  reproduces byte for byte (GIT_ARCHIVE_SOURCES)
 
 For these, the source lock names this script and records the SHA-512 of the
 bytes the transformation produces. Verification re-runs the transformation
@@ -27,6 +47,7 @@ without installing anything at runtime.
 from __future__ import annotations
 
 import fnmatch
+import functools
 import gzip
 import hashlib
 import io
@@ -61,9 +82,34 @@ GPM_INPUT_SHA512 = {
     "1.20.7": "a502741e2f457b47e41c6d155b1f7ef7c95384fd394503f82ddacf80cde9cdc286c906c77be12b6af8565ef1c3ab24d226379c1dcebcfcd15d64bcf3e94b63b9",
 }
 
+
+OPENAL_SOFT_INPUT_SHA512 = {
+    "1.24.2": "5ac05fb20b414dfe50e6ac80a69d1e36db5588fd2ccef2606ae1f3b6fc155881d45826031660123101a31469e24bc2bea42993d81b28dd5f18d0d0463988fa65",
+}
+
 PYDANTIC_CORE_INPUT_SHA512 = {
     "2.46.5": "7af13f280d74ab0ded8e9299820930b0257502017f6a688d7d598e72351e127e178db11aeab987decaf95ca8619e151f244392ad9638ea184625728dcbb7cfff",
 }
+
+FPASTE_INPUT_SHA512 = {
+    "0.5.0.0": "0337bca5141d8ec99d2b7ea4710c6852f7abd1c8d6481c5051d572e7fdfe7a99f5741ea69fa802a2d514fa0c23eb215357ef6599a27226880e4e272ed0b8b46f",
+}
+
+HPLIP_INPUT_SHA512 = {
+    "3.26.6": "1bebae77c6a71029647e391b743dae1b52b0e4ea7ff4a728fbf592160f9f8607e0196d8045189b1f032654d1e9724de464bf9ad2c79c553c4d6ffe9af7d3c5fa",
+}
+
+# Commit -> SHA-512 of every file taken from it. A commit is immutable, but
+# raw.githubusercontent.com is a CDN; the digests make it fail closed anyway.
+BLUEFIN_ARTWORK_FILES = {
+    "9ab493bf1fb3ae41594b6bb0a2c5f2350d81de01": {
+        "LICENSE": "dc6b68d13b8cf959644b935f1192b02c71aa7a5cf653bd43b4480fa89eec8d4d3f16a2278ec8c3b40ab1fdb233b3173a78fd83590d6f739e0c9e8ff56c282557",
+        "assets/vector/logos/bluefin/bluefin-logo-dark.svg": "947ab6e7a24dcabcbef41a2d5f46400c815dbe0199933194e5cf5ffefaf6c547364b9222a60a2fbca01995ac9801778775cd018a93df35ba0442a14394c20ea5",
+        "assets/vector/logos/bluefin/bluefin-logo-light.svg": "97ec4f9a726a836928af9a50c8abeb2123205d6c3b1bdb19c1199d1d1429533510df6f78abd8c12b1d1a24047744c664ac47629298210d1aea8a2f797800b42a",
+    },
+}
+
+BLUEFIN_ARTWORK_RAW_URL = "https://raw.githubusercontent.com/projectbluefin/artwork/{commit}/{path}"
 
 
 def sha512_path(path: Path) -> str:
@@ -350,6 +396,279 @@ def _gpm_generate(package_dir: Path, out_dir: Path) -> Path:
     return target
 
 
+# --- openal-soft -----------------------------------------------------------------
+
+
+def _openal_soft_dropped(name: str, version: str) -> bool:
+    """The exact removal set of packages/openal-soft/make_tarball.sh.
+
+    The script deletes the bundled fmt tree (`rm -rf openal-soft-$VERSION/fmt-*/`)
+    and the non-free HRTF datasets (`rm -rf openal-soft-$VERSION/utils/*.def`,
+    a non-recursive glob, so a .def nested deeper would stay).
+    """
+    top = f"openal-soft-{version}"
+    rel = name.rstrip("/")
+    if rel == top or not rel.startswith(top + "/"):
+        return False
+    rest = rel[len(top) + 1:]
+    first, _, remainder = rest.partition("/")
+    if first.startswith("fmt-"):
+        return True
+    return first == "utils" and "/" not in remainder and remainder.endswith(".def")
+
+
+def _openal_soft_transform(archive: bytes, version: str) -> bytes:
+    """Repack the upstream .tar.bz2 without fmt and the non-free datasets.
+
+    Same tree make_tarball.sh produces by hand, made deterministically:
+    members keep the archive's own modes and mtimes, are sorted by name with
+    ownership zeroed, and are compressed as a single xz stream. Fedora's
+    lookaside copy is that tarball made by hand, so its bytes cannot be
+    reproduced; the kept 343 files were verified byte-identical against it.
+    """
+    raw = io.BytesIO()
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:bz2") as source:
+        members = sorted(source.getmembers(), key=lambda m: m.name.rstrip("/"))
+        with tarfile.open(fileobj=raw, mode="w", format=tarfile.PAX_FORMAT) as result:
+            for member in members:
+                if _openal_soft_dropped(member.name, version):
+                    continue
+                member.uid = member.gid = 0
+                member.uname = member.gname = ""
+                result.addfile(member, source.extractfile(member) if member.isreg() else None)
+    out = io.BytesIO()
+    _xz_compress_stream(iter([raw.getvalue()]), out)
+    return out.getvalue()
+
+
+def _openal_soft_metadata(package_dir: Path) -> dict:
+    version = spec_version(package_dir, "openal-soft.spec")
+    return {
+        "name": "openal-soft",
+        "version": version,
+        "filename": f"openal-soft-{version}-clean.tar.xz",
+        "generate": {
+            "script": SCRIPT_PATH,
+            "input": f"https://openal-soft.org/openal-releases/openal-soft-{version}.tar.bz2 (sha512-pinned)",
+            "method": f"remove the bundled fmt-*/ tree and utils/*.def datasets (non-free, per make_tarball.sh) from the upstream release and repack deterministically as openal-soft-{version}-clean.tar.xz",
+        },
+    }
+
+
+def _openal_soft_generate(package_dir: Path, out_dir: Path) -> Path:
+    version = spec_version(package_dir, "openal-soft.spec")
+    pin = OPENAL_SOFT_INPUT_SHA512.get(version)
+    if pin is None:
+        raise RuntimeError(f"no pinned input SHA-512 for openal-soft {version}")
+    url = f"https://openal-soft.org/openal-releases/openal-soft-{version}.tar.bz2"
+    request = urllib.request.Request(url, headers={"User-Agent": "utah-packages-generated-source/1"})
+    with urllib.request.urlopen(request, timeout=300) as response:
+        payload = response.read()
+    actual = hashlib.sha512(payload).hexdigest()
+    if actual != pin:
+        raise RuntimeError(f"input archive mismatch for {url}: expected {pin}, got {actual}")
+    target = out_dir / f"openal-soft-{version}-clean.tar.xz"
+    target.write_bytes(_openal_soft_transform(payload, version))
+    return target
+
+
+# --- hplip ---------------------------------------------------------------------
+
+HPLIP_UPSTREAM_URL = "https://downloads.sourceforge.net/project/hplip/hplip/{version}/hplip-{version}.tar.gz"
+
+
+def _hplip_transform(archive: bytes, version: str) -> bytes:
+    """Repack the upstream .tar.gz without `locatedriver`, as Fedora's recipe does.
+
+    packages/hplip/hplip.spec documents the transformation above its Source0
+    line: unpack the upstream tarball, remove `locatedriver` (a
+    license-related removal, see https://bugs.launchpad.net/hplip/+bug/2028938
+    via the recipe's `hplip-repack.sh`), and recompress. Fedora's lookaside
+    copy is that tarball made by hand, so its bytes cannot be reproduced;
+    this makes the same tree deterministically. Members keep the archive's
+    own modes and mtimes, are sorted by name with ownership zeroed, and are
+    compressed with `gzip -n -9` so no name or timestamp enters the header.
+    """
+    doomed = f"hplip-{version}/locatedriver"
+    tar_buf = io.BytesIO()
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:gz") as source:
+        members = sorted(source.getmembers(), key=lambda m: m.name.rstrip("/"))
+        with tarfile.open(fileobj=tar_buf, mode="w", format=tarfile.PAX_FORMAT) as result:
+            for member in members:
+                name = member.name.rstrip("/")
+                if name == doomed:
+                    continue
+                member.uid = member.gid = 0
+                member.uname = member.gname = ""
+                result.addfile(member, source.extractfile(member) if member.isreg() else None)
+    tar_bytes = tar_buf.getvalue()
+    proc = subprocess.Popen(
+        ["gzip", "-n", "-9"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
+    out, _ = proc.communicate(tar_bytes)
+    if proc.returncode != 0:
+        raise RuntimeError("gzip failed")
+    return out
+
+
+def _hplip_metadata(package_dir: Path) -> dict:
+    version = spec_version(package_dir, "hplip.spec")
+    return {
+        "name": "hplip",
+        "version": version,
+        "filename": f"hplip-{version}-repack.tar.gz",
+        "generate": {
+            "script": SCRIPT_PATH,
+            "input": f"{HPLIP_UPSTREAM_URL.format(version=version)} (sha512-pinned)",
+            "method": f"remove locatedriver (license-related, per hplip.spec/hplip-repack.sh) from the upstream release and repack deterministically as hplip-{version}-repack.tar.gz",
+        },
+    }
+
+
+def _hplip_generate(package_dir: Path, out_dir: Path) -> Path:
+    version = spec_version(package_dir, "hplip.spec")
+    pin = HPLIP_INPUT_SHA512.get(version)
+    if pin is None:
+        raise RuntimeError(f"no pinned input SHA-512 for hplip {version}")
+    url = HPLIP_UPSTREAM_URL.format(version=version)
+    request = urllib.request.Request(url, headers={"User-Agent": "utah-packages-generated-source/1"})
+    with urllib.request.urlopen(request, timeout=300) as response:
+        payload = response.read()
+    actual = hashlib.sha512(payload).hexdigest()
+    if actual != pin:
+        raise RuntimeError(f"input archive mismatch for {url}: expected {pin}, got {actual}")
+    target = out_dir / f"hplip-{version}-repack.tar.gz"
+    target.write_bytes(_hplip_transform(payload, version))
+    return target
+
+# --- freerdp ---------------------------------------------------------------------
+
+FREERDP_UPSTREAM_URL = "https://github.com/FreeRDP/FreeRDP/archive/{version}/FreeRDP-{version}.tar.gz"
+
+FREERDP_INPUT_SHA512 = {
+    "3.32.2": "2f036908fc96650fcec0810c05cf7fbad08f7c47a27aa7951b25e4bc1f390eb47223eaeaf622715bf2df6bd056e7f245502a3af57e606fd53d214c121a862a7e",
+}
+
+FREERDP_DOOMED = "winpr/libwinpr/crt/unicode_builtin.c"
+
+
+def _freerdp_record_size(header: bytes) -> int:
+    raw = header[124:136].split(b"\0")[0].strip()
+    return int(raw or b"0", 8)
+
+
+def _freerdp_pax_path(data: bytes) -> str | None:
+    for line in data.split(b"\n"):
+        if b"=" not in line:
+            continue
+        key, _, value = line.partition(b"=")
+        if key.split(b" ", 1)[-1] == b"path":
+            return value.decode()
+    return None
+
+
+def _freerdp_transform(archive: bytes, version: str) -> bytes:
+    """Repack the upstream .tar.gz without unicode_builtin.c, as Fedora's recipe does.
+
+    packages/freerdp/freerdp.spec documents the transformation above its
+    Source0 line: download the upstream release, delete
+    `*/winpr/libwinpr/crt/unicode_builtin.c` (a file whose license is not
+    allowed), and recompress with `gzip -9 -n`. GNU tar's `--delete` also
+    drops the leading `pax_global_header` records, so Fedora's lookaside copy
+    starts at the top directory. This drops the same records by raw 512-byte
+    slicing and leaves every other member byte-identical, which reproduces
+    Fedora's archive exactly (the generated 3.32.2 output hashes identically
+    to the lookaside copy). Exactly one matching member is required; anything
+    else fails closed.
+    """
+    top = f"FreeRDP-{version}"
+    doomed = f"{top}/{FREERDP_DOOMED}"
+    payload = gzip.decompress(archive)
+    records = [payload[i:i + 512] for i in range(0, len(payload), 512)]
+    drops: set[int] = set()
+    pending: list[tuple[int, int, bytes]] = []
+    found = 0
+    seen_member = False
+    i = 0
+    while i < len(records):
+        header = records[i]
+        if header == b"\0" * 512:
+            break
+        kind = header[156:157]
+        span = 1 + (_freerdp_record_size(header) + 511) // 512
+        if kind == b"g":
+            if not seen_member:
+                drops.update(range(i, i + span))
+            pending = []
+        elif kind in (b"x", b"L", b"K"):
+            pending.append((i, span, kind))
+        else:
+            seen_member = True
+            name = header[:100].split(b"\0")[0].decode()
+            prefix = header[345:500].split(b"\0")[0].decode()
+            full = f"{prefix}/{name}" if prefix else name
+            for (at, length, ext) in pending:
+                data = b"".join(records[at + 1:at + length])
+                if ext == b"x":
+                    override = _freerdp_pax_path(data)
+                    if override is not None:
+                        full = override
+                elif ext == b"L":
+                    full = data.split(b"\0")[0].decode()
+            if full == doomed:
+                found += 1
+                for (at, length, _) in pending:
+                    drops.update(range(at, at + length))
+                drops.update(range(i, i + span))
+            pending = []
+        i += span
+    if found != 1:
+        raise RuntimeError(f"expected exactly one {doomed} member, found {found}")
+    out = b"".join(record for index, record in enumerate(records) if index not in drops)
+    proc = subprocess.Popen(
+        ["gzip", "-n", "-9"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
+    compressed, _ = proc.communicate(out)
+    if proc.returncode != 0:
+        raise RuntimeError("gzip failed")
+    return compressed
+
+
+def _freerdp_metadata(package_dir: Path) -> dict:
+    version = spec_version(package_dir, "freerdp.spec")
+    return {
+        "name": "freerdp",
+        "version": version,
+        "filename": f"FreeRDP-{version}-repack.tar.gz",
+        "generate": {
+            "script": SCRIPT_PATH,
+            "input": f"{FREERDP_UPSTREAM_URL.format(version=version)} (sha512-pinned)",
+            "method": f"remove {FREERDP_DOOMED} (license not allowed, per freerdp.spec/freerdp_download_and_repack.sh) from the upstream release and repack deterministically as FreeRDP-{version}-repack.tar.gz",
+        },
+    }
+
+
+def _freerdp_generate(package_dir: Path, out_dir: Path) -> Path:
+    version = spec_version(package_dir, "freerdp.spec")
+    pin = FREERDP_INPUT_SHA512.get(version)
+    if pin is None:
+        raise RuntimeError(f"no pinned input SHA-512 for freerdp {version}")
+    url = FREERDP_UPSTREAM_URL.format(version=version)
+    request = urllib.request.Request(url, headers={"User-Agent": "utah-packages-generated-source/1"})
+    with urllib.request.urlopen(request, timeout=300) as response:
+        payload = response.read()
+    actual = hashlib.sha512(payload).hexdigest()
+    if actual != pin:
+        raise RuntimeError(f"input archive mismatch for {url}: expected {pin}, got {actual}")
+    target = out_dir / f"FreeRDP-{version}-repack.tar.gz"
+    target.write_bytes(_freerdp_transform(payload, version))
+    return target
+
+
 # --- python-pydantic-core ------------------------------------------------------
 
 CRATES_IO_INDEX = "registry+https://github.com/rust-lang/crates.io-index"
@@ -506,18 +825,266 @@ def _pydantic_core_generate(package_dir: Path, out_dir: Path) -> Path:
     return target
 
 
+# --- fpaste ----------------------------------------------------------------------
+
+FPASTE_UPSTREAM_URL = "https://codeberg.org/sanjay_ankur/fpaste/archive/{version}.tar.gz"
+
+
+def _fpaste_transform(archive: bytes, version: str) -> bytes:
+    """Move the Codeberg tag archive from `fpaste/` to `fpaste-<version>/`.
+
+    packages/fpaste/fpaste.spec takes Source0 from pagure.io, which was sunset
+    in 2026; the project moved to Codeberg and publishes no release tarball.
+    Fedora's lookaside copy is a hand-made `fpaste-<version>/` tarball whose
+    tree equals the tag archive's minus `.gitignore` (unpacked and diffed for
+    0.5.0.0), so its bytes cannot be reproduced; this makes the same tree
+    deterministically. The pax global header carrying the commit id goes with
+    the old prefix; members keep the archive's own modes and mtimes, are
+    sorted by name with ownership zeroed, and are compressed with
+    `gzip -n -9` so no name or timestamp enters the header.
+    """
+    old, new = "fpaste", f"fpaste-{version}"
+    tar_buf = io.BytesIO()
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:gz") as source:
+        members = sorted(source.getmembers(), key=lambda m: m.name.rstrip("/"))
+        with tarfile.open(fileobj=tar_buf, mode="w", format=tarfile.PAX_FORMAT) as result:
+            for member in members:
+                name = member.name.rstrip("/")
+                if name != old and not name.startswith(old + "/"):
+                    raise RuntimeError(f"fpaste archive member outside {old}/: {member.name}")
+                if name == f"{old}/.gitignore":
+                    continue
+                data = source.extractfile(member) if member.isreg() else None
+                member.name = new + name[len(old):]
+                member.pax_headers = {}
+                member.uid = member.gid = 0
+                member.uname = member.gname = ""
+                result.addfile(member, data)
+    proc = subprocess.Popen(["gzip", "-n", "-9"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    out, _ = proc.communicate(tar_buf.getvalue())
+    if proc.returncode != 0:
+        raise RuntimeError("gzip failed")
+    return out
+
+
+def _fpaste_metadata(package_dir: Path) -> dict:
+    version = spec_version(package_dir, "fpaste.spec")
+    return {
+        "name": "fpaste",
+        "version": version,
+        "filename": f"fpaste-{version}.tar.gz",
+        "generate": {
+            "script": SCRIPT_PATH,
+            "input": f"{FPASTE_UPSTREAM_URL.format(version=version)} (sha512-pinned)",
+            "method": f"move the Codeberg tag archive from fpaste/ to fpaste-{version}/ without .gitignore (the tree of Fedora's hand-made tarball; pagure.io, the recipe's Source0 host, is gone) and repack deterministically as fpaste-{version}.tar.gz",
+        },
+    }
+
+
+def _fpaste_generate(package_dir: Path, out_dir: Path) -> Path:
+    version = spec_version(package_dir, "fpaste.spec")
+    pin = FPASTE_INPUT_SHA512.get(version)
+    if pin is None:
+        raise RuntimeError(f"no pinned input SHA-512 for fpaste {version}")
+    url = FPASTE_UPSTREAM_URL.format(version=version)
+    request = urllib.request.Request(url, headers={"User-Agent": "utah-packages-generated-source/1"})
+    with urllib.request.urlopen(request, timeout=300) as response:
+        payload = response.read()
+    actual = hashlib.sha512(payload).hexdigest()
+    if actual != pin:
+        raise RuntimeError(f"input archive mismatch for {url}: expected {pin}, got {actual}")
+    target = out_dir / f"fpaste-{version}.tar.gz"
+    target.write_bytes(_fpaste_transform(payload, version))
+    return target
+
+
+# --- bluefin-artwork-logos -------------------------------------------------------
+
+
+def _bluefin_artwork_commit(package_dir: Path) -> str:
+    macros = recipe_macros((package_dir / "bluefin-artwork-logos.spec").read_text())
+    commit = macros.get("commit", "")
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ValueError("bluefin-artwork-logos.spec must pin %global commit to a full SHA-1")
+    return commit
+
+
+def _bluefin_artwork_transform(files: dict[str, bytes], commit: str) -> bytes:
+    """Pack the fetched files flat under one top directory, deterministically.
+
+    Members are sorted by name, owned by root with no names, mode 0644, and
+    stamped with a fixed mtime, so the same inputs always give the same bytes.
+    """
+    top = f"bluefin-artwork-logos-{commit[:7]}"
+    raw = io.BytesIO()
+    with tarfile.open(fileobj=raw, mode="w", format=tarfile.PAX_FORMAT) as result:
+        directory = tarfile.TarInfo(top)
+        directory.type = tarfile.DIRTYPE
+        directory.mode = 0o755
+        directory.mtime = 0
+        result.addfile(directory)
+        names = {}
+        for path in files:
+            name = path.rsplit("/", 1)[-1]
+            if name in names:
+                raise ValueError(f"{path} and {names[name]} flatten to the same name")
+            names[name] = path
+        for name in sorted(names):
+            data = files[names[name]]
+            info = tarfile.TarInfo(f"{top}/{name}")
+            info.size = len(data)
+            info.mode = 0o644
+            info.mtime = 0
+            result.addfile(info, io.BytesIO(data))
+    out = io.BytesIO()
+    _xz_compress_stream(iter([raw.getvalue()]), out)
+    return out.getvalue()
+
+
+def _bluefin_artwork_metadata(package_dir: Path) -> dict:
+    commit = _bluefin_artwork_commit(package_dir)
+    filename = f"bluefin-artwork-logos-{commit[:7]}.tar.xz"
+    urls = ", ".join(BLUEFIN_ARTWORK_RAW_URL.format(commit=commit, path=path)
+                     for path in sorted(BLUEFIN_ARTWORK_FILES.get(commit, {})))
+    return {
+        "name": "bluefin-artwork-logos",
+        "version": spec_version(package_dir, "bluefin-artwork-logos.spec"),
+        "filename": filename,
+        "generate": {
+            "script": SCRIPT_PATH,
+            "input": f"{urls} (each sha512-pinned)",
+            "method": f"fetch each file from projectbluefin/artwork at {commit} and pack them flat and deterministically as {filename}",
+        },
+    }
+
+
+def _bluefin_artwork_generate(package_dir: Path, out_dir: Path) -> Path:
+    commit = _bluefin_artwork_commit(package_dir)
+    pins = BLUEFIN_ARTWORK_FILES.get(commit)
+    if pins is None:
+        raise RuntimeError(f"no pinned file SHA-512s for projectbluefin/artwork {commit}")
+    files = {}
+    for path, pin in sorted(pins.items()):
+        url = BLUEFIN_ARTWORK_RAW_URL.format(commit=commit, path=path)
+        request = urllib.request.Request(url, headers={"User-Agent": "utah-packages-generated-source/1"})
+        with urllib.request.urlopen(request, timeout=300) as response:
+            payload = response.read()
+        actual = hashlib.sha512(payload).hexdigest()
+        if actual != pin:
+            raise RuntimeError(f"input file mismatch for {url}: expected {pin}, got {actual}")
+        files[path] = payload
+    target = out_dir / f"bluefin-artwork-logos-{commit[:7]}.tar.xz"
+    target.write_bytes(_bluefin_artwork_transform(files, commit))
+    return target
+
+
+# --- git-archive tag sources -----------------------------------------------------
+
+# Recipes whose Source0 is `git archive` of an upstream tag: the project
+# publishes no release file, and the forge's on-the-fly tag archive is not
+# stable bytes. The tag is mutable; the commit it resolves to is not, so pin
+# that. `compression` is how the Fedora packager compressed the archive:
+# libslirp's tar.xz is GitLab's archive, and xz preset 6 over the `git archive`
+# tar reproduces Fedora's pinned bytes exactly. rtmpdump's tar is identical to
+# Fedora's, but the packager's gzip (zlib-ng) is not reproducible here, so it
+# is `gzip -n -9` and the recipe's `sources` pins that digest.
+GIT_ARCHIVE_SOURCES = {
+    "libslirp": {
+        "remote": "https://gitlab.freedesktop.org/slirp/libslirp.git",
+        "tag": "v{version}",
+        "compression": "xz",
+        "commits": {"4.9.6": "392af90207fc51dd9f9044ee9b1f963f3c851c2c"},
+    },
+    "rtmpdump": {
+        "remote": "https://git.ffmpeg.org/rtmpdump.git",
+        "tag": "v{version}",
+        "compression": "gz",
+        "commits": {"2.6": "138fdb258d9fc26f1843fd1b891180416c9dc575"},
+    },
+}
+
+
+def _git_archive_compress(raw: bytes, compression: str) -> bytes:
+    if compression == "xz":
+        return lzma.compress(raw, format=lzma.FORMAT_XZ, check=lzma.CHECK_CRC64, preset=6)
+    if compression == "gz":
+        proc = subprocess.run(["gzip", "-n", "-9"], input=raw, capture_output=True)
+        if proc.returncode != 0:
+            raise RuntimeError("gzip failed")
+        return proc.stdout
+    raise ValueError(f"unknown compression {compression!r}")
+
+
+def _git_archive_metadata(name: str, package_dir: Path) -> dict:
+    source = GIT_ARCHIVE_SOURCES[name]
+    version = spec_version(package_dir, f"{name}.spec")
+    commit = source["commits"].get(version, "<unpinned>")
+    tag = source["tag"].format(version=version)
+    filename = f"{name}-{version}.tar.{source['compression']}"
+    return {
+        "name": name,
+        "version": version,
+        "filename": filename,
+        "generate": {
+            "script": SCRIPT_PATH,
+            "input": f"{source['remote']} tag {tag} (commit {commit})",
+            "method": f"git archive --format=tar --prefix={name}-{version}/ of the pinned commit, compressed deterministically as {filename}",
+        },
+    }
+
+
+def _git_archive_generate(name: str, package_dir: Path, out_dir: Path) -> Path:
+    source = GIT_ARCHIVE_SOURCES[name]
+    version = spec_version(package_dir, f"{name}.spec")
+    commit = source["commits"].get(version)
+    if commit is None:
+        raise RuntimeError(f"no pinned commit for {name} {version}")
+    tag = source["tag"].format(version=version)
+    with tempfile.TemporaryDirectory(prefix=f"{name}-git-", dir=out_dir) as tmp:
+        subprocess.run(["git", "init", "-q", tmp], check=True)
+        # Fetch only the tag: rtmpdump's repository advertises refs to the
+        # all-zero object, which a full clone refuses.
+        subprocess.run(
+            ["git", "-C", tmp, "fetch", "-q", "--depth", "1", source["remote"], f"refs/tags/{tag}"],
+            check=True,
+        )
+        head = subprocess.check_output(
+            ["git", "-C", tmp, "rev-parse", "FETCH_HEAD^{commit}"], text=True
+        ).strip()
+        if head != commit:
+            raise RuntimeError(f"tag {tag} moved: expected {commit}, got {head}")
+        raw = subprocess.check_output(
+            ["git", "-C", tmp, "archive", "--format=tar", f"--prefix={name}-{version}/", commit]
+        )
+    target = out_dir / f"{name}-{version}.tar.{source['compression']}"
+    target.write_bytes(_git_archive_compress(raw, source["compression"]))
+    return target
+
+
 METADATA = {
+    **{name: functools.partial(_git_archive_metadata, name) for name in GIT_ARCHIVE_SOURCES},
     "intel-media-driver-free": _imd_metadata,
     "tailscale": _tailscale_metadata,
     "python-pydantic-core": _pydantic_core_metadata,
     "gpm": _gpm_metadata,
+    "hplip": _hplip_metadata,
+    "openal-soft": _openal_soft_metadata,
+    "freerdp": _freerdp_metadata,
+    "fpaste": _fpaste_metadata,
+    "bluefin-artwork-logos": _bluefin_artwork_metadata,
 }
 
 GENERATORS = {
+    **{name: functools.partial(_git_archive_generate, name) for name in GIT_ARCHIVE_SOURCES},
     "intel-media-driver-free": _imd_generate,
     "tailscale": _tailscale_generate,
     "python-pydantic-core": _pydantic_core_generate,
+    "hplip": _hplip_generate,
     "gpm": _gpm_generate,
+    "openal-soft": _openal_soft_generate,
+    "freerdp": _freerdp_generate,
+    "fpaste": _fpaste_generate,
+    "bluefin-artwork-logos": _bluefin_artwork_generate,
 }
 
 

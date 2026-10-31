@@ -2,7 +2,7 @@
   "package": "gtk4",
   "branch": "rawhide",
   "remote": "https://src.fedoraproject.org/rpms/gtk4.git",
-  "commit": "344a7a96dd00abd0a728da3092bbb1b5d6d7388b",
-  "tree": "1e3f08144cf8621cce13c3cba6319ca0193abd9e",
-  "imported_at": "2026-08-29T06:52:07.456648+00:00"
+  "commit": "619defa4d351b5ef40aab17e7057fc307e1a3598",
+  "tree": "3afc04ade7de56d4035a87d494926452233d984a",
+  "imported_at": "2026-10-22T22:49:32.674535+00:00"
 }

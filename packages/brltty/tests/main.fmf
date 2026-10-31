@@ -1,0 +1,2 @@
+summary: Smoke test
+test: ./run_tests.sh

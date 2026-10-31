@@ -1,0 +1,12 @@
+diff -up nfs-utils-2.1.1/support/nfs/exports.c.orig nfs-utils-2.1.1/support/nfs/exports.c
+--- nfs-utils-2.1.1/support/nfs/exports.c.orig	2017-01-12 10:21:39.000000000 -0500
++++ nfs-utils-2.1.1/support/nfs/exports.c	2017-04-26 12:46:24.186480312 -0400
+@@ -507,7 +507,7 @@ void fix_pseudoflavor_flags(struct expor
+ static int
+ parseopts(char *cp, struct exportent *ep, int warn, int *had_subtree_opt_ptr)
+ {
+-	int	had_subtree_opt = 0;
++	int	had_subtree_opt = 1;
+ 	char 	*flname = efname?efname:"command line";
+ 	int	flline = efp?efp->x_line:0;
+ 	unsigned int active = 0;

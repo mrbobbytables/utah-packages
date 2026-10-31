@@ -10,10 +10,12 @@ downloads.
 """
 
 import contextlib
+import gzip
 import hashlib
 import io
 import json
 import lzma
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -24,7 +26,7 @@ from unittest.mock import patch
 
 from tools import generated_sources
 
-from tests.test_generated_sources import build_gpm_archive, build_input_archive, read_archive
+from tests.test_generated_sources import build_fpaste_archive, build_gpm_archive, build_input_archive, build_openal_soft_archive, read_archive
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -182,6 +184,121 @@ class GpmGenerateTests(PackageDirMixin, unittest.TestCase):
         self.assertEqual([url for url, _, _ in fetch.requests], [self.URL])
 
 
+class FpasteGenerateTests(PackageDirMixin, unittest.TestCase):
+    VERSION = "0.5.0.0"
+    URL = f"https://codeberg.org/sanjay_ankur/fpaste/archive/{VERSION}.tar.gz"
+
+    def setUp(self):
+        super().setUp()
+        self.write_spec("fpaste.spec", self.VERSION)
+        self.payload = build_fpaste_archive()
+
+    def test_an_unpinned_version_fails_before_any_download(self):
+        self.write_spec("fpaste.spec", "0.6.0.0")
+        fetch = UrlopenRecorder({})
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch):
+            with self.assertRaisesRegex(RuntimeError, "no pinned input SHA-512 for fpaste 0.6.0.0"):
+                generated_sources.generate("fpaste", self.package_dir, self.out_dir)
+        self.assertEqual(fetch.requests, [])
+
+    def test_a_rerolled_upstream_archive_fails_closed_and_writes_nothing(self):
+        fetch = UrlopenRecorder({self.URL: self.payload})
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch):
+            with self.assertRaisesRegex(RuntimeError, f"input archive mismatch for {self.URL}"):
+                generated_sources.generate("fpaste", self.package_dir, self.out_dir)
+        self.assertEqual(list(self.out_dir.iterdir()), [])
+
+    def test_the_pinned_archive_is_transformed_into_the_named_target(self):
+        fetch = UrlopenRecorder({self.URL: self.payload})
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch), \
+                patch.dict(generated_sources.FPASTE_INPUT_SHA512, {self.VERSION: sha512(self.payload)}):
+            target = generated_sources.generate("fpaste", self.package_dir, self.out_dir)
+        self.assertEqual(target.name, f"fpaste-{self.VERSION}.tar.gz")
+        self.assertEqual(target.read_bytes(), generated_sources._fpaste_transform(self.payload, self.VERSION))
+        self.assertEqual([url for url, _, _ in fetch.requests], [self.URL])
+
+
+class BluefinArtworkGenerateTests(PackageDirMixin, unittest.TestCase):
+    COMMIT = "9ab493bf1fb3ae41594b6bb0a2c5f2350d81de01"
+    FILES = {"LICENSE": b"Apache License", "logos/bluefin-logo-light.svg": b"<svg/>"}
+
+    def setUp(self):
+        super().setUp()
+        self.write_commit(self.COMMIT)
+        self.payloads = {generated_sources.BLUEFIN_ARTWORK_RAW_URL.format(commit=self.COMMIT, path=path): data
+                         for path, data in self.FILES.items()}
+        self.pins = {self.COMMIT: {path: sha512(data) for path, data in self.FILES.items()}}
+
+    def write_commit(self, commit: str) -> None:
+        (self.package_dir / "bluefin-artwork-logos.spec").write_text(
+            f"%global commit {commit}\nName: bluefin-artwork-logos\nVersion: 0\n")
+
+    def test_a_short_or_missing_commit_is_refused(self):
+        self.write_commit("9ab493b")
+        with self.assertRaisesRegex(ValueError, "full SHA-1"):
+            generated_sources.generate("bluefin-artwork-logos", self.package_dir, self.out_dir)
+
+    def test_an_unpinned_commit_fails_before_any_download(self):
+        fetch = UrlopenRecorder({})
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch), \
+                patch.dict(generated_sources.BLUEFIN_ARTWORK_FILES, {}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, f"no pinned file SHA-512s for projectbluefin/artwork {self.COMMIT}"):
+                generated_sources.generate("bluefin-artwork-logos", self.package_dir, self.out_dir)
+        self.assertEqual(fetch.requests, [])
+
+    def test_a_changed_file_fails_closed_and_writes_nothing(self):
+        self.pins[self.COMMIT]["LICENSE"] = sha512(b"something else")
+        fetch = UrlopenRecorder(self.payloads)
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch), \
+                patch.dict(generated_sources.BLUEFIN_ARTWORK_FILES, self.pins, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "input file mismatch for .*/LICENSE"):
+                generated_sources.generate("bluefin-artwork-logos", self.package_dir, self.out_dir)
+        self.assertEqual(list(self.out_dir.iterdir()), [])
+
+    def test_the_pinned_files_are_packed_into_the_named_target(self):
+        fetch = UrlopenRecorder(self.payloads)
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch), \
+                patch.dict(generated_sources.BLUEFIN_ARTWORK_FILES, self.pins, clear=True):
+            target = generated_sources.generate("bluefin-artwork-logos", self.package_dir, self.out_dir)
+        self.assertEqual(target.name, "bluefin-artwork-logos-9ab493b.tar.xz")
+        self.assertEqual(target.read_bytes(), generated_sources._bluefin_artwork_transform(self.FILES, self.COMMIT))
+        self.assertEqual(sorted(url for url, _, _ in fetch.requests), sorted(self.payloads))
+
+
+class OpenALSoftGenerateTests(PackageDirMixin, unittest.TestCase):
+    VERSION = "1.24.2"
+    URL = f"https://openal-soft.org/openal-releases/openal-soft-{VERSION}.tar.bz2"
+
+    def setUp(self):
+        super().setUp()
+        self.write_spec("openal-soft.spec", self.VERSION)
+        self.payload = build_openal_soft_archive(self.VERSION)
+
+    def test_an_unpinned_version_fails_before_any_download(self):
+        self.write_spec("openal-soft.spec", "1.0.0")
+        fetch = UrlopenRecorder({})
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch):
+            with self.assertRaisesRegex(RuntimeError, "no pinned input SHA-512 for openal-soft 1.0.0"):
+                generated_sources.generate("openal-soft", self.package_dir, self.out_dir)
+        self.assertEqual(fetch.requests, [])
+
+    def test_a_rerolled_upstream_archive_fails_closed_and_writes_nothing(self):
+        fetch = UrlopenRecorder({self.URL: self.payload})
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch):
+            with self.assertRaisesRegex(RuntimeError, f"input archive mismatch for {self.URL}"):
+                generated_sources.generate("openal-soft", self.package_dir, self.out_dir)
+        self.assertEqual(list(self.out_dir.iterdir()), [])
+
+    def test_the_pinned_archive_is_transformed_into_the_named_target(self):
+        fetch = UrlopenRecorder({self.URL: self.payload})
+        with patch.object(generated_sources.urllib.request, "urlopen", fetch), \
+                patch.dict(generated_sources.OPENAL_SOFT_INPUT_SHA512, {self.VERSION: sha512(self.payload)}):
+            target = generated_sources.generate("openal-soft", self.package_dir, self.out_dir)
+        self.assertEqual(target.name, f"openal-soft-{self.VERSION}-clean.tar.xz")
+        self.assertEqual(target.read_bytes(), generated_sources._openal_soft_transform(self.payload, self.VERSION))
+        self.assertEqual([url for url, _, _ in fetch.requests], [self.URL])
+
+
 class TailscaleGenerateTests(PackageDirMixin, unittest.TestCase):
     VERSION = "1.98.8"
 
@@ -207,6 +324,81 @@ class TailscaleGenerateTests(PackageDirMixin, unittest.TestCase):
         self.assertEqual(len(runs), 1)
         self.assertEqual(runs[0][:6], ["git", "clone", "-q", "--branch", f"v{self.VERSION}", "--depth"])
         self.assertFalse((self.out_dir / f"tailscale-{self.VERSION}-vendored.tar.xz").exists())
+
+
+class GitArchiveGenerateTests(PackageDirMixin, unittest.TestCase):
+    """libslirp and rtmpdump, generated from a local repository carrying the tag."""
+
+    VERSION = "1.0"
+
+    def git(self, *args: str) -> str:
+        env = {
+            **os.environ,
+            "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@example.com",
+            "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com",
+            "GIT_AUTHOR_DATE": "1700000000 +0000", "GIT_COMMITTER_DATE": "1700000000 +0000",
+        }
+        return subprocess.check_output(["git", "-C", str(self.repo), *args], text=True, env=env).strip()
+
+    def setUp(self):
+        super().setUp()
+        self.repo = self.tmp / "upstream"
+        self.repo.mkdir()
+        self.git("init", "-q")
+        (self.repo / "README").write_text("readme\n")
+        self.git("add", "README")
+        self.git("commit", "-q", "-m", "release")
+        self.git("tag", "-a", f"v{self.VERSION}", "-m", "release")
+        self.commit = self.git("rev-parse", "HEAD")
+
+    def source(self, name: str, compression: str, commit: str | None = None):
+        entry = {"remote": str(self.repo), "tag": "v{version}", "compression": compression,
+                 "commits": {self.VERSION: commit or self.commit}}
+        self.write_spec(f"{name}.spec", self.VERSION)
+        return patch.dict(generated_sources.GIT_ARCHIVE_SOURCES, {name: entry})
+
+    def expected_tar(self, name: str) -> bytes:
+        return subprocess.check_output(
+            ["git", "-C", str(self.repo), "archive", "--format=tar", f"--prefix={name}-{self.VERSION}/", self.commit]
+        )
+
+    def test_an_unpinned_version_fails_before_running_git(self):
+        with self.source("libslirp", "xz"):
+            self.write_spec("libslirp.spec", "9.9")
+            with patch.object(generated_sources.subprocess, "run") as run:
+                with self.assertRaisesRegex(RuntimeError, "no pinned commit for libslirp 9.9"):
+                    generated_sources.generate("libslirp", self.package_dir, self.out_dir)
+        run.assert_not_called()
+
+    def test_the_xz_archive_is_the_git_archive_tar_at_preset_6(self):
+        with self.source("libslirp", "xz"):
+            target = generated_sources.generate("libslirp", self.package_dir, self.out_dir)
+        self.assertEqual(target.name, "libslirp-1.0.tar.xz")
+        raw = self.expected_tar("libslirp")
+        self.assertEqual(target.read_bytes(),
+                         lzma.compress(raw, format=lzma.FORMAT_XZ, check=lzma.CHECK_CRC64, preset=6))
+
+    def test_the_gz_archive_is_reproducible_and_carries_no_timestamp(self):
+        with self.source("rtmpdump", "gz"):
+            first = generated_sources.generate("rtmpdump", self.package_dir, self.out_dir).read_bytes()
+            second = generated_sources.generate("rtmpdump", self.package_dir, self.out_dir).read_bytes()
+        self.assertEqual(first, second)
+        self.assertEqual(first[4:8], b"\0\0\0\0")
+        self.assertEqual(gzip.decompress(first), self.expected_tar("rtmpdump"))
+
+    def test_a_moved_tag_fails_closed_and_writes_nothing(self):
+        with self.source("libslirp", "xz", commit="f" * 40):
+            with self.assertRaisesRegex(RuntimeError, f"tag v{self.VERSION} moved: expected ffff"):
+                generated_sources.generate("libslirp", self.package_dir, self.out_dir)
+        self.assertEqual(list(self.out_dir.iterdir()), [])
+
+    def test_metadata_pins_the_tag_commit_of_the_carried_recipes(self):
+        slirp = generated_sources.metadata_for("libslirp", ROOT / "packages" / "libslirp")
+        self.assertEqual(slirp["filename"], "libslirp-4.9.6.tar.xz")
+        self.assertIn("392af90207fc51dd9f9044ee9b1f963f3c851c2c", slirp["generate"]["input"])
+        rtmp = generated_sources.metadata_for("rtmpdump", ROOT / "packages" / "rtmpdump")
+        self.assertEqual(rtmp["filename"], "rtmpdump-2.6.tar.gz")
+        self.assertIn("git.ffmpeg.org/rtmpdump.git tag v2.6", rtmp["generate"]["input"])
 
 
 class CrateVendoringTests(unittest.TestCase):

@@ -1,0 +1,8 @@
+{
+  "package": "splix",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/splix.git",
+  "commit": "3b08ba73791dbb68cc3554a03d9fe16df8fd7f5a",
+  "tree": "d6d3dacc23c7b720e3249e22a68cddc2e9a1ad16",
+  "imported_at": "2026-10-24T03:59:17.436145+00:00"
+}

@@ -1,0 +1,11 @@
+# Intentional permissions
+addFilter(r"E: non-standard-dir-perm /etc/openvpn/(client|server) 750")
+addFilter(r"E: non-standard-dir-perm /run/openvpn-(client|server) 750")
+addFilter(r"E: non-standard-dir-perm /var/lib/openvpn 770")
+addFilter(r"W: non-standard-gid /etc/openvpn/(client|server) openvpn")
+addFilter(r"W: non-standard-gid /run/openvpn-(client|server) openvpn")
+addFilter(r"W: non-standard-(uid|gid) /var/lib/openvpn openvpn")
+# Doesn't seem to make sense with directories
+addFilter("W: post-without-tmpfile-creation")
+# Yes, we package source code examples
+addFilter(r"openvpn-devel\..*: W: makefile-junk /usr/share/doc/openvpn/sample/sample-plugins/")

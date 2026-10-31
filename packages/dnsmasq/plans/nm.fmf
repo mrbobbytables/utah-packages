@@ -1,0 +1,11 @@
+summary: Run Network Manager tests
+prepare:
+  how: install
+  packages: git-core
+execute:
+  how: tmt
+  script: |
+    dnf install -y git-core
+    git clone https://gitlab.freedesktop.org/NetworkManager/NetworkManager-ci.git
+    cd NetworkManager-ci
+    ./run/osci/run-tests dnsmasq

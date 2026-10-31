@@ -1,0 +1,112 @@
+From 1ed5e281dcd9d59d4f98cdfc0e0aa303e3205fd5 Mon Sep 17 00:00:00 2001
+From: Kjell Ahlstedt <kjellahlstedt@gmail.com>
+Date: Tue, 4 Aug 2026 16:49:39 +0200
+Subject: [PATCH] Gtk: Remove API as in gtk 4.23.3
+
+* gtk/src/application.hg: Remove save(), forget(),
+property_support_save(), property_autosave_interval(),
+signal_restore_window(), signal_save_state(), signal_restore_state().
+* gtk/src/applicationwindow.hg: Remove signal_save_state().
+* gtk/src/enums.hg: Remove enum RestoreReason.
+
+GTK removed some unstable API in 4.23.3.
+The corresponding API is removed from gtkmm.
+---
+ gtk/src/application.hg       | 33 ++-------------------------------
+ gtk/src/applicationwindow.hg |  4 +---
+ gtk/src/enums.hg             |  1 -
+ 3 files changed, 3 insertions(+), 35 deletions(-)
+
+diff --git a/gtk/src/application.hg b/gtk/src/application.hg
+index 61eac431..1b32f301 100644
+--- a/gtk/src/application.hg
++++ b/gtk/src/application.hg
+@@ -91,27 +91,6 @@ namespace Gtk
+  * default window icon. Use Gtk::Window::set_default_icon_name() or
+  * Gtk::Window::property_icon_name() to override that behavior.
+  *
+- * ## State saving
+- *
+- * %Gtk::Application registers with a session manager if possible and
+- * offers various functionality related to the session life-cycle,
+- * such as state saving.
+- *
+- * State-saving functionality can be enabled by setting
+- * property_support_save() to true.
+- *
+- * In order to save and restore per-window state, applications must
+- * connect to signal_restore_window() and
+- * handle Gtk::ApplicationWindow::signal_save_state(). There
+- * are also signal_restore_state() and
+- * signal_save_state() signals, which can be used
+- * for global state that is not connected to any window.
+- *
+- * %Gtk::Application automatically saves state before app shutdown, and by
+- * default periodically auto-saves app state (as configured by
+- * property_autosave_interval()). Applications can
+- * also call save() themselves at opportune times.
+- *
+  * ## Inhibiting
+  *
+  * An application can block various ways to end the session with
+@@ -345,28 +324,20 @@ public:
+ 
+   _WRAP_METHOD(Glib::RefPtr<Gio::Menu> get_menu_by_id(const Glib::ustring& id), gtk_application_get_menu_by_id, refreturn)
+   _WRAP_METHOD(Glib::RefPtr<const Gio::Menu> get_menu_by_id(const Glib::ustring& id) const, gtk_application_get_menu_by_id, refreturn, constversion)
+-  _WRAP_METHOD(void save(), gtk_application_save)
+-  _WRAP_METHOD(void forget(), gtk_application_forget)
+ 
+   _WRAP_PROPERTY("menubar", Glib::RefPtr<Gio::MenuModel>)
+   _WRAP_PROPERTY("register-session", bool,
+     deprecated "4.20: This property is ignored. GTK always registers with the session manager.")
+   _WRAP_PROPERTY("screensaver-active", bool, newin "3,94")
+   _WRAP_PROPERTY("active-window", Window*)
+-  _WRAP_PROPERTY("support-save", bool)
+-  _WRAP_PROPERTY("autosave-interval", unsigned int)
+ 
+   _WRAP_SIGNAL(void window_added(Window* window), "window-added")
+   _WRAP_SIGNAL(void window_removed(Window* window), "window-removed")
+   // no_default_handler because the wrapped C signal has no default handler.
+   _WRAP_SIGNAL(void query_end(), "query-end", no_default_handler)
+ 
+-#m4 _CONVERSION(`GVariant*',`const Glib::VariantBase&',`Glib::wrap($3, true)')
+-#m4 _CONVERSION(`GVariantDict*',`const Glib::RefPtr<Glib::VariantDict>&',`Glib::wrap($3, true)')
+-  // TODO: Remove the following 3 no_default_handler when we can break ABI.
+-  _WRAP_SIGNAL(void restore_window(RestoreReason reason, const Glib::VariantBase& state), "restore-window", no_default_handler)
+-  _WRAP_SIGNAL(bool save_state(const Glib::RefPtr<Glib::VariantDict>& dict), "save-state", no_default_handler)
+-  _WRAP_SIGNAL(bool restore_state(RestoreReason reason, const Glib::VariantBase& state), "restore-state", no_default_handler)
++  // If GtkApplication::restore-window, ::save-state, ::restoee-state
++  // are added again, see how they were wrapped in gtkmm 4.21.2 and 4.23.0.
+ 
+ private:
+   /** This is just a way to call Glib::init() before calling a Glib::Object ctor,
+diff --git a/gtk/src/applicationwindow.hg b/gtk/src/applicationwindow.hg
+index 53cfa50c..1539552b 100644
+--- a/gtk/src/applicationwindow.hg
++++ b/gtk/src/applicationwindow.hg
+@@ -109,9 +109,7 @@ _DEPRECATE_IFDEF_END
+   _WRAP_METHOD(const ShortcutsWindow* get_help_overlay() const, gtk_application_window_get_help_overlay, constversion,
+     deprecated "4.18: libadwaita (a C library) has a replacement for GtkShortcutsWindow.")
+ 
+-#m4 _CONVERSION(`GVariantDict*',`const Glib::RefPtr<Glib::VariantDict>&',`Glib::wrap($3, true)')
+-  // TODO: Remove no_default_handler when we can break ABI.
+-  _WRAP_SIGNAL(bool save_state(const Glib::RefPtr<Glib::VariantDict>& dict), "save-state", no_default_handler)
++  // If GtkApplicationWindow::save-state is added again, see how it was wrapped in gtkmm 4.21.2 and 4.23.0.
+ 
+   _WRAP_PROPERTY("show-menubar", bool)
+ };
+diff --git a/gtk/src/enums.hg b/gtk/src/enums.hg
+index c8468442..e48be99f 100644
+--- a/gtk/src/enums.hg
++++ b/gtk/src/enums.hg
+@@ -66,7 +66,6 @@ _WRAP_ENUM(FontRendering, GtkFontRendering, decl_prefix GTKMM_API)
+ _WRAP_ENUM(InterfaceColorScheme, GtkInterfaceColorScheme, decl_prefix GTKMM_API)
+ _WRAP_ENUM(InterfaceContrast, GtkInterfaceContrast, decl_prefix GTKMM_API)
+ _WRAP_ENUM(ReducedMotion, GtkReducedMotion, decl_prefix GTKMM_API)
+-_WRAP_ENUM(RestoreReason, GtkRestoreReason, decl_prefix GTKMM_API)
+ 
+ #ifndef DOXYGEN_SHOULD_SKIP_THIS
+ //We need this because we can't just use floats for enum value.
+-- 
+GitLab
+

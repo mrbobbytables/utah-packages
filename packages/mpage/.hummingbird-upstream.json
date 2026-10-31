@@ -1,0 +1,8 @@
+{
+  "package": "mpage",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/mpage.git",
+  "commit": "f3a9673731bd5467fad5857e076edb50f9b3b105",
+  "tree": "06021d9eb5f86056d000f0a90887dca2394e5db1",
+  "imported_at": "2026-10-24T03:59:28.009326+00:00"
+}

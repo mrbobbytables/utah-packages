@@ -1,0 +1,8 @@
+{
+  "package": "ethtool",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/ethtool.git",
+  "commit": "d3d4a4209eca7aa743f4b80b20b5771f42a40ee8",
+  "tree": "9747a2bb9d0cc57900ccc2c64c67714d627b1eff",
+  "imported_at": "2026-10-24T03:59:30.308138+00:00"
+}

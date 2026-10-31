@@ -1,0 +1,96 @@
+Name:           gnome-user-share
+Version:        48.3
+Release:        %autorelease
+Summary:        Gnome user file sharing
+
+# * gnome-tour source code is GPL-2.0-or-later
+# * rust crate dependencies are:
+# (MIT OR Apache-2.0) AND Unicode-DFS-2016
+# Apache-2.0 OR MIT
+# MIT
+# MIT OR Apache-2.0
+# Unlicense OR MIT
+License:        GPL-2.0-or-later AND MIT AND Unicode-DFS-2016 AND (Apache-2.0 OR MIT) AND (Unlicense OR MIT)
+# LICENSE.dependencies contains a full license breakdown
+
+URL:            https://gitlab.gnome.org/GNOME/gnome-user-share
+Source0:        https://download.gnome.org/sources/%{name}/%{gnome_major_version}/%{name}-%{gnome_tarball_version}.tar.xz
+
+# upstream patch to update dependencies from gtk-rs v0.20 to v0.21:
+Patch:          https://gitlab.gnome.org/GNOME/gnome-user-share/-/commit/7f995367.patch
+
+%gnome_check_version
+
+BuildRequires:  cargo-rpm-macros
+BuildRequires:  clang
+BuildRequires:  desktop-file-utils
+BuildRequires:  gettext
+BuildRequires:  meson
+BuildRequires:  systemd-rpm-macros
+
+BuildRequires:  httpd
+BuildRequires:  mod_dnssd
+BuildRequires:  systemd-devel
+BuildRequires:  pkgconfig(libselinux)
+
+Requires:       httpd
+Requires:       mod_dnssd
+
+%description
+gnome-user-share is a small package that binds together various free
+software projects to bring easy to use user-level file sharing to the
+masses.
+
+The program is meant to run in the background when the user is logged
+in, and when file sharing is enabled a webdav server is started that
+shares the $HOME/Public folder. The share is then published to all
+computers on the local network using mDNS/rendezvous, so that it shows
+up in the Network location in GNOME.
+
+%prep
+%autosetup -p1 -n %{name}-%{gnome_tarball_version}
+%cargo_prep
+
+%generate_buildrequires
+%cargo_generate_buildrequires -a
+
+%build
+# Hummingbird's systemd-devel ships no systemd.pc, so meson's
+# dependency('systemd') lookup fails and it falls back to
+# prefix/libdir/systemd/user (/usr/lib64). Pin the Fedora path explicitly
+# (same as dconf.spec). This is a Utah-local edit: reimports skip it.
+%meson -Dsystemduserunitdir=%{_userunitdir}
+%meson_build
+%{cargo_license_summary -a}
+%{cargo_license -a} > LICENSE.dependencies
+
+%install
+%meson_install
+
+%find_lang gnome-user-share --with-gnome
+
+%check
+desktop-file-validate $RPM_BUILD_ROOT%{_datadir}/applications/gnome-user-share-webdav.desktop
+
+%post
+%systemd_user_post gnome-user-share-webdav.service
+
+%preun
+%systemd_user_preun gnome-user-share-webdav.service
+
+%postun
+%systemd_user_postun_with_restart gnome-user-share-webdav.service
+
+%files -f gnome-user-share.lang
+%license COPYING
+%license LICENSE.dependencies
+%doc README.md NEWS
+%{_libexecdir}/gnome-user-share-webdav
+%{_datadir}/GConf/gsettings/gnome-user-share.convert
+%{_datadir}/applications/gnome-user-share-webdav.desktop
+%{_datadir}/glib-2.0/schemas/org.gnome.desktop.file-sharing.gschema.xml
+%{_datadir}/gnome-user-share/
+%{_userunitdir}/gnome-user-share-webdav.service
+
+%changelog
+%autochangelog

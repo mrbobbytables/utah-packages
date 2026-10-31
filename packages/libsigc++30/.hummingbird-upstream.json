@@ -1,0 +1,8 @@
+{
+  "package": "libsigc++30",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libsigc++30.git",
+  "commit": "c4fc55834cafab72db6a445538b59fccb01a531a",
+  "tree": "adfb852e8094f51818ad0f3ce724b8e05590f0a5",
+  "imported_at": "2026-10-20T23:25:31.954935+00:00"
+}

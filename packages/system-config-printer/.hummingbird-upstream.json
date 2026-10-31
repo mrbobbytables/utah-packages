@@ -1,0 +1,8 @@
+{
+  "package": "system-config-printer",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/system-config-printer.git",
+  "commit": "7fc9b1ce372de3091a92edb989d328ddeffb57d4",
+  "tree": "dc959980f0d4fb023ccadc2d28f443bdf43513bd",
+  "imported_at": "2026-10-18T08:53:33.301817+00:00"
+}

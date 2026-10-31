@@ -1,0 +1,8 @@
+{
+  "package": "bc",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/bc.git",
+  "commit": "210e2929cfe25c07fbbc27e3f0826d81a91f103a",
+  "tree": "77238d5d9ec32f07dbb7adc86cbef7ecc2f2ecf6",
+  "imported_at": "2026-10-24T03:59:05.063476+00:00"
+}

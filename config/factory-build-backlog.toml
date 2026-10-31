@@ -38,297 +38,96 @@ audit_measured_at = "2026-09-30T22:08:14Z"
 # projectbluefin/utah#383 - 49 names
 consumer_issue = "projectbluefin/utah#383"
 packages = [
-    "ImageMagick",
-    "ImageMagick-libs",
+    # LCEVCdec (BSD-3-Clause-Clear, removed from Fedora rawhide), davs2-libs
+    # (absent from Fedora dist-git) and gstreamer1-plugins-good-qt6
+    # (--with qt6 build config) stay open in batch #474 (see #815).
+    # #474's ffmpeg outputs moved to [resolved] as recipe coverage; the
+    # remaining libav*/libsw* outputs of packages/ffmpeg listed here belong to
+    # a later batch. Build/publication proof stays in projectbluefin/utah#383.
     "LCEVCdec",
-    "LibRaw",
     "davs2-libs",
-    "faad2-libs",
-    "ffmpeg",
-    "ffmpeg-libs",
-    "ffmpegthumbnailer",
-    "ffmpegthumbnailer-libs",
-    "gstreamer1-plugin-dav1d",
-    "gstreamer1-plugin-libav",
     "gstreamer1-plugins-good-qt6",
-    "gstreamer1-plugins-ugly-free",
-    "liba52",
-    "libao",
-    "libavc1394",
-    "libavcodec",
-    "libavdevice",
     "libavfilter",
     "libavformat",
     "libavutil",
-    "libbluray",
-    "libdc1394",
     "libde265",
     "libdovi",
     "libfdk-aac",
-    "libiec61883",
     "libklvanc",
-    "libmpeg2",
     "libopenjph",
     "libplacebo",
-    "libraw1394",
-    "libshaderc",
+
     "libswresample",
     "libswscale",
-    "libudfread",
-    "libultrahdr",
     "libxavs",
-    "papers-libs",
-    "papers-nautilus",
-    "papers-previewer",
-    "papers-thumbnailer",
-    "svt-vp9-libs",
-    "vvdec-libs",
-    "vvenc-libs",
-    "x264-libs",
-    "x265-libs",
-    "xavs2-libs",
 ]
 
 [areas.power]
 # projectbluefin/utah#388 - 6 names
 consumer_issue = "projectbluefin/utah#388"
 packages = [
-    "intel-lpmd",
-    "powerstat",
-    "powertop",
-    "thermald",
-    "tuned",
-    "tuned-ppd",
 ]
 
 [areas.vpn]
 # projectbluefin/utah#389 - 27 names
 consumer_issue = "projectbluefin/utah#389"
 packages = [
-    "NetworkManager-openconnect",
-    "NetworkManager-openconnect-gnome",
-    "NetworkManager-openvpn",
-    "NetworkManager-openvpn-gnome",
     "NetworkManager-vpnc",
     "NetworkManager-vpnc-gnome",
-    "libyubikey",
-    "openconnect",
-    "openpace",
-    "opensc",
-    "opensc-libs",
-    "openvpn",
-    "pam-u2f",
-    "pam_yubico",
-    "pamu2fcfg",
-    "pcsc-lite",
-    "pcsc-lite-ccid",
-    "pcsc-lite-libs",
-    "pkcs11-helper",
-    "pkcs11-provider",
-    "python3-yubikey-manager",
-    "stoken-libs",
-    "vpnc",
-    "vpnc-script",
-    "ykclient",
-    "ykpers",
-    "yubikey-manager",
 ]
 
 [areas.printing-scanning]
 # projectbluefin/utah#390 - 32 names
 consumer_issue = "projectbluefin/utah#390"
 packages = [
-    "brlapi",
-    "brltty",
-    "c2esp",
-    "dymo-cups-drivers",
-    "foo2zjs",
-    "foomatic-db-filesystem",
-    "gutenprint",
-    "gutenprint-cups",
-    "gutenprint-libs",
-    "hplip",
-    "hplip-common",
-    "hplip-libs",
-    "ipp-usb",
-    "liblouis",
-    "liblouis-tables",
-    "liblouisutdml",
-    "liblouisutdml-utils",
-    "libsane-airscan",
-    "libsane-hpaio",
-    "mpage",
-    "printer-driver-brlaser",
-    "ptouch-driver",
-    "python3-brlapi",
-    "python3-louis",
-    "sane-airscan",
-    "sane-backends",
-    "sane-backends-drivers-cameras",
-    "sane-backends-drivers-scanners",
-    "sane-backends-libs",
-    "splix",
-    "system-config-printer-libs",
-    "system-config-printer-udev",
 ]
 
 [areas.gnome-apps]
-# projectbluefin/utah#391 - 38 names
+# projectbluefin/utah#391 - 35 names
 consumer_issue = "projectbluefin/utah#391"
 packages = [
-    "cairomm1.16",
     "epiphany-runtime",
-    "glibmm2.68",
-    "gnome-app-list",
-    "gnome-backgrounds",
-    "gnome-browser-connector",
-    "gnome-classic-session",
-    "gnome-color-manager",
-    "gnome-disk-utility",
-    "gnome-epub-thumbnailer",
-    "gnome-menus",
-    "gnome-remote-desktop",
-    "gnome-rounded-blur",
-    "gnome-shell-extension-apps-menu",
-    "gnome-shell-extension-blur-my-shell",
-    "gnome-shell-extension-common",
-    "gnome-shell-extension-launch-new-instance",
-    "gnome-shell-extension-places-menu",
-    "gnome-shell-extension-window-list",
-    "gnome-system-monitor",
-    "gnome-tour",
-    "gnome-user-docs",
-    "gnome-user-share",
-    "gtkmm4.0",
-    "gtksourceview5",
-    "imath",
-    "libgee",
-    "libhandy",
-    "libmediaart",
-    "libspelling",
-    "libwnck3",
-    "orca",
-    "pangomm2.48",
-    "ptyxis",
-    "rygel",
-    "vte-profile",
-    "vte291",
-    "vte291-gtk4",
 ]
 
 [areas.dev-tools]
-# projectbluefin/utah#392 - 150 names
+# projectbluefin/utah#392 - 147 names
 consumer_issue = "projectbluefin/utah#392"
 packages = [
-    "adcli",
-    "adcli-selinux",
-    "autofs",
-    "bc",
-    "bcache-tools",
-    "bison",
-    "bolt",
-    "borgbackup",
-    "cifs-utils",
-    "cifs-utils-info",
     "cryfs",
-    "davfs2",
-    "default-editor",
     "distribution-gpg-keys",
-    "djvulibre-libs",
-    "dnsmasq",
-    "espeak-ng",
-    "ethtool",
-    "exfatprogs",
-    "f2fs-tools",
     "fedora-release-common",
     "fedora-release-identity-silverblue",
     "fedora-release-ostree-desktop",
     "fedora-release-silverblue",
-    "flex",
-    "freerdp-libs",
     "fuse-encfs",
-    "gamemode",
     "generic-logos",
-    "gssproxy",
-    "hdparm",
-    "hfsplus-tools",
-    "htop",
-    "ifuse",
-    "iwd",
     "kernel-devel-matched",
-    "kernel-modules-extra",
     "kernel-tools",
     "kernel-tools-libs",
-    "leptonica",
-    "libbsd",
-    "libcaca",
-    "libchromaprint",
-    "libcollection",
-    "libsss_autofs",
-    "libsss_certmap",
-    "libsss_idmap",
-    "libsss_nss_idmap",
-    "libsss_sudo",
-    "libwinpr",
-    "lsb_release",
-    "lsof",
-    "man-pages",
-    "mtr",
-    "nano",
-    "nano-default-editor",
-    "nfs-client-utils",
-    "nfs-common-utils",
-    "nfs-utils",
-    "nfsv3-client-utils",
-    "nfsv4-client-utils",
-    "nilfs-utils",
-    "ntfs-3g-system-compression",
-    "nvme-cli",
-    "nvtop",
-    "oddjob",
-    "oddjob-mkhomedir",
     "open-vm-tools",
     "open-vm-tools-desktop",
-    "pinentry",
-    "pinentry-gnome3",
     "python3-anyio",
     "python3-boto3",
     "python3-botocore",
-    "python3-click",
-    "python3-dateutil",
     "python3-dns",
     "python3-email-validator",
     "python3-enchant",
     "python3-fido2",
-    "python3-h11",
     "python3-html2text",
     "python3-httpcore",
     "python3-httpx",
-    "python3-inotify",
-    "python3-jaraco-classes",
-    "python3-jaraco-context",
-    "python3-jaraco-functools",
     "python3-jeepney",
-    "python3-jmespath",
     "python3-keyring",
     "python3-keyring+completion",
-    "python3-llfuse",
     "python3-more-itertools",
-    "python3-msgpack",
-    "python3-olefile",
-    "python3-pexpect",
-    "python3-pillow",
-    "python3-ptyprocess",
     "python3-pygit2",
     "python3-pysocks",
-    "python3-pyudev",
     "python3-pyxdg",
     "python3-rapidfuzz",
     "python3-regex",
     "python3-s3transfer",
     "python3-secretstorage",
     "python3-shtab",
-    "python3-six",
     "qemu-guest-agent",
     "qemu-user-static-aarch64",
     "rclone",
@@ -336,40 +135,11 @@ packages = [
     "restic",
     "rpm-ostree",
     "rpm-ostree-libs",
-    "rsync",
-    "smartmontools",
-    "smartmontools-selinux",
-    "speech-dispatcher",
-    "speech-dispatcher-espeak-ng",
-    "speech-dispatcher-libs",
-    "speech-dispatcher-utils",
-    "spice-vdagent",
-    "spice-webdavd",
-    "sshpass",
     "sssd-client",
     "sssd-common",
     "sssd-kcm",
     "sssd-krb5-common",
     "sssd-nfs-idmap",
-    "symlinks",
-    "tcpdump",
-    "time",
-    "tmux",
-    "toolbox",
-    "tpm2-tools",
-    "traceroute",
-    "tree",
-    "usb_modeswitch",
-    "usb_modeswitch-data",
-    "usbip",
-    "usbutils",
-    "virt-what",
-    "wget2",
-    "wget2-libs",
-    "wget2-wget",
-    "whois",
-    "whois-nls",
-    "xdg-utils",
 ]
 
 [areas.fonts-i18n]
@@ -379,71 +149,23 @@ packages = [
     "adobe-mappings-cmap",
     "adobe-mappings-cmap-deprecated",
     "adobe-mappings-pdf",
-    "adobe-source-code-pro-fonts",
-    "anthy-unicode",
     "cldr-emoji-annotation",
     "cldr-emoji-annotation-dtd",
-    "gdouros-symbola-fonts",
-    "google-droid-sans-fonts",
-    "google-noto-emoji-fonts",
-    "google-noto-sans-cjk-fonts",
-    "google-noto-serif-cjk-vf-fonts",
     "ibus-anthy",
     "ibus-anthy-python",
-    "ibus-chewing",
     "ibus-hangul",
     "ibus-libpinyin",
     "ibus-m17n",
     "ibus-typing-booster",
-    "jetbrains-mono-fonts",
-    "jetbrains-mono-fonts-all",
-    "jetbrains-mono-nl-fonts",
-    "jomolhari-fonts",
-    "julietaula-montserrat-fonts",
     "kasumi-common",
     "kasumi-unicode",
-    "langtable",
-    "libchewing",
-    "liberation-mono-fonts",
-    "liberation-sans-fonts",
-    "liberation-serif-fonts",
-    "libhangul",
-    "libpinyin",
-    "libpinyin-data",
-    "m17n-db",
     "m17n-lib",
-    "madan-fonts",
-    "nerd-fonts",
-    "open-sans-fonts",
-    "opendyslexic-fonts",
-    "paktype-naskh-basic-fonts",
-    "python3-langtable",
-    "rit-meera-new-fonts",
-    "rit-rachana-fonts",
-    "sil-padauk-fonts",
-    "unicode-ucd",
-    "urw-base35-bookman-fonts",
-    "urw-base35-c059-fonts",
-    "urw-base35-d050000l-fonts",
-    "urw-base35-fonts",
-    "urw-base35-fonts-common",
-    "urw-base35-gothic-fonts",
-    "urw-base35-nimbus-mono-ps-fonts",
-    "urw-base35-nimbus-roman-fonts",
-    "urw-base35-nimbus-sans-fonts",
-    "urw-base35-p052-fonts",
-    "urw-base35-standard-symbols-ps-fonts",
-    "urw-base35-z003-fonts",
-    "vazirmatn-vf-fonts",
 ]
 
 [areas.ujust-deps]
 # projectbluefin/utah#394 - 2 names
 consumer_issue = "projectbluefin/utah#394"
-packages = [
-    "fpaste",
-    "glow",
-]
+packages = []
 
 [areas.unblockers]
 # projectbluefin/utah#395 - 4 names
@@ -460,141 +182,52 @@ packages = [
 consumer_issue = "projectbluefin/utah#396"
 packages = [
     "7zip",
-    "NetworkManager-ssh",
-    "NetworkManager-ssh-gnome",
-    "NetworkManager-ssh-selinux",
     "OpenCL-ICD-Loader",
     "PackageKit-glib",
-    "antiword",
     "appstream-data",
-    "argyllcms",
-    "argyllcms-data",
-    "b43-fwcutter",
     "b43-openfwwf",
-    "bash-color-prompt",
     "braille-printer-app",
     "compsize",
     "criu",
     "criu-libs",
     "desktop-backgrounds-gnome",
-    "dotconf",
     "evolution-ews-core",
     "evolution-ews-langpacks",
     "f44-backgrounds-base",
     "f44-backgrounds-gnome",
-    "fedora-workstation-backgrounds",
-    "freeglut",
-    "fwupd-efi",
-    "gst-editing-services",
     "gst-thumbnailers",
     "gupnp-av",
-    "gupnp-dlna",
     "gvfs-afp",
     "gvfs-archive",
-    "hyperv-daemons",
-    "hyperv-daemons-license",
-    "hypervfcopyd",
-    "hypervkvpd",
-    "hypervvssd",
-    "initscripts-service",
     "intel-vaapi-driver",
-    "ipset",
-    "ipset-libs",
-    "iptstate",
-    "jbig2dec-libs",
     "kf6-filesystem",
     "kf6-karchive",
     "kf6-kimageformats",
     "kmod-v4l2loopback",
     "kpartx",
     "kvazaar-libs",
-    "kyotocabinet-libs",
-    "lcms",
-    "lcms-libs",
-    "libXScrnSaver",
-    "libXres",
-    "libbasicobjects",
-    "libdeflate",
-    "libdhash",
-    "libell",
-    "libev",
-    "libieee1284",
     "libijs",
-    "libini_config",
     "liblqr-1",
-    "libmd",
-    "libmspack",
     "libnet",
-    "libnfsidmap",
-    "libntlm",
-    "libpaper",
-    "libpasswdqc",
-    "libpath_utils",
     "libpfm",
-    "libpskc",
-    "librabbitmq",
-    "libraqm",
-    "libref_array",
     "libreport-filesystem",
-    "librtmp",
-    "libsigc++30",
-    "libslirp",
-    "libsrtp",
-    "libtraceevent",
-    "liburing",
-    "libuser",
-    "libutempter",
-    "libvarlink",
-    "libvncserver",
-    "libwmf-lite",
-    "lilv-libs",
     "lockdev",
-    "lrzsz",
-    "lshw",
     "mcelog",
     "memstrack",
     "mkpasswd",
-    "mod_dnssd",
     "mod_http2",
-    "mozilla-filesystem",
-    "mtools",
-    "neon",
-    "net-snmp-libs",
+
     "net-tools",
     "nm-connection-editor",
     "nss-altfiles",
     "nss-mdns",
-    "openal-soft",
     "openexr-libs",
     "oversteer-udev",
     "pam_afs_session",
-    "pam_passwdqc",
     "paps",
-    "passwdqc",
-    "passwdqc-utils",
-    "pcaudiolib",
-    "perl-Unicode-Normalize",
-    "pinfo",
-    "plymouth",
-    "plymouth-core-libs",
-    "plymouth-graphics-libs",
-    "plymouth-plugin-label",
-    "plymouth-plugin-two-step",
-    "plymouth-scripts",
-    "plymouth-system-theme",
-    "plymouth-theme-spinner",
-    "portaudio",
     "prefixdevname",
-    "python3-cups",
-    "python3-linux-procfs",
     "python3-perf",
-    "python3-pskc",
-    "python3-pyatspi",
-    "python3-pyaudio",
-    "python3-pyscard",
-    "python3-speechd",
     "qadwaitadecorations-qt5",
-    "qpdf-libs",
     "qrencode-libs",
     "qt5-qtdeclarative",
     "qt5-qtsvg",
@@ -602,58 +235,633 @@ packages = [
     "qt5-qtwayland",
     "qt5-qtx11extras",
     "qt5-qtxmlpatterns",
-    "quota",
-    "quota-nls",
-    "redhat-menus",
-    "rpcbind",
-    "serd",
     "shim-ia32",
-    "simdutf",
     "slang",
-    "slirp4netns",
     "solaar-udev",
-    "sord",
     "sos",
-    "soundtouch",
-    "sratom",
-    "sso-mib-libs",
-    "tesseract-common",
-    "tesseract-langpack-eng",
-    "tesseract-libs",
-    "tesseract-tessdata-doc",
-    "tslib",
     "uavs3d-libs",
     "ublue-os-akmods-addons",
-    "uchardet",
-    "udftools",
-    "uresourced",
-    "usermode",
-    "uupd",
-    "uvg266-libs",
     "v4l2loopback",
     "virtualbox-guest-additions",
-    "words",
-    "xcb-util-cursor",
-    "xdriinfo",
-    "xfsprogs",
-    "xrandr",
-    "xset",
-    "yelp-libs",
-    "yelp-xsl",
-    "zinnia",
-    "zinnia-tomoe-ja",
-    "zix",
 ]
 
 [resolved]
+# Long-tail #506 publication fields from run 40626803772 describe these seven outputs:
+# python3-cups, python3-linux-procfs, python3-pyaudio, qpdf-libs, quota, quota-nls, redhat-menus.
+# Image: ghcr.io/projectbluefin/utah-packages@sha256:2ff39e76a1473cf0a4299952b951080a79650363b1ac9c3b8e372cadcba5a319
+# Source revision: d645fd21fdcc879ed9ad01f04a1acade5fd8fe1d (on main).
+# Primary metadata SHA-256: d364c5f677095a7d4aeb03cf0e86b13d524b7a07e514ef5e79e9f389f9e8178f
+# Run: https://github.com/projectbluefin/utah-packages/actions/runs/40626803772
+# This records published metadata, not successful runtime transactions or completion of #506.
+# GNOME batch #483 publication: ghcr.io/projectbluefin/utah-packages@sha256:7a18f83ef345e1c4f101e2ec00a2c8dffd7e5ef679089bf9d90238a58d99a593
+# Run: https://github.com/projectbluefin/utah-packages/actions/runs/40151594832
+# Published binaries can survive newer failed rebuilds; this is not a runtime validation claim.
+# Latest rebuilds of gnome-tour, gnome-browser-connector and gnome-remote-desktop failed in run 40151594832; their earlier RPMs remain published.
 # Packages that left the backlog because a recipe was imported.
 # Each entry: package name and the commit that closed the gap.
-packages = []
+packages = [
+    # Codec recipe imports for #476; publication and runtime proof remain separate.
+    { name = "x264-libs", pr = 633 },
+    { name = "x265-libs", pr = 633 },
+    { name = "vvdec-libs", pr = 633 },
+    { name = "vvenc-libs", pr = 633 },
+    { name = "xavs2-libs", pr = 633 },
+    # Recipe import only; build, publication, dependency closure and guest file-transfer proof remain on #490.
+    { name = "spice-webdavd", pr = 761 },
+    # Recipe coverage only; hosted build, publication and runtime proof remain on #486.
+    { name = "hfsplus-tools", pr = 837 },
+    # Recipe import only; build, publication and runtime proof remain on #478.
+    { name = "pam-u2f", pr = 776 },
+    { name = "pamu2fcfg", pr = 776 },
+    # VPN parity #478: import openpace and opensc. opensc-libs is the opensc
+    # "%package libs" subpackage, so importing opensc resolves it too. Recipe
+    # import only; hosted build, publication and runtime proof remain open on
+    # #478. NetworkManager-vpnc and NetworkManager-vpnc-gnome are deliberately
+    # left pending: Fedora retired the vpnc plugin (privilege-escalation
+    # vulnerabilities) and current NetworkManager Obsoletes/Conflicts them.
+    { name = "openpace", pr = 825 },
+    { name = "opensc", pr = 825 },
+    { name = "opensc-libs", pr = 825 },
+    # jaraco-family parity for #489 (partial source-family PR); hosted build,
+    # publication and runtime proof remain open until #489 closes.
+    { name = "python3-jaraco-context", pr = 808 },
+    { name = "python3-jaraco-classes", pr = 808 },
+    { name = "python3-jaraco-functools", pr = 808 },
+    # Recipe import only; build, publication and runtime proof remain on #484.
+    { name = "libgee" },
+    # Recipe import only (Orca recommends it); build, publication and runtime proof remain on #484.
+    { name = "libwnck3", pr = 786 },
+    # Recipe import only; hosted build, publication and runtime proof remain on #484.
+    { name = "libmediaart", pr = 816 },
+    # imath is the C++ vector/matrix library OpenEXR builds on; recipe
+    # import only, hosted build, publication and runtime proof remain on #484.
+    { name = "imath", pr = 823 },
+    # rygel is a UPnP/DLNA home media server; recipe import only, hosted build,
+    # publication and runtime proof remain on #484. Build blocker: rygel
+    # BuildRequires pkgconfig(gupnp-av-1.0), but gupnp-av has no factory recipe
+    # yet (pending in [areas.long-tail], projectbluefin/utah#396).
+    { name = "rygel", pr = 823 },
+    # NTFS-3G read-only plugin recipe for #488; hosted build, publication and runtime proof remain open.
+    { name = "ntfs-3g-system-compression", pr = 771 },
+    # Recipe import only; hosted build, publication and device validation remain on #485.
+    { name = "bcache-tools", pr = 833 },
+    # Recipe import only; build, publication and runtime proof remain on #485.
+    { name = "adcli", pr = 774 },
+    { name = "adcli-selinux", pr = 774 },
+    { name = "serd", pr = 773 },
+    # Long-tail tesseract family (recipe import only); build, publication and
+    # runtime proof remain on #507.
+    { name = "tesseract-libs", pr = 836 },
+    { name = "tesseract-common", pr = 836 },
+    { name = "tesseract-tessdata-doc", pr = 836 },
+    { name = "tesseract-langpack-eng", pr = 836 },
+    # Recipe coverage only; slirp4netns uses the existing libslirp recipe.
+    # Hosted build, publication, runtime solver and namespace tests remain on #507.
+    { name = "slirp4netns", pr = 830 },
+    # Language data recipe; build/publication and consumer proof remain tracked in #494.
+    { name = "langtable", pr = 700 },
+    { name = "python3-langtable", pr = 700 },
+    # Chewing input-method engine + library recipe for #494; hosted build, publication and runtime proof remain open.
+    { name = "ibus-chewing" },
+    { name = "libchewing" },
+    # Recipe import only; build, publication and runtime proof remain on #508.
+    { name = "uchardet", pr = 729 },
+    # Published boot-screen outputs; recipe #312, source lock #320; runtime proof stays on #505.
+    { name = "plymouth", commit = "9565b33477aa10c8af48774fff2598f028a3241a", pr = 320, published_run = 40416793064, published_nevra = "plymouth-0:26.134.222-1.hum1.bfin.x86_64" },
+    { name = "plymouth-core-libs", commit = "9565b33477aa10c8af48774fff2598f028a3241a", pr = 320, published_run = 40416793064, published_nevra = "plymouth-core-libs-0:26.134.222-1.hum1.bfin.x86_64" },
+    { name = "plymouth-graphics-libs", commit = "9565b33477aa10c8af48774fff2598f028a3241a", pr = 320, published_run = 40416793064, published_nevra = "plymouth-graphics-libs-0:26.134.222-1.hum1.bfin.x86_64" },
+    { name = "plymouth-plugin-label", commit = "9565b33477aa10c8af48774fff2598f028a3241a", pr = 320, published_run = 40416793064, published_nevra = "plymouth-plugin-label-0:26.134.222-1.hum1.bfin.x86_64" },
+    { name = "plymouth-plugin-two-step", commit = "9565b33477aa10c8af48774fff2598f028a3241a", pr = 320, published_run = 40416793064, published_nevra = "plymouth-plugin-two-step-0:26.134.222-1.hum1.bfin.x86_64" },
+    { name = "plymouth-scripts", commit = "9565b33477aa10c8af48774fff2598f028a3241a", pr = 320, published_run = 40416793064, published_nevra = "plymouth-scripts-0:26.134.222-1.hum1.bfin.x86_64" },
+    { name = "plymouth-system-theme", commit = "9565b33477aa10c8af48774fff2598f028a3241a", pr = 320, published_run = 40416793064, published_nevra = "plymouth-system-theme-0:26.134.222-1.hum1.bfin.x86_64" },
+    { name = "plymouth-theme-spinner", commit = "9565b33477aa10c8af48774fff2598f028a3241a", pr = 320, published_run = 40416793064, published_nevra = "plymouth-theme-spinner-0:26.134.222-1.hum1.bfin.x86_64" },
+    { name = "davfs2", pr = 696 },
+    { name = "neon", pr = 696 },
+    { name = "libntlm", pr = 696, published_run = 40626803772, published_nevra = "libntlm-0:1.8-1.hum1.bfin.x86_64" },
+    { name = "anthy-unicode", pr = 788 },
+    # FireWire recipe coverage; hosted builds and runtime proof remain outstanding.
+    { name = "libavc1394", pr = 681 },
+    # FFmpeg family recipe coverage. The recipe exists under packages/ffmpeg and
+    # is registered in .packit.yaml with a source lock, so it builds on the
+    # hosted packit/mock workflow; the public NEVRAs are recorded once that
+    # build publishes. This records recipe coverage, not a runtime transaction.
+    # ffmpeg-libs is negativo17's single bundle name for the split libav* libs
+    # the ffmpeg recipe ships (libavcodec-free, libavdevice-free, ...), which
+    # satisfy it. Full-codec (freeworld) ffmpeg, licensing-approved in #383,
+    # still needs the freeworld codec deps (x264-libs, x265-libs, libfdk-aac)
+    # and a hosted build first. Build/publication proof stays tracked in
+    # projectbluefin/utah#383.
+    { name = "ffmpeg", pr = 70 },
+    { name = "ffmpeg-libs", pr = 70 },
+    { name = "ffmpegthumbnailer", pr = 414 },
+    { name = "ffmpegthumbnailer-libs", pr = 414 },
+    { name = "libavcodec", pr = 70 },
+    { name = "libavdevice", pr = 70 },
+    { name = "libdc1394", pr = 794 },
+    { name = "libiec61883", pr = 801 },
+    { name = "libraw1394", pr = 681 },
+    { name = "pam_yubico", pr = 706 },
+    # Smart-card Python binding; hosted build and runtime proof remain in #506.
+    { name = "python3-pyscard", pr = 704 },
+    # NILFS filesystem utilities imported for issue #488; publication still requires validation.
+    { name = "nilfs-utils", pr = 702 },
+    # Recipe imported; hosted build, publication and runtime proof remain in #501.
+    { name = "jbig2dec-libs", pr = 817 },
+    { name = "ipset" },
+    { name = "ipset-libs" },
+    { name = "iptstate", pr = 697 },
+    { name = "kyotocabinet-libs", pr = 767 },
+    # Batch #502 publication: ghcr.io/projectbluefin/utah-packages@sha256:2ff39e76a1473cf0a4299952b951080a79650363b1ac9c3b8e372cadcba5a319
+    # Run: https://github.com/projectbluefin/utah-packages/actions/runs/40626803772
+    # Recipe/publication accounting only; dependency transactions and runtime proof remain in #502.
+    { name = "libpasswdqc", commit = "dfd06b47175b8c94d511c12ac995ecb5e25d7efa", pr = 676, published_run = 40626803772, published_nevra = "libpasswdqc-0:2.0.3-10.hum1.bfin.x86_64" },
+    { name = "libdeflate", pr = 695, published_run = 40626803772, published_nevra = "libdeflate-0:1.26-1.hum1.bfin.x86_64" },
+    # High-performance event loop library recipe import (#502); publication and runtime proof remain outstanding.
+    { name = "libev", pr = 844 },
+    # Microsoft CAB compression library recipe import (#502); hosted build, publication and runtime proof remain outstanding.
+    { name = "libmspack", pr = 846 },
+    # Paper-size library recipe import (#502); hosted build, publication and runtime proof remain outstanding.
+    { name = "libpaper", pr = 853 },
+    { name = "gnome-rounded-blur", commit = "f8589ccd95a48a1f26826c8764330c9f7811a09d", pr = 440, published_run = 40151594832, published_nevra = "gnome-rounded-blur-0:1.0.1^20260809gitf3bfcc7-1.hum1.bfin.x86_64" },
+    # Disc-reading recipes; publication and runtime proof remain tracked in #475.
+    { name = "libudfread", pr = 658 },
+    { name = "libbluray", pr = 658 },
+    # NetworkManager-ssh VPN plugin (main + gnome + selinux subpackages); recipe
+    # import only, hosted build, publication and runtime proof remain outstanding.
+    { name = "NetworkManager-ssh", pr = 770 },
+    { name = "NetworkManager-ssh-gnome", pr = 770 },
+    { name = "NetworkManager-ssh-selinux", pr = 770 },
+    # bash-color-prompt recipe was already imported in #728 (commit e53a1bf5);
+    # record that existing PR and commit to close the catalog gap instead of
+    # re-importing the same source under this PR.
+    { name = "bash-color-prompt", commit = "e53a1bf5c5d30730b49132eab460e60699d5ddfc", pr = 728 },
+    # Shader compiler recipe; hosted build and runtime proof remain tracked in #475.
+    { name = "libshaderc" },
+    # #486 publication evidence for ifuse, iwd, flex, freerdp-libs, gamemode,
+    # gssproxy, hdparm and htop: ghcr.io/projectbluefin/utah-packages
+    # @sha256:b46eb6b07b07b3371b4166d18b970e6dc1e9de5655f094cf519ab63583375617
+    # Revision ba694e547ea02535f3361e251af9a1ce8f7465f3 (on main).
+    # Primary metadata SHA-256:
+    # e2a050dd437b7231f56bdcde6fe6bb015031b333544b922c4e029181b70b47b6
+    # published_run identifies the image publisher, not each RPM's build run.
+    # Runtime transactions and device/service probes remain tracked in #486;
+    # publication alone does not establish consumer acceptance (utah#392).
+    { name = "ifuse", pr = 703, published_run = 41111585693, published_nevra = "ifuse-0:1.2.1-1.hum1.bfin.x86_64" },
+    # iwd source import includes its libell runtime library.
+    { name = "iwd", pr = 793, published_run = 41111585693, published_nevra = "iwd-0:3.12-1.hum1.bfin.x86_64" },
+    { name = "libell", pr = 793, published_run = 41173029071, published_nevra = "libell-0:0.83-1.hum1.bfin.x86_64" },
+    # Flex source import; consumer validation remains tracked in #486.
+    { name = "flex", pr = 654, published_run = 41111585693, published_nevra = "flex-0:2.6.4-25.hum1.bfin.x86_64" },
+    # Existing GPU monitor recipe; publication/runtime proof remains in #488.
+    { name = "nvtop", commit = "e19a229", pr = 410 },
+    # Long-tail batch (projectbluefin/utah-packages#607, part of #500).
+    # Six source packages imported from Fedora rawhide dist-git, each now
+    # source-locked in config/upstream-sources.json.
+    { name = "fedora-workstation-backgrounds", pr = 607 },
+    { name = "freeglut", pr = 607 },
+    { name = "fwupd-efi", pr = 607 },
+    { name = "gst-editing-services", pr = 607 },
+    { name = "gupnp-dlna", pr = 607 },
+    { name = "hyperv-daemons", pr = 607 },
+    # hyperv-daemons-license, hypervfcopyd, hypervkvpd and hypervvssd are
+    # subpackages built from hyperv-daemons.spec. hypervfcopyd sits under
+    # %ifarch i686 x86_64, which the auditor treats as undecidable, so all
+    # four close here explicitly.
+    { name = "hyperv-daemons-license", pr = 607 },
+    { name = "hypervfcopyd", pr = 607 },
+    { name = "hypervkvpd", pr = 607 },
+    { name = "hypervvssd", pr = 607 },
+    # Recipe coverage only; build/publication/runtime proof stays on #489.
+    { name = "python3-pexpect", pr = 684 },
+    { name = "python3-ptyprocess", pr = 684 },
+    { name = "python3-dateutil", pr = 613 },
+    { name = "python3-six", pr = 613 },
+    { name = "python3-h11" },
+    { name = "python3-click" },
+    { name = "python3-jmespath", pr = 798 },
+    # Chromaprint recipe coverage only; publication and runtime proof remain in #487.
+    { name = "libchromaprint", pr = 692 },
+    { name = "leptonica", pr = 772 }, # Recipe import; publication and runtime proof remain.
+    # BSD compatibility library and its digest-library dependency (#487).
+    # Recipe import only; build/publication and Utah consumption remain separate proof.
+    { name = "libbsd", pr = 614 },
+    { name = "libmd", pr = 614, published_run = 40626803772, published_nevra = "libmd-0:1.3.0-1.hum1.bfin.x86_64" },
+    { name = "spice-vdagent", pr = 679 }, # Recipe import; publication/installability tracked in #490.
+    { name = "sshpass", pr = 611 }, # Recipe import; publication/installability tracked in #490.
+    # Password-quality source family: #676 merged the recipes from #644; publication is not runtime acceptance (#505).
+    { name = "pam_passwdqc", commit = "dfd06b47175b8c94d511c12ac995ecb5e25d7efa", pr = 676, published_run = 40626803772, published_nevra = "pam_passwdqc-0:2.0.3-10.hum1.bfin.x86_64" },
+    { name = "passwdqc", commit = "dfd06b47175b8c94d511c12ac995ecb5e25d7efa", pr = 676, published_run = 40626803772, published_nevra = "passwdqc-0:2.0.3-10.hum1.bfin.x86_64" },
+    { name = "passwdqc-utils", commit = "dfd06b47175b8c94d511c12ac995ecb5e25d7efa", pr = 676, published_run = 40626803772, published_nevra = "passwdqc-utils-0:2.0.3-10.hum1.bfin.x86_64" },
+    # Smart-card recipes imported in #364; publication verified for #478.
+    { name = "pcsc-lite", commit = "a09ec58", pr = 364 },
+    { name = "pcsc-lite-libs", commit = "a09ec58", pr = 364 },
+    { name = "pcsc-lite-ccid", commit = "a09ec58", pr = 364 },
+    { name = "mtools" },
+    # Cursor library import for #508; build/publication/runtime proof remains separate.
+    { name = "xcb-util-cursor", pr = 620 },
+    # Printing runtime providers for hplip/system-config-printer (projectbluefin/utah-packages#596, utah#390).
+    { name = "python3-olefile", pr = 596 },
+    { name = "python3-pillow", pr = 596 },
+    { name = "usbutils", pr = 596 },
+    { name = "net-snmp-libs", pr = 596, published_run = 40511180133, published_nevra = "net-snmp-libs-1:5.9.5.2-10.hum1.bfin.x86_64" },
+    { name = "python3-cups", pr = 596, published_run = 40626803772, published_nevra = "python3-cups-0:2.0.4-11.hum1.bfin.x86_64" },
+    { name = "libraqm", pr = 596 },
+    # VPN stack + oath-toolkit/libuser/usermode closure (projectbluefin/utah-packages#585).
+    { name = "NetworkManager-openconnect", pr = 585 },
+    { name = "NetworkManager-openconnect-gnome", pr = 585 },
+    { name = "openconnect", pr = 585 },
+    { name = "vpnc", pr = 585 },
+    { name = "vpnc-script", pr = 585 },
+    { name = "stoken-libs", pr = 585 },
+    { name = "pkcs11-helper", pr = 585 },
+    { name = "libpskc", pr = 585, published_run = 40626803772, published_nevra = "libpskc-0:2.6.15-1.hum1.bfin.x86_64" },
+    { name = "libuser", pr = 585 },
+    { name = "usermode", pr = 585 },
+    # PSKC library for yubikey-manager (projectbluefin/utah-packages#479); long-tail #506.
+    # Recipe import only; publication and runtime proof remain outstanding.
+    { name = "python3-pskc", pr = 775 },
+    # Screen-reader stack (projectbluefin/utah-packages#447).
+    { name = "brlapi", pr = 466 },
+    { name = "brltty", pr = 466 },
+    { name = "dotconf", pr = 466 },
+    { name = "espeak-ng", pr = 466 },
+    { name = "libao", pr = 466 },
+    { name = "liblouis", pr = 466 },
+    { name = "liblouis-tables", pr = 466 },
+    { name = "orca", pr = 466 },
+    { name = "pcaudiolib", pr = 466 },
+    { name = "python3-brlapi", pr = 466 },
+    { name = "python3-louis", pr = 466 },
+    { name = "python3-pyatspi", pr = 466 },
+    { name = "python3-speechd", pr = 466 },
+    { name = "speech-dispatcher", pr = 466 },
+    { name = "speech-dispatcher-espeak-ng", pr = 466 },
+    { name = "speech-dispatcher-libs", pr = 466 },
+    { name = "speech-dispatcher-utils", pr = 466 },
+    # Dev-tools essentials (fork #433, landing PR #514).
+    # default-editor and nano-default-editor are nano subpackages built under
+    # nano.spec's %bcond default_editor; the auditor does not resolve that
+    # conditional, so they are closed here explicitly.
+    { name = "default-editor", pr = 514 },
+    { name = "htop", pr = 514, published_run = 41111585693, published_nevra = "htop-0:3.5.3-1.hum1.bfin.x86_64" },
+    { name = "nano", pr = 514 },
+    { name = "nano-default-editor", pr = 514 },
+    { name = "rsync", pr = 514 },
+    { name = "tmux", pr = 514 },
+    { name = "xdg-utils", pr = 514 },
+    # Laptop-power and VPN wave (landing PR #522). tuned-ppd and
+    # NetworkManager-openvpn-gnome are subpackages (no dist-git source).
+    { name = "thermald", pr = 522 },
+    { name = "tuned", pr = 522 },
+    { name = "tuned-ppd", pr = 522 },
+    { name = "openvpn", pr = 522 },
+    { name = "NetworkManager-openvpn", pr = 522 },
+    { name = "NetworkManager-openvpn-gnome", pr = 522 },
+    # tuned/powertop runtime providers (landing PR #595, utah#388).
+    { name = "python3-inotify", pr = 595 },
+    { name = "python3-pyudev", pr = 595 },
+    { name = "virt-what", pr = 595 },
+    { name = "libtraceevent", pr = 595 },
+    { name = "python3-linux-procfs", pr = 595, published_run = 40626803772, published_nevra = "python3-linux-procfs-0:0.7.4-5.hum1.bfin.noarch" },
+    # Netfs/auth starters (landing PR #524). Subpackage closures:
+    # cifs-utils-info (%package info), nfs-common/client/v3/v4 (%package -n),
+    # pinentry-gnome3 (%package gnome3).
+    { name = "autofs", pr = 524 },
+    { name = "cifs-utils", pr = 524 },
+    { name = "cifs-utils-info", pr = 524 },
+    { name = "nfs-client-utils", pr = 524 },
+    { name = "nfs-common-utils", pr = 524 },
+    { name = "nfs-utils", pr = 524 },
+    { name = "nfsv3-client-utils", pr = 524 },
+    { name = "nfsv4-client-utils", pr = 524 },
+    { name = "pinentry", pr = 524 },
+    { name = "pinentry-gnome3", pr = 524 },
+    { name = "rpcbind", pr = 524 },
+    # H.264 decode path + bad-free dep closure wave (landing PR #526).
+    # gstreamer1-plugin-dav1d is the binary subpackage of rust-gst-plugin-dav1d;
+    # faad2-libs is faad2.spec's %package libs.
+    { name = "faad2-libs", pr = 526 },
+    { name = "gstreamer1-plugin-dav1d", pr = 526 },
+    { name = "gstreamer1-plugins-ugly-free", pr = 526 },
+    { name = "openal-soft", pr = 526, published_run = 40511180133, published_nevra = "openal-soft-0:1.24.2-1.hum1.bfin.x86_64" },
+    { name = "soundtouch", pr = 526 },
+    # Thumbnailers + Disks wave (landing PR #523). libspelling ships as a
+    # standalone recipe; papers/gst-thumbnailers deferred to #527.
+    # Publication verified in run 40569848351.
+    { name = "gnome-disk-utility", pr = 523 },
+    { name = "gnome-epub-thumbnailer", pr = 523, published_run = 40151594832, published_nevra = "gnome-epub-thumbnailer-0:1.8-6.hum1.bfin.x86_64" },
+    { name = "libspelling", pr = 523, published_run = 40569848351, published_nevra = "libspelling-0:0.4.10-1.hum1.bfin.x86_64" },
+    # Printing/scanning core wave (landing PR #525). hplip-common,
+    # hplip-libs and libsane-hpaio are %package subpackages of hplip.spec;
+    # system-config-printer-libs and -udev are %package subpackages of
+    # system-config-printer.spec.
+    { name = "hplip", pr = 525 },
+    { name = "hplip-common", pr = 525 },
+    { name = "hplip-libs", pr = 525 },
+    { name = "libsane-hpaio", pr = 525 },
+    { name = "system-config-printer-libs", pr = 525 },
+    { name = "system-config-printer-udev", pr = 525 },
+    # Papers retry (landing PR #532) after libspelling published (#523).
+    # All four are %package subpackages of papers.spec.
+    { name = "papers-libs", pr = 532 },
+    { name = "papers-nautilus", pr = 532 },
+    { name = "papers-previewer", pr = 532 },
+    { name = "papers-thumbnailer", pr = 532 },
+    # GNOME Tour import (PR #549).
+    { name = "gnome-tour", pr = 549, published_run = 40151594832, published_nevra = "gnome-tour-0:50.0-1.hum1.bfin.x86_64" },
+    # GNOME display and sharing apps: importer source URLs normalized to HTTPS (PR #556).
+    { name = "gnome-color-manager", pr = 556, published_run = 40151594832, published_nevra = "gnome-color-manager-0:3.36.2-1.hum1.bfin.x86_64" },
+    { name = "gnome-user-share", pr = 556, published_run = 40151594832, published_nevra = "gnome-user-share-0:48.3-1.hum1.bfin.x86_64" },
+    # GNOME C++ binding recipes (PR #544); publication verified in run 40569848351.
+    { name = "cairomm1.16", pr = 544 },
+    { name = "gtkmm4.0", pr = 544, published_run = 40569848351, published_nevra = "gtkmm4.0-0:4.24.0-1.hum1.bfin.x86_64" },
+    { name = "pangomm2.48", pr = 544, published_run = 40569848351, published_nevra = "pangomm2.48-0:2.58.0-1.hum1.bfin.x86_64" },
+    # GNOME wallpaper package import (PR #546).
+    { name = "gnome-backgrounds", pr = 546, published_run = 40151594832, published_nevra = "gnome-backgrounds-0:51.0.1-1.hum1.bfin.noarch" },
+    { name = "glibmm2.68", pr = 543 },
+    # freerdp-libs and libwinpr are %package subpackages of freerdp.spec (PR #559).
+    { name = "freerdp-libs", pr = 559, published_run = 41111585693, published_nevra = "freerdp-libs-2:3.32.2-1.hum1.bfin.x86_64" },
+    { name = "libwinpr", pr = 559 },
+    # libsigc++30 is built by its own source package (PR #560).
+    { name = "libsigc++30", pr = 560 },
+    # GNOME System Monitor import (PR #542).
+    { name = "gnome-system-monitor", pr = 542, published_run = 40151594832, published_nevra = "gnome-system-monitor-0:51.1-1.hum1.bfin.x86_64" },
+    # GNOME menus import (PR #548).
+    { name = "gnome-menus", pr = 548, published_run = 40151594832, published_nevra = "gnome-menus-0:3.38.1-1.hum1.bfin.x86_64" },
+    # GNOME app list import (PR #550).
+    { name = "gnome-app-list", pr = 550, published_run = 40151594832, published_nevra = "gnome-app-list-0:2026.08-1.hum1.bfin.noarch" },
+    # GNOME remote desktop import (PR #555).
+    { name = "gnome-remote-desktop", pr = 555, published_run = 40151594832, published_nevra = "gnome-remote-desktop-0:51.0-1.hum1.bfin.x86_64" },
+    # GNOME browser connector import (PR #547).
+    { name = "gnome-browser-connector", pr = 547, published_run = 40151594832, published_nevra = "gnome-browser-connector-0:42.1-1.hum1.bfin.x86_64" },
+    # GNOME user documentation import (PR #551).
+    { name = "gnome-user-docs", pr = 551, published_run = 40151594832, published_nevra = "gnome-user-docs-0:51.0-1.hum1.bfin.noarch" },
+    # Yelp XSL import (PR #552).
+    { name = "yelp-xsl", pr = 552 },
+    # Yelp runtime libraries are built by the yelp source package (PR #553).
+    { name = "yelp-libs", pr = 553 },
+    # Power tooling (projectbluefin/utah-packages#477).
+    { name = "intel-lpmd", pr = 567 },
+    { name = "powerstat", pr = 568 },
+    # powertop (#477, power) and fpaste (#497, ujust-deps) Rawhide imports.
+    { name = "powertop", pr = 572 },
+    { name = "fpaste", pr = 572 },
+    # Markdown viewer companion to fpaste (projectbluefin/utah-packages#497).
+    { name = "glow", pr = 650 },
+    # Runtime dependencies of the GNOME apps imported for Utah (PR #573).
+    { name = "libvncserver", pr = 573 },
+    { name = "mod_dnssd", pr = 573, published_run = 40511180133, published_nevra = "mod_dnssd-0:0.6-37.hum1.bfin.x86_64" },
+    { name = "mozilla-filesystem", pr = 573, published_run = 40511180133, published_nevra = "mozilla-filesystem-0:1.9-39.hum1.bfin.x86_64" },
+    { name = "redhat-menus", pr = 573, published_run = 40626803772, published_nevra = "redhat-menus-0:12.0.2-1.hum1.bfin.noarch" },
+    # sso-mib-libs is a %package subpackage of sso-mib.spec (PR #574).
+    { name = "sso-mib-libs", pr = 574 },
+    # foo2zjs and its runtime dependencies (argyllcms, lcms 1.x, libXScrnSaver).
+    # Subpackages share their source recipe's PR.
+    { name = "argyllcms", pr = 588 },
+    { name = "argyllcms-data", pr = 588 },
+    { name = "foo2zjs", pr = 588 },
+    { name = "lcms", pr = 588 },
+    { name = "lcms-libs", pr = 588 },
+    { name = "libXScrnSaver", pr = 588 },
+    # Printing/scanning SANE + drivers wave. libieee1284 is a runtime dependency of
+    # sane-backends (libieee1284.so.3). Subpackages share their source recipe's PR.
+    { name = "c2esp", pr = 586 },
+    { name = "dymo-cups-drivers", pr = 586 },
+    { name = "foomatic-db-filesystem", pr = 586 },
+    { name = "gutenprint", pr = 586 },
+    { name = "gutenprint-cups", pr = 586 },
+    { name = "gutenprint-libs", pr = 586 },
+    { name = "ipp-usb", pr = 586 },
+    { name = "libieee1284", pr = 586, published_run = 40626803772, published_nevra = "libieee1284-0:0.2.11-50.hum1.bfin.x86_64" },
+    { name = "libsane-airscan", pr = 586 },
+    { name = "mpage", pr = 586 },
+    { name = "printer-driver-brlaser", pr = 586 },
+    { name = "ptouch-driver", pr = 586 },
+    # Braille source family and its Word conversion runtime dependency (#480).
+    { name = "liblouisutdml", pr = 616 },
+    { name = "liblouisutdml-utils", pr = 616 },
+    { name = "antiword", pr = 616 },
+    { name = "b43-fwcutter", pr = 813 },
+    { name = "sane-airscan", pr = 586 },
+    { name = "sane-backends", pr = 586 },
+    { name = "sane-backends-drivers-cameras", pr = 586 },
+    { name = "sane-backends-drivers-scanners", pr = 586 },
+    { name = "sane-backends-libs", pr = 586 },
+    { name = "splix", pr = 586 },
+    # GStreamer-to-FFmpeg bridge, imported at the 1.28.6 gstreamer1 pin (PR #584).
+    { name = "gstreamer1-plugin-libav", pr = 584 },
+    # Dev-tools wave (landing PR #587): user-facing CLI tools from projectbluefin/utah#392.
+    { name = "bc", pr = 587 },
+    { name = "bolt", pr = 587 },
+    { name = "borgbackup", pr = 587 },
+    { name = "dnsmasq", pr = 587 },
+    { name = "ethtool", pr = 587 },
+    { name = "exfatprogs", pr = 587 },
+    { name = "f2fs-tools", pr = 587 },
+    { name = "gamemode", pr = 587, published_run = 41111585693, published_nevra = "gamemode-0:1.8.2-5.hum1.bfin.x86_64" },
+    { name = "hdparm", pr = 587, published_run = 41111585693, published_nevra = "hdparm-0:9.65-11.hum1.bfin.x86_64" },
+    { name = "lshw", pr = 587, published_run = 40511180133, published_nevra = "lshw-0:B.02.20-13.hum1.bfin.x86_64" },
+    { name = "lsof", pr = 587 },
+    { name = "man-pages", pr = 587 },
+    { name = "mtr", pr = 587 },
+    { name = "nvme-cli", pr = 587 },
+    { name = "pinfo", commit = "c2c7cd8c3f440a81b9aafe204bc9d22b0532fe0e", pr = 587, published_run = 40626803772, published_nevra = "pinfo-0:0.6.13-11.hum1.bfin.x86_64" },
+    { name = "perl-Unicode-Normalize", pr = 783 },
+    { name = "python3-llfuse", pr = 587 },
+    { name = "python3-msgpack", pr = 587 },
+    { name = "smartmontools", pr = 587 },
+    { name = "smartmontools-selinux", pr = 587 },
+    { name = "tcpdump", pr = 587 },
+    { name = "traceroute", pr = 587 },
+    { name = "tree", pr = 587 },
+    { name = "words", pr = 587 },
+    # Media runtime providers (landing PR #594): libsrtp2.so.1, liba52/libmpeg2, gtksourceview-5, libdjvulibre.
+    # liba52 is a52dec.spec's %package -n liba52; djvulibre-libs is djvulibre.spec's %package libs.
+    # Publication of gtksourceview5 verified in run 40569848351.
+    { name = "djvulibre-libs", pr = 594 },
+    { name = "gtksourceview5", pr = 594, published_run = 40569848351, published_nevra = "gtksourceview5-0:5.22.0-1.hum1.bfin.x86_64" },
+    { name = "liba52", pr = 594 },
+    { name = "libmpeg2", pr = 594 },
+    { name = "libsrtp", pr = 594 },
+    # tmux/nfs-utils/gnome-disk-utility runtime providers: libutempter, gssproxy, quota, libhandy, ding-libs (projectbluefin/utah#392).
+    # Publication of libhandy verified in run 40569848351.
+    { name = "libutempter", pr = 597 },
+    { name = "libhandy", pr = 597, published_run = 40569848351, published_nevra = "libhandy-0:1.8.3-1.hum1.bfin.x86_64" },
+    { name = "gssproxy", pr = 597, published_run = 41111585693, published_nevra = "gssproxy-0:0.9.2-1.hum1.bfin.x86_64" },
+    { name = "quota", pr = 597, published_run = 40626803772, published_nevra = "quota-1:4.11-4.hum1.bfin.x86_64" },
+    { name = "quota-nls", pr = 597, published_run = 40626803772, published_nevra = "quota-nls-1:4.11-4.hum1.bfin.noarch" },
+    { name = "libcollection", pr = 597 },
+    { name = "libini_config", pr = 597, published_run = 40626803772, published_nevra = "libini_config-0:2.0.0-63.hum1.bfin.x86_64" },
+    { name = "libdhash", pr = 597, published_run = 40626803772, published_nevra = "libdhash-0:0.5.0-63.hum1.bfin.x86_64" },
+    # nfs-utils subpackage imported in #524; publication verified for #502.
+    { name = "libnfsidmap", pr = 524, published_run = 40626803772, published_nevra = "libnfsidmap-1:2.9.2-1.rc1.hum1.bfin.1.x86_64" },
+    { name = "libbasicobjects", pr = 597 },
+    { name = "libpath_utils", pr = 597 },
+    { name = "libref_array", pr = 597 },
+    # urw-base35-fonts (#631): built by job 121701868428 of run 40346690119 (that
+    # aggregate run failed on other packages); published by run 40481255792 in
+    # ghcr.io/projectbluefin/utah-packages@sha256:710195827218db354cd1d0033d68db8b96efec97f1aaf3f45f8973479c6e7215.
+    # vazirmatn-vf-fonts from the same batch (#496) is [wontfix] under utah#393.
+    { name = "urw-base35-bookman-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-bookman-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-c059-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-c059-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-d050000l-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-d050000l-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-fonts-common", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-fonts-common-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-gothic-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-gothic-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-nimbus-mono-ps-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-nimbus-mono-ps-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-nimbus-roman-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-nimbus-roman-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-nimbus-sans-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-nimbus-sans-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-p052-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-p052-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-standard-symbols-ps-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-standard-symbols-ps-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "urw-base35-z003-fonts", pr = 631, published_run = 40481255792, published_nevra = "urw-base35-z003-fonts-0:20200910-29.hum1.bfin.noarch" },
+    { name = "libXres", pr = 646 },
+    # VPN / smart-card PKCS#11 provider and Yubico C/personalization stack (projectbluefin/utah-packages#479, utah#389).
+    # libyubikey is ykpers's build and runtime dependency (libyubikey.so.0).
+    { name = "libyubikey", pr = 647 },
+    { name = "pkcs11-provider", pr = 647 },
+    { name = "ykclient", pr = 647 },
+    { name = "ykpers", pr = 647 },
+    # Recipe coverage only; Python runtime dependencies and publication remain outstanding.
+    { name = "python3-yubikey-manager" },
+    { name = "yubikey-manager" },
+    # bison.spec produces bison plus bison-devel/runtime; recipe closure for #485,
+    # not a claim of publication or runtime installation.
+    { name = "bison", pr = 615 },
+    # Recipe coverage only; hosted build/publication/runtime proof remains in #474.
+    { name = "LibRaw", pr = 618 },
+    # ImageMagick.spec produces ImageMagick and its %package libs (ImageMagick-libs); recipe coverage only.
+    { name = "ImageMagick", pr = 787 },
+    { name = "ImageMagick-libs", pr = 787 },
+    # Recipes imported before this reconciliation (#413, #643); publication is
+    # observed in the image's repodata. Runtime proof for the batch remains in #507.
+    { name = "simdutf", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40481255792, published_nevra = "simdutf-0:9.0.0-1.hum1.bfin.x86_64" },
+    { name = "tslib", commit = "e3b500e58e5dbed8948ea41ad926acf454b5b44b", pr = 643, published_run = 40481255792, published_nevra = "tslib-0:1.24-3.hum1.bfin.x86_64" },
+    # Parity import from Fedora rawhide dist-git (projectbluefin/utah-packages#495).
+    # Source recipes only; publication and runtime proof remain on #495.
+    { name = "unicode-ucd", pr = 731 },
+    { name = "libhangul", pr = 731 },
+    { name = "m17n-db", pr = 731 },
+    # libpinyin.spec builds libpinyin plus its -data, -devel, -tools and
+    # libzhuyin subpackages; recipe only (#495). It BuildRequires
+    # kyotocabinet-devel, imported by #767 and already in [resolved].
+    # Publication and runtime proof remain on #495.
+    { name = "libpinyin", pr = 796 },
+    { name = "libpinyin-data", pr = 796 },
+    # Dev-tools recipes imported from PR #655; remaining USB/IP work stays open in #491.
+    { name = "tpm2-tools", commit = "a09ec58", pr = 364 },
+    { name = "symlinks", pr = 655 },
+    { name = "time", pr = 655 },
+    { name = "toolbox", pr = 655 },
+    { name = "usb_modeswitch", pr = 655 },
+    { name = "usb_modeswitch-data", pr = 655 },
+    { name = "wget2", pr = 655 },
+    { name = "wget2-libs", pr = 655 },
+    { name = "wget2-wget", pr = 655 },
+    { name = "whois", pr = 655 },
+    { name = "whois-nls", pr = 655 },
+    # libvarlink: reconciled from #519; published in ghcr.io/projectbluefin/utah-packages@sha256:96ada3a16e10d5a6bfefc265c4fbfcf0222e8ec21e3d66e631c56b9677ed0ebc
+    { name = "libvarlink", commit = "26ebd2a8ecc9fdd617061452449c71a9fdcdf34d", pr = 519, published_nevra = "libvarlink-0:24.0.1-1.hum1.bfin.x86_64" },
+    { name = "liburing", pr = 742 },
+    { name = "lrzsz", pr = 742 },
+    # librabbitmq (source librabbitmq) and libwmf-lite (source libwmf) recipe imports (#503).
+    { name = "librabbitmq", pr = 756 },
+    { name = "libwmf-lite", pr = 756 },
+    # libslirp and librtmp (source rtmpdump) recipe imports (#503): Source0 is
+    # `git archive` of the upstream tag, regenerated by tools/generated_sources.py.
+    # Audio-plugin discovery dependency family (#503): recipe imports only;
+    # hosted builds, publication, and runtime acceptance remain unproven.
+    { name = "lilv-libs", pr = 831 },
+    { name = "sord", pr = 831 },
+    { name = "sratom", pr = 831 },
+    { name = "libslirp", pr = 789 },
+    { name = "librtmp", pr = 789 },
+    { name = "qpdf-libs", pr = 640, published_run = 40626803772, published_nevra = "qpdf-libs-0:12.4.2-1.hum1.bfin.x86_64" },
+    # Handwriting recognition (zinnia also builds zinnia-tomoe-ja) and zix (#509).
+    { name = "zinnia", pr = 630 },
+    { name = "zinnia-tomoe-ja", pr = 630 },
+    { name = "zix", pr = 630 },
+    # Codecs-media batch (projectbluefin/utah-packages#476, PR #626, supersedes #609): the two
+    # codecs-media sources importable from this environment's dist-git.
+    # libultrahdr is the Ultra HDR image format library; svt-vp9 is Intel's
+    # standalone SVT VP9 encoder (library, CLI, GStreamer plug-in).
+    { name = "libultrahdr", pr = 626 },
+    { name = "svt-vp9-libs", pr = 626 },
+    # PyAudio (Python bindings for audio capture/playback) and the PortAudio
+    # library it links against (#506); both long-tail names.
+    # #752 adopted #748 and merged its source family.
+    { name = "portaudio", commit = "da68d0f0b38c2f8bacf3fbfc6dd13c0b17681134", pr = 752, published_run = 40626803772, published_nevra = "portaudio-0:19.7.0-1.hum1.bfin.x86_64" },
+    { name = "python3-pyaudio", pr = 748, published_run = 40626803772, published_nevra = "python3-pyaudio-0:0.2.13-14.hum1.bfin.x86_64" },
+    { name = "udftools", pr = 782 },
+    { name = "uresourced", pr = 782 },
+    { name = "xfsprogs", pr = 782 },
+    # VVC encoder library from the negativo17 uvg266 recipe (#508); hosted build, publication and runtime proof remain outstanding.
+    { name = "uvg266-libs" },
+    # Terminal and VTE emulator outputs (PR #413); publication verified in run 40569848351.
+    # vte-profile and vte291-gtk4 are subpackages of vte291.spec.
+    # Recipe and publication closure for projectbluefin/utah-packages#484.
+    { name = "ptyxis", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40569848351, published_nevra = "ptyxis-0:50.1-1.hum1.bfin.x86_64" },
+    { name = "vte-profile", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40569848351, published_nevra = "vte-profile-0:0.84.1-1.hum1.bfin.x86_64" },
+    { name = "vte291", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40569848351, published_nevra = "vte291-0:0.84.1-1.hum1.bfin.x86_64" },
+    { name = "vte291-gtk4", commit = "ded82d6174382a397a2d7ddc066daeabe2e31232", pr = 413, published_run = 40569848351, published_nevra = "vte291-gtk4-0:0.84.1-1.hum1.bfin.x86_64" },
+    # D-Bus helper service and its home-directory creator (#488). oddjob-mkhomedir
+    # is an unconditional subpackage of oddjob.spec; build and runtime evidence pending.
+    { name = "oddjob", pr = 784 },
+    { name = "oddjob-mkhomedir", pr = 784 },
+    # Dev-tools batch (#487) recipe imports; hosted build, publication and runtime proof remain.
+    # libsss_* are unconditional %package subpackages of sssd.spec.
+    { name = "libcaca", pr = 848 },
+    { name = "libsss_autofs", pr = 848 },
+    { name = "libsss_certmap", pr = 848 },
+    { name = "libsss_idmap", pr = 848 },
+    { name = "libsss_nss_idmap", pr = 848 },
+    { name = "libsss_sudo", pr = 848 },
+    { name = "lsb_release", pr = 848 },
+]
 
 [wontfix]
 # Packages deliberately decided not to carry. Each entry: package
-# name and a short reason with an issue link. Empty until a
-# maintainer records a decision. Wontfixed names are NOT in ``states``;
-# they are surfaced as ``totals.wontfix`` so the count partition
+# name and a short reason with an issue link. Wontfixed names are NOT in
+# ``states``; they are surfaced as ``totals.wontfix`` so the count partition
 # (areas + resolved + wontfix) still equals the audit's 551.
-packages = []
+packages = [
+    { name = "initscripts-service", reason = "Utah already waives the legacy SysV service shim; reconcile existing consumer policy, not a new exclusion (projectbluefin/utah#263; https://github.com/projectbluefin/utah/blob/1bc07242296d039bca80412ec2b0e68579a61d3e/baselines/triage.toml#L384-L386)." },
+    # Kernel-policy decision applies to the module package and its USB/IP consumer.
+    { name = "usbip", reason = "USB-over-network requires excluded kernel-modules-extra and matching kmod providers; no named use case accepted. Maintainer decision: https://github.com/projectbluefin/utah-packages/issues/491#issuecomment-6475648707 (Utah D4; dependency tracked in #487)." },
+    { name = "kernel-modules-extra", reason = "Utah D4 excludes extra kernel modules unless a named use case is accepted. Maintainer decision: https://github.com/projectbluefin/utah-packages/issues/491#issuecomment-6475648707 (kernel batch #487)." },
+    # Existing consumer waivers, not new exclusions: projectbluefin/utah#263.
+    # https://github.com/projectbluefin/utah/blob/e11a7b297264251704af25d8920d2a2bb58241c9/baselines/triage.toml
+    { name = "xdriinfo", reason = "Utah waives this X11 client tool because it ships a Wayland-only session (projectbluefin/utah#263; pinned triage above)." },
+    { name = "xrandr", reason = "Utah waives this X11 client tool because it ships a Wayland-only session (projectbluefin/utah#263; pinned triage above)." },
+    { name = "xset", reason = "Utah waives this X11 client tool because it ships a Wayland-only session (projectbluefin/utah#263; pinned triage above)." },
+    { name = "uupd", reason = "Utah installs a pinned upstream release; its triage waives the RPM difference (projectbluefin/utah#263; pinned triage above)." },
+    { name = "adobe-source-code-pro-fonts", reason = "Bulk font parity rejected; individual additions need a separate proposal (https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811)." },
+    { name = "gdouros-symbola-fonts", reason = "Bulk font parity rejected; individual additions need a separate proposal (https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811)." },
+    { name = "google-droid-sans-fonts", reason = "Bulk font parity rejected; individual additions need a separate proposal (https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811)." },
+    { name = "google-noto-emoji-fonts", reason = "Bulk font parity rejected; individual additions need a separate proposal (https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811)." },
+    { name = "google-noto-sans-cjk-fonts", reason = "Bulk font parity rejected; individual additions need a separate proposal (https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811)." },
+    { name = "google-noto-serif-cjk-vf-fonts", reason = "Bulk font parity rejected; individual additions need a separate proposal (https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811)." },
+    { name = "gnome-classic-session", reason = "Utah waives GNOME Classic (projectbluefin/utah baselines/triage.toml; projectbluefin/utah#391). Approved in projectbluefin/utah-packages#483: its source would introduce the shell-extension RPMs excluded in #556." },
+    { name = "jetbrains-mono-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "jetbrains-mono-fonts-all", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "jetbrains-mono-nl-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "jomolhari-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "julietaula-montserrat-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "gnome-shell-extension-apps-menu", reason = "Utah uses Git submodules for GNOME extensions (projectbluefin/utah#391); no factory RPM." },
+    { name = "gnome-shell-extension-blur-my-shell", reason = "Utah uses Git submodules for GNOME extensions (projectbluefin/utah#391); no factory RPM." },
+    { name = "gnome-shell-extension-common", reason = "Utah uses Git submodules for GNOME extensions (projectbluefin/utah#391); no factory RPM." },
+    { name = "gnome-shell-extension-launch-new-instance", reason = "Utah uses Git submodules for GNOME extensions (projectbluefin/utah#391); no factory RPM." },
+    { name = "gnome-shell-extension-places-menu", reason = "Utah uses Git submodules for GNOME extensions (projectbluefin/utah#391); no factory RPM." },
+    { name = "gnome-shell-extension-window-list", reason = "Utah uses Git submodules for GNOME extensions (projectbluefin/utah#391); no factory RPM." },
+    { name = "liberation-mono-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted. In-repo consumer libcupsfilters Recommends it (resolved from Fedora)." },
+    { name = "liberation-sans-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted. In-repo consumer totem BuildRequires it (resolved from Fedora)." },
+    { name = "liberation-serif-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "madan-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "nerd-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "open-sans-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "opendyslexic-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "paktype-naskh-basic-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "rit-meera-new-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "rit-rachana-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "sil-padauk-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+    { name = "vazirmatn-vf-fonts", reason = "Bulk desktop font parity rejected by Utah: https://github.com/projectbluefin/utah/issues/393#issuecomment-5920428811; no individual addition accepted." },
+]

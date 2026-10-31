@@ -1,0 +1,8 @@
+{
+  "package": "dnsmasq",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/dnsmasq.git",
+  "commit": "70811d36816183016738eb6d463ecab49c2c4244",
+  "tree": "cd8a576c9a240aef55fec24762cad8b368706ee3",
+  "imported_at": "2026-10-24T04:13:40.905123+00:00"
+}

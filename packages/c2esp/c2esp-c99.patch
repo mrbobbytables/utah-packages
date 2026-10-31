@@ -1,0 +1,14 @@
+Include <strings.h> for the strncasecmp function.
+
+diff --git a/src/command2esp.c b/src/command2esp.c
+index 529342c99c5c5f52..c1acdb16a1ec2f1c 100644
+--- a/src/command2esp.c
++++ b/src/command2esp.c
+@@ -44,6 +44,7 @@ Maintenance=003?
+ #include <cups/cups.h>
+ #include <cups/sidechannel.h> //FlushBackChannel, and the side channel functions and constants
+ #include "string.h"
++#include <strings.h>
+ #include <ctype.h> 
+ #include <fcntl.h> //files
+ #include <time.h> //time functions used for debugging

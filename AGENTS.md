@@ -132,6 +132,7 @@ must appear in the router.
 | `skill-improvement` | Finishing a task and deciding what learning to write back |
 | `repeated-mistakes` | Changing a stage, a container pin, a bcond, the rebuild workflow, or dropping a recipe: the history already reverted several of these once |
 | `multimedia-closure` | Adding a codec recipe, syncing Bluefin's package manifest, or answering whether the factory covers Bluefin's multimedia |
+| `package-catalog` | Changing the GitHub Pages package catalog: its data from the published image's repodata layer, the site, or its deploy |
 | `factory-build-backlog` | Tracking the backlog from projectbluefin/utah-packages#308 (live total in `reports/factory-build-backlog.json`), or closing a backlog gap |
 
 The `hummingbird` skill is vendored from
@@ -172,12 +173,19 @@ tooling arrives; do not copy them as-is.
   the lock. A package that cannot, stays on the container lane with
   `build_lane: container` and a `build_lane_reason` in
   `config/upstream-sources.json`; do not add one without the reason.
-- Run package builds, source-generation and reproducibility probes, and other
-  environment-sensitive validation in GitHub Actions on GitHub-hosted
-  `ubuntu-26.04` runners, inside the digest-pinned
-  `quay.io/packit/packit` container. The container owns the toolchain: do not
-  use ad hoc or unpinned containers, install packages into it at runtime, or
-  substitute a generic distro image.
+- Run package builds in GitHub Actions on GitHub-hosted `ubuntu-26.04`
+  runners, using the hermetic Mock lane (the default since #264) with the
+  digest-pinned `ghcr.io/projectbluefin/utah-buildroot` image. Its pin lives in
+  `config/buildroot-image` and is refreshed by `refresh-buildroot.yml`.
+  The digest-pinned `quay.io/packit/packit` container is for SRPM
+  generation/import only (`packit-srpm-chunk.yml`,
+  `import-rawhide-package.yml`), not binary package builds. Run
+  source-generation and reproducibility probes and other environment-sensitive
+  validation in the corresponding pinned workflow environment. Each container
+  owns its toolchain: do not use ad hoc or unpinned containers, install
+  toolchain packages into it at runtime, or substitute a generic distro image.
+  Mock resolving and installing a package's locked BuildRequires into its
+  isolated build root is part of the hermetic lane, not a toolchain override.
 - Buildroots are declared by image digest in
   [`config/buildroot-lock.json`](config/buildroot-lock.json), which must name
   exactly the pin in [`config/buildroot-image`](config/buildroot-image); move

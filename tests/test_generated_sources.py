@@ -9,6 +9,7 @@ double-run gate covers the network path.
 
 import gzip
 import io
+import json
 import lzma
 from pathlib import Path
 import tarfile
@@ -161,6 +162,317 @@ class GpmTransformTests(unittest.TestCase):
         self.assertEqual(metadata["filename"], "gpm-1.20.7.tar.xz")
         self.assertIn("gpm-1.20.7.tar.lzma", metadata["generate"]["input"])
         self.assertIn("1.20.7", generated_sources.GPM_INPUT_SHA512)
+
+
+def build_openal_soft_archive(version: str) -> bytes:
+    """A synthetic upstream openal-soft .tar.bz2 carrying fmt and .def files."""
+    top = f"openal-soft-{version}"
+    members = {
+        f"{top}/CMakeLists.txt": b"kept",
+        f"{top}/fmt-11.1.1/src/format.cc": b"bundled",
+        f"{top}/fmt-11.1.1/include/fmt/core.h": b"bundled",
+        f"{top}/fmt-old/doc.txt": b"bundled: any fmt- prefix goes",
+        f"{top}/utils/CIAIR.def": b"non-free dataset",
+        f"{top}/utils/presets.txt": b"kept: only .def goes",
+        f"{top}/utils/nested/extra.def": b"kept: the recipe glob is not recursive",
+        f"{top}/utilsdef/kept.def": b"kept: utilsdef is not utils",
+    }
+    directories = {top, f"{top}/fmt-11.1.1", f"{top}/fmt-11.1.1/src",
+                   f"{top}/fmt-11.1.1/include", f"{top}/fmt-11.1.1/include/fmt",
+                   f"{top}/fmt-old", f"{top}/utils", f"{top}/utils/nested",
+                   f"{top}/utilsdef"}
+    raw = io.BytesIO()
+    with tarfile.open(fileobj=raw, mode="w:bz2") as tar:
+        for name in sorted(directories, reverse=True):
+            info = tarfile.TarInfo(name)
+            info.type = tarfile.DIRTYPE
+            info.mtime, info.uid, info.gid, info.uname, info.gname = 1748353371, 1000, 1000, "kcat", "kcat"
+            tar.addfile(info)
+        for name in sorted(members, reverse=True):
+            info = tarfile.TarInfo(name)
+            info.size = len(members[name])
+            info.mtime, info.uid, info.gid, info.uname, info.gname = 1748353371, 1000, 1000, "kcat", "kcat"
+            tar.addfile(info, io.BytesIO(members[name]))
+    return raw.getvalue()
+
+
+class OpenALSoftTransformTests(unittest.TestCase):
+    VERSION = "1.24.2"
+
+    def members(self, payload: bytes) -> list[tarfile.TarInfo]:
+        with tarfile.open(fileobj=io.BytesIO(payload), mode="r:xz") as tar:
+            return tar.getmembers()
+
+    def test_removes_exactly_fmt_and_top_level_utils_def(self):
+        result = generated_sources._openal_soft_transform(build_openal_soft_archive(self.VERSION), self.VERSION)
+        names = {member.name for member in self.members(result)}
+        self.assertNotIn("openal-soft-1.24.2/fmt-11.1.1", names)
+        self.assertNotIn("openal-soft-1.24.2/fmt-11.1.1/src/format.cc", names)
+        self.assertNotIn("openal-soft-1.24.2/fmt-old/doc.txt", names)
+        self.assertNotIn("openal-soft-1.24.2/utils/CIAIR.def", names)
+        self.assertIn("openal-soft-1.24.2/CMakeLists.txt", names)
+        self.assertIn("openal-soft-1.24.2/utils/presets.txt", names)
+        self.assertIn("openal-soft-1.24.2/utils/nested/extra.def", names)
+        self.assertIn("openal-soft-1.24.2/utilsdef/kept.def", names)
+
+    def test_transform_is_byte_reproducible_sorted_and_ownerless(self):
+        archive = build_openal_soft_archive(self.VERSION)
+        first = generated_sources._openal_soft_transform(archive, self.VERSION)
+        self.assertEqual(first, generated_sources._openal_soft_transform(archive, self.VERSION))
+        members = self.members(first)
+        self.assertEqual([m.name for m in members], sorted(m.name for m in members))
+        for member in members:
+            self.assertEqual((member.uid, member.gid, member.uname, member.gname), (0, 0, "", ""))
+            self.assertEqual(member.mtime, 1748353371)
+
+    def test_metadata_names_the_recipe_source_and_pinned_input(self):
+        metadata = generated_sources.metadata_for("openal-soft", ROOT / "packages" / "openal-soft")
+        self.assertEqual(metadata["filename"], "openal-soft-1.24.2-clean.tar.xz")
+        self.assertIn("openal-soft-1.24.2.tar.bz2", metadata["generate"]["input"])
+        self.assertIn("1.24.2", generated_sources.OPENAL_SOFT_INPUT_SHA512)
+
+
+def build_hplip_archive(version: str) -> bytes:
+    """A synthetic upstream hplip .tar.gz carrying `locatedriver`."""
+    top = f"hplip-{version}"
+    members = {
+        f"{top}/Makefile.am": b"kept",
+        f"{top}/locatedriver": b"license-encumbered helper",
+        f"{top}/prnt/hpcups/hpcups.cpp": b"kept",
+    }
+    directories = {top, f"{top}/prnt", f"{top}/prnt/hpcups"}
+    buffer = io.BytesIO()
+    with gzip.GzipFile(filename="", mode="wb", fileobj=buffer, mtime=0) as gz:
+        with tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT) as tar:
+            for name in sorted(directories, reverse=True):
+                info = tarfile.TarInfo(name)
+                info.type = tarfile.DIRTYPE
+                info.mtime, info.uid, info.gid, info.uname, info.gname = 1748479065, 1000, 1000, "pbuilder", "pbuilder"
+                tar.addfile(info)
+            for name in sorted(members, reverse=True):
+                info = tarfile.TarInfo(name)
+                info.size = len(members[name])
+                info.mtime, info.uid, info.gid, info.uname, info.gname = 1748479065, 1000, 1000, "pbuilder", "pbuilder"
+                tar.addfile(info, io.BytesIO(members[name]))
+    return buffer.getvalue()
+
+
+class HplipTransformTests(unittest.TestCase):
+    VERSION = "3.26.6"
+
+    def members(self, payload: bytes) -> list[tarfile.TarInfo]:
+        with tarfile.open(fileobj=io.BytesIO(payload), mode="r:gz") as tar:
+            return tar.getmembers()
+
+    def test_removes_exactly_locatedriver(self):
+        result = generated_sources._hplip_transform(build_hplip_archive(self.VERSION), self.VERSION)
+        names = {member.name for member in self.members(result)}
+        self.assertNotIn("hplip-3.26.6/locatedriver", names)
+        self.assertIn("hplip-3.26.6/Makefile.am", names)
+        self.assertIn("hplip-3.26.6/prnt/hpcups/hpcups.cpp", names)
+
+    def test_transform_is_byte_reproducible_sorted_and_ownerless(self):
+        archive = build_hplip_archive(self.VERSION)
+        first = generated_sources._hplip_transform(archive, self.VERSION)
+        self.assertEqual(first, generated_sources._hplip_transform(archive, self.VERSION))
+        members = self.members(first)
+        self.assertEqual([m.name for m in members], sorted(m.name for m in members))
+        for member in members:
+            self.assertEqual((member.uid, member.gid, member.uname, member.gname), (0, 0, "", ""))
+            self.assertEqual(member.mtime, 1748479065)
+
+    def test_metadata_names_the_recipe_source_and_pinned_input(self):
+        metadata = generated_sources.metadata_for("hplip", ROOT / "packages" / "hplip")
+        self.assertEqual(metadata["filename"], "hplip-3.26.6-repack.tar.gz")
+        self.assertIn("hplip-3.26.6.tar.gz", metadata["generate"]["input"])
+        self.assertIn("3.26.6", generated_sources.HPLIP_INPUT_SHA512)
+
+
+def build_fpaste_archive(prefix: str = "fpaste") -> bytes:
+    """A synthetic Codeberg tag archive: `fpaste/` prefix, pax global comment, .gitignore."""
+    members = {
+        f"{prefix}/.gitignore": b"*.swp\n",
+        f"{prefix}/Makefile": b"kept",
+        f"{prefix}/fpaste": b"#!/usr/bin/python3\n",
+        f"{prefix}/completions/bash/fpaste.bash": b"kept",
+    }
+    directories = {prefix, f"{prefix}/completions", f"{prefix}/completions/bash"}
+    buffer = io.BytesIO()
+    with gzip.GzipFile(filename="", mode="wb", fileobj=buffer, mtime=0) as gz:
+        with tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT,
+                          pax_headers={"comment": "84a795a0abd225edb9eaf3d84f1dc80e5418c361"}) as tar:
+            for name in sorted(directories, reverse=True):
+                info = tarfile.TarInfo(name)
+                info.type = tarfile.DIRTYPE
+                info.mode, info.mtime, info.uname, info.gname = 0o775, 1723405207, "root", "root"
+                tar.addfile(info)
+            for name in sorted(members, reverse=True):
+                info = tarfile.TarInfo(name)
+                info.size = len(members[name])
+                info.mode = 0o775 if name.endswith("/fpaste") else 0o664
+                info.mtime, info.uname, info.gname = 1723405207, "root", "root"
+                tar.addfile(info, io.BytesIO(members[name]))
+    return buffer.getvalue()
+
+
+class FpasteTransformTests(unittest.TestCase):
+    VERSION = "0.5.0.0"
+
+    def members(self, payload: bytes) -> list[tarfile.TarInfo]:
+        with tarfile.open(fileobj=io.BytesIO(payload), mode="r:gz") as tar:
+            return tar.getmembers()
+
+    def test_moves_the_prefix_and_drops_only_gitignore(self):
+        result = generated_sources._fpaste_transform(build_fpaste_archive(), self.VERSION)
+        names = {member.name for member in self.members(result)}
+        self.assertEqual(names, {
+            "fpaste-0.5.0.0",
+            "fpaste-0.5.0.0/Makefile",
+            "fpaste-0.5.0.0/fpaste",
+            "fpaste-0.5.0.0/completions",
+            "fpaste-0.5.0.0/completions/bash",
+            "fpaste-0.5.0.0/completions/bash/fpaste.bash",
+        })
+
+    def test_transform_is_byte_reproducible_sorted_ownerless_and_commentless(self):
+        archive = build_fpaste_archive()
+        first = generated_sources._fpaste_transform(archive, self.VERSION)
+        self.assertEqual(first, generated_sources._fpaste_transform(archive, self.VERSION))
+        self.assertEqual(first[4:8], b"\0\0\0\0")
+        with tarfile.open(fileobj=io.BytesIO(first), mode="r:gz") as tar:
+            members = tar.getmembers()
+            self.assertEqual(tar.pax_headers, {})
+        self.assertEqual([m.name for m in members], sorted(m.name for m in members))
+        for member in members:
+            self.assertEqual((member.uid, member.gid, member.uname, member.gname), (0, 0, "", ""))
+            self.assertEqual(member.mtime, 1723405207)
+            self.assertNotIn("comment", member.pax_headers)
+        self.assertEqual({m.name: m.mode for m in members}["fpaste-0.5.0.0/fpaste"], 0o775)
+
+    def test_a_member_outside_the_tag_prefix_fails_closed(self):
+        with self.assertRaisesRegex(RuntimeError, "outside fpaste/"):
+            generated_sources._fpaste_transform(build_fpaste_archive("fpaste-0.5.0.0"), self.VERSION)
+
+    def test_metadata_names_the_recipe_source_and_pinned_input(self):
+        metadata = generated_sources.metadata_for("fpaste", ROOT / "packages" / "fpaste")
+        self.assertEqual(metadata["filename"], "fpaste-0.5.0.0.tar.gz")
+        self.assertIn("codeberg.org/sanjay_ankur/fpaste/archive/0.5.0.0.tar.gz", metadata["generate"]["input"])
+        self.assertIn("0.5.0.0", generated_sources.FPASTE_INPUT_SHA512)
+
+
+def build_freerdp_archive(version: str) -> bytes:
+    """A synthetic upstream FreeRDP .tar.gz carrying unicode_builtin.c."""
+    top = f"FreeRDP-{version}"
+    members = {
+        f"{top}/CMakeLists.txt": b"kept",
+        f"{top}/winpr/libwinpr/crt/unicode.c": b"kept: basename differs",
+        f"{top}/winpr/libwinpr/crt/unicode_builtin.c": b"license-encumbered",
+    }
+    buffer = io.BytesIO()
+    with gzip.GzipFile(filename="", mode="wb", fileobj=buffer, mtime=0) as gz:
+        with tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT,
+                           pax_headers={"comment": "synthetic global header"}) as tar:
+            for name in sorted(members):
+                info = tarfile.TarInfo(name)
+                info.size = len(members[name])
+                info.mtime = 1760900000
+                tar.addfile(info, io.BytesIO(members[name]))
+    return buffer.getvalue()
+
+
+class FreerdpTransformTests(unittest.TestCase):
+    VERSION = "3.32.2"
+
+    def test_removes_exactly_unicode_builtin_c_and_the_global_header(self):
+        result = generated_sources._freerdp_transform(build_freerdp_archive(self.VERSION), self.VERSION)
+        names = set(read_archive(result))
+        self.assertNotIn("FreeRDP-3.32.2/winpr/libwinpr/crt/unicode_builtin.c", names)
+        self.assertIn("FreeRDP-3.32.2/CMakeLists.txt", names)
+        self.assertIn("FreeRDP-3.32.2/winpr/libwinpr/crt/unicode.c", names)
+
+    def test_transform_is_byte_reproducible(self):
+        archive = build_freerdp_archive(self.VERSION)
+        first = generated_sources._freerdp_transform(archive, self.VERSION)
+        self.assertEqual(first, generated_sources._freerdp_transform(archive, self.VERSION))
+
+    def test_a_missing_doomed_member_fails_closed(self):
+        top = f"FreeRDP-{self.VERSION}"
+        buffer = io.BytesIO()
+        with gzip.GzipFile(filename="", mode="wb", fileobj=buffer, mtime=0) as gz:
+            with tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT) as tar:
+                info = tarfile.TarInfo(f"{top}/CMakeLists.txt")
+                info.size = 4
+                tar.addfile(info, io.BytesIO(b"kept"))
+        with self.assertRaisesRegex(RuntimeError, "expected exactly one"):
+            generated_sources._freerdp_transform(buffer.getvalue(), self.VERSION)
+
+    def test_metadata_names_the_recipe_source_and_pinned_input(self):
+        metadata = generated_sources.metadata_for("freerdp", ROOT / "packages" / "freerdp")
+        self.assertEqual(metadata["filename"], "FreeRDP-3.32.2-repack.tar.gz")
+        self.assertIn("FreeRDP-3.32.2.tar.gz", metadata["generate"]["input"])
+        self.assertIn("3.32.2", generated_sources.FREERDP_INPUT_SHA512)
+
+
+class BluefinArtworkTransformTests(unittest.TestCase):
+    COMMIT = "9ab493bf1fb3ae41594b6bb0a2c5f2350d81de01"
+    FILES = {
+        "LICENSE": b"Apache License",
+        "assets/vector/logos/bluefin/bluefin-logo-light.svg": b"<svg fill='#000'/>",
+        "assets/vector/logos/bluefin/bluefin-logo-dark.svg": b"<svg fill='#fff'/>",
+    }
+
+    def members(self, payload: bytes) -> list[tarfile.TarInfo]:
+        with tarfile.open(fileobj=io.BytesIO(payload), mode="r:xz") as tar:
+            return tar.getmembers()
+
+    def test_files_are_packed_flat_under_the_short_commit(self):
+        result = generated_sources._bluefin_artwork_transform(self.FILES, self.COMMIT)
+        with tarfile.open(fileobj=io.BytesIO(result), mode="r:xz") as tar:
+            self.assertEqual(tar.getnames(), [
+                "bluefin-artwork-logos-9ab493b",
+                "bluefin-artwork-logos-9ab493b/LICENSE",
+                "bluefin-artwork-logos-9ab493b/bluefin-logo-dark.svg",
+                "bluefin-artwork-logos-9ab493b/bluefin-logo-light.svg",
+            ])
+            self.assertEqual(tar.extractfile("bluefin-artwork-logos-9ab493b/bluefin-logo-dark.svg").read(),
+                             b"<svg fill='#fff'/>")
+
+    def test_transform_is_byte_reproducible_sorted_and_ownerless(self):
+        first = generated_sources._bluefin_artwork_transform(self.FILES, self.COMMIT)
+        reordered = dict(reversed(list(self.FILES.items())))
+        self.assertEqual(first, generated_sources._bluefin_artwork_transform(reordered, self.COMMIT))
+        for member in self.members(first):
+            self.assertEqual((member.uid, member.gid, member.uname, member.gname, member.mtime), (0, 0, "", "", 0))
+
+    def test_two_files_with_one_basename_fail_closed(self):
+        files = {"a/logo.svg": b"1", "b/logo.svg": b"2"}
+        with self.assertRaisesRegex(ValueError, "flatten to the same name"):
+            generated_sources._bluefin_artwork_transform(files, self.COMMIT)
+
+    def test_metadata_names_the_recipe_source_and_every_pinned_file(self):
+        metadata = generated_sources.metadata_for("bluefin-artwork-logos", ROOT / "packages" / "bluefin-artwork-logos")
+        self.assertEqual(metadata["filename"], "bluefin-artwork-logos-9ab493b.tar.xz")
+        pins = generated_sources.BLUEFIN_ARTWORK_FILES[self.COMMIT]
+        for path in pins:
+            self.assertIn(f"projectbluefin/artwork/{self.COMMIT}/{path}", metadata["generate"]["input"])
+        self.assertEqual(set(self.FILES), set(pins))
+
+    def test_the_lock_entry_matches_the_metadata(self):
+        lock = json.loads((ROOT / "config" / "upstream-sources.json").read_text())
+        entry = next(p for p in lock["packages"] if p["name"] == "bluefin-artwork-logos")
+        metadata = generated_sources.metadata_for("bluefin-artwork-logos", ROOT / "packages" / "bluefin-artwork-logos")
+        self.assertEqual({key: entry[key] for key in metadata}, metadata)
+        self.assertIn(f"SHA512 ({entry['filename']}) = {entry['sha512']}",
+                      (ROOT / "packages" / "bluefin-artwork-logos" / "sources").read_text())
+
+    def test_gnome_control_center_points_about_at_the_installed_logos(self):
+        recipe = (ROOT / "packages" / "bluefin-artwork-logos" / "bluefin-artwork-logos.spec").read_text()
+        consumer = (ROOT / "packages" / "gnome-control-center" / "gnome-control-center.spec").read_text()
+        self.assertIn("Requires: bluefin-artwork-logos\n", consumer)
+        self.assertNotIn("pixmaps/fedora", consumer)
+        for option, style in (("distributor_logo", "light"), ("dark_mode_distributor_logo", "dark")):
+            self.assertIn(f"-D{option}=%{{_datadir}}/bluefin-artwork-logos/bluefin-logo-{style}.png", consumer)
+            self.assertIn(f"bluefin-logo-{style}.png", recipe)
 
 
 class GeneratedMetadataTests(unittest.TestCase):

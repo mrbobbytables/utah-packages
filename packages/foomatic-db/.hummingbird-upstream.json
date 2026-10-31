@@ -1,0 +1,8 @@
+{
+  "package": "foomatic-db",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/foomatic-db.git",
+  "commit": "6d39b5678084a6a453d67d9840790e1db2a79f95",
+  "tree": "35bbe8518da809894a6ac00da95224f836ac2a9f",
+  "imported_at": "2026-10-24T03:59:22.654098+00:00"
+}
