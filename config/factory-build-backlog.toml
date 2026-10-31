@@ -323,8 +323,8 @@ packages = [
     { name = "adcli-selinux", pr = 774 },
     # CryFS and distribution signing-key recipe imports for #485; hosted build,
     # publication, dependency solving and runtime proof remain open.
-    { name = "cryfs" },
-    { name = "distribution-gpg-keys" },
+    { name = "cryfs", pr = 838 },
+    { name = "distribution-gpg-keys", pr = 838 },
     { name = "serd", pr = 773 },
     # Recipe coverage only; slirp4netns uses the existing libslirp recipe.
     # Hosted build, publication, runtime solver and namespace tests remain on #507.
