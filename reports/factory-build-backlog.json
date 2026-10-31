@@ -20,8 +20,8 @@
     "long-tail": {
       "already_recipe": 2,
       "manifest_wants": 1,
-      "pending": 64,
-      "total": 67
+      "pending": 62,
+      "total": 65
     },
     "power": {
       "total": 0
@@ -645,11 +645,6 @@
     },
     {
       "area": "long-tail",
-      "name": "libpaper",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "libpfm",
       "state": "pending"
     },
@@ -825,11 +820,6 @@
     },
     {
       "area": "long-tail",
-      "name": "uvg266-libs",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "v4l2loopback",
       "state": "pending"
     },
@@ -883,11 +873,11 @@
   "states": {
     "already_recipe": 7,
     "manifest_wants": 1,
-    "pending": 158
+    "pending": 156
   },
   "totals": {
-    "backlog": 166,
-    "resolved": 348,
+    "backlog": 164,
+    "resolved": 350,
     "wontfix": 37
   }
 }

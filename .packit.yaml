@@ -2044,6 +2044,12 @@ packages:
     downstream_package_name: libotf
     paths:
       - packages/libotf
+  libpaper:
+    specfile_path: libpaper.spec
+    upstream_package_name: libpaper
+    downstream_package_name: libpaper
+    paths:
+      - packages/libpaper
   libpcap:
     specfile_path: libpcap.spec
     upstream_package_name: libpcap
@@ -3712,6 +3718,12 @@ packages:
     downstream_package_name: usermode
     paths:
       - packages/usermode
+  uvg266:
+    specfile_path: uvg266.spec
+    upstream_package_name: uvg266
+    downstream_package_name: uvg266
+    paths:
+      - packages/uvg266
   v4l-utils:
     specfile_path: v4l-utils.spec
     upstream_package_name: v4l-utils
