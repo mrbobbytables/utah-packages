@@ -1816,6 +1816,12 @@ packages:
     downstream_package_name: libical
     paths:
       - packages/libical
+  libiec61883:
+    specfile_path: libiec61883.spec
+    upstream_package_name: libiec61883
+    downstream_package_name: libiec61883
+    paths:
+      - packages/libiec61883
   libieee1284:
     specfile_path: libieee1284.spec
     upstream_package_name: libieee1284
