@@ -299,6 +299,24 @@ when other outputs or their build/runtime evidence remain outstanding.
 
 ### Virtual machine guest integration
 
+`spice-webdavd` is a binary subpackage of **phodav**, alongside
+`libphodav`, `libphodav-devel`, and `chezdav`; there is no separate
+`spice-webdavd` dist-git recipe. Import `phodav` once and lock its GNOME
+release archive. Keep its Meson virtual-directory tests enabled in `%check`
+and let configuration failures stop the build. Its explicit runtime
+requirement is `avahi`; inspect the built RPM's generated library requirements
+before claiming dependency closure. A runtime test needs a SPICE guest with
+the WebDAV virtio channel and a host-shared directory: verify a file transfer
+through that channel, not just service startup or the standalone `chezdav`
+server. Recipe accounting does not establish guest file sharing.
+
+Confirm `avahi-gobject-devel`, `gtk-doc`, and `xmlto` against the repositories
+enabled by `tools/mock_config.py` before asserting build dependency availability.
+Other recipes declaring the same BuildRequires are not availability evidence.
+Record the repository snapshot or release and the published package versions in
+the PR; a metadata match still needs a successful Mock dependency lock and build
+in the pinned environment before claiming solver success.
+
 `spice-vdagent` BuildRequires `spice-protocol` headers. Import the protocol
 source alongside the agent when neither build root nor factory supplies it;
 the graph can then place the headers before the agent from the package-name
@@ -451,6 +469,36 @@ Reconcile both catalog names against that explicit decision, not an assumed
 waiver for every kernel-related package. Consumer triage belongs in the Utah
 repository; a factory catalog change does not update that separate ledger or
 prove runtime acceptance of the other outputs in the batch.
+
+The remaining kernel outputs of that batch (`kernel-devel-matched`,
+`kernel-tools`, `kernel-tools-libs`) are binaries of Fedora's `kernel` source
+package; Hummingbird ships only `kernel-headers` and the RPM macros. Importing
+the full kernel recipe, or splitting the tools out of it, is a kernel-policy
+decision that the usbip decision does not cover: keep them pending until a
+maintainer records one, even though Utah triages `kernel-tools` as `planned`.
+
+### SSSD client libraries, terminal graphics and LSB query
+
+The `libsss_*` outputs (`libsss_autofs`, `libsss_certmap`, `libsss_idmap`,
+`libsss_nss_idmap`, `libsss_sudo`) are unconditional `%package -n`
+subpackages of `sssd.spec`; import the `sssd` source once. Its Rawhide recipe
+verifies `Source2` (the release `.asc`) against the committed `pubkey.asc`,
+which the root `.gitignore` already tracks through `!packages/*/*key*.asc`.
+`libcaca` disables Ruby bindings on Fedora 40 and later, so `ruby` is not a
+build dependency; its library links factory `libglvnd`, `freeglut`, `mesa-libGLU` and
+`slang`. The `caca-utils` subpackage additionally requires `libImlib2.so.1` and
+`toilet`, which neither Hummingbird nor the factory carries: the audited
+`libcaca` output does not depend on it, but do not claim `caca-utils` is
+installable. `lsb_release` (from `thkukuk/lsb-release_os-release`) needs only
+`getopt`, `sed` and `tr` at runtime, all in Hummingbird.
+
+This is partial recipe coverage for `Refs #487`, not completion of the
+system-core batch: the kernel outputs above still require their own policy
+decision, and hosted builds, publication and runtime proof remain outstanding.
+The same SSSD source also makes `sssd-client`, `sssd-common`, `sssd-kcm`,
+`sssd-krb5-common` and `sssd-nfs-idmap` visible as `already_recipe` for #490;
+keep those sibling observations distinct from a resolved catalog record or
+evidence that the security-auth batch is complete.
 
 ### Optional changelog viewer
 
