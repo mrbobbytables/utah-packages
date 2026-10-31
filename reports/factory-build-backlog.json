@@ -2,8 +2,8 @@
   "areas": {
     "codecs-media": {
       "already_recipe": 5,
-      "pending": 15,
-      "total": 20
+      "pending": 10,
+      "total": 15
     },
     "dev-tools": {
       "already_recipe": 5,
@@ -122,31 +122,6 @@
     {
       "area": "codecs-media",
       "name": "libxavs",
-      "state": "pending"
-    },
-    {
-      "area": "codecs-media",
-      "name": "vvdec-libs",
-      "state": "pending"
-    },
-    {
-      "area": "codecs-media",
-      "name": "vvenc-libs",
-      "state": "pending"
-    },
-    {
-      "area": "codecs-media",
-      "name": "x264-libs",
-      "state": "pending"
-    },
-    {
-      "area": "codecs-media",
-      "name": "x265-libs",
-      "state": "pending"
-    },
-    {
-      "area": "codecs-media",
-      "name": "xavs2-libs",
       "state": "pending"
     },
     {
@@ -789,11 +764,11 @@
   "states": {
     "already_recipe": 16,
     "manifest_wants": 1,
-    "pending": 130
+    "pending": 125
   },
   "totals": {
-    "backlog": 147,
-    "resolved": 367,
+    "backlog": 142,
+    "resolved": 372,
     "wontfix": 37
   }
 }
