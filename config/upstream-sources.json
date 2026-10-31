@@ -5887,6 +5887,13 @@
       "sha512": "f882f09e3fcd53427de0f233c9fc3ab15497f2323007be9a084696c8cf810ffe2726cd003149e757df26198b390b9f8c1ff411dc6473513457bd0f94722f8490"
     },
     {
+      "name": "libiec61883",
+      "version": "1.2.0",
+      "url": "https://www.kernel.org/pub/linux/libs/ieee1394/libiec61883-1.2.0.tar.gz",
+      "filename": "libiec61883-1.2.0.tar.gz",
+      "sha512": "303391dc5d75298039f51bcb9c53061f5ada92210c81dfe860994c05e8e03d6d9d1a662fad780d5766c17a8aade665d996ab3454fc93bc06981a3832e6de4066"
+    },
+    {
       "name": "libraw1394",
       "version": "2.1.2",
       "url": "https://www.kernel.org/pub/linux/libs/ieee1394/libraw1394-2.1.2.tar.xz",

@@ -53,7 +53,6 @@ packages = [
     "libde265",
     "libdovi",
     "libfdk-aac",
-    "libiec61883",
     "libklvanc",
     "libopenjph",
     "libplacebo",
@@ -362,6 +361,7 @@ packages = [
     { name = "libavcodec", pr = 70 },
     { name = "libavdevice", pr = 70 },
     { name = "libdc1394", pr = 794 },
+    { name = "libiec61883", pr = 801 },
     { name = "libraw1394", pr = 681 },
     { name = "pam_yubico", pr = 706 },
     # Smart-card Python binding; hosted build and runtime proof remain in #506.
