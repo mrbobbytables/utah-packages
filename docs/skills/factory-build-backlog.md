@@ -299,6 +299,24 @@ when other outputs or their build/runtime evidence remain outstanding.
 
 ### Virtual machine guest integration
 
+`spice-webdavd` is a binary subpackage of **phodav**, alongside
+`libphodav`, `libphodav-devel`, and `chezdav`; there is no separate
+`spice-webdavd` dist-git recipe. Import `phodav` once and lock its GNOME
+release archive. Keep its Meson virtual-directory tests enabled in `%check`
+and let configuration failures stop the build. Its explicit runtime
+requirement is `avahi`; inspect the built RPM's generated library requirements
+before claiming dependency closure. A runtime test needs a SPICE guest with
+the WebDAV virtio channel and a host-shared directory: verify a file transfer
+through that channel, not just service startup or the standalone `chezdav`
+server. Recipe accounting does not establish guest file sharing.
+
+Confirm `avahi-gobject-devel`, `gtk-doc`, and `xmlto` against the repositories
+enabled by `tools/mock_config.py` before asserting build dependency availability.
+Other recipes declaring the same BuildRequires are not availability evidence.
+Record the repository snapshot or release and the published package versions in
+the PR; a metadata match still needs a successful Mock dependency lock and build
+in the pinned environment before claiming solver success.
+
 `spice-vdagent` BuildRequires `spice-protocol` headers. Import the protocol
 source alongside the agent when neither build root nor factory supplies it;
 the graph can then place the headers before the agent from the package-name
