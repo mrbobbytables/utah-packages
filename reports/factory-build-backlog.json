@@ -11,8 +11,8 @@
       "total": 47
     },
     "fonts-i18n": {
-      "pending": 15,
-      "total": 15
+      "pending": 14,
+      "total": 14
     },
     "gnome-apps": {
       "pending": 1,
@@ -34,7 +34,7 @@
       "total": 0
     },
     "unblockers": {
-      "pending": 4,
+      "already_recipe": 4,
       "total": 4
     },
     "vpn": {
@@ -397,11 +397,6 @@
     {
       "area": "fonts-i18n",
       "name": "adobe-mappings-pdf",
-      "state": "pending"
-    },
-    {
-      "area": "fonts-i18n",
-      "name": "anthy-unicode",
       "state": "pending"
     },
     {
@@ -772,22 +767,22 @@
     {
       "area": "unblockers",
       "name": "qt6-qtdeclarative",
-      "state": "pending"
+      "state": "already_recipe"
     },
     {
       "area": "unblockers",
       "name": "qt6-qttranslations",
-      "state": "pending"
+      "state": "already_recipe"
     },
     {
       "area": "unblockers",
       "name": "qt6-qtwayland",
-      "state": "pending"
+      "state": "already_recipe"
     },
     {
       "area": "unblockers",
       "name": "qt6-qtwayland-adwaita-decoration",
-      "state": "pending"
+      "state": "already_recipe"
     },
     {
       "area": "vpn",
@@ -802,13 +797,13 @@
   ],
   "issue": "projectbluefin/utah-packages#308",
   "states": {
-    "already_recipe": 12,
+    "already_recipe": 16,
     "manifest_wants": 1,
-    "pending": 137
+    "pending": 132
   },
   "totals": {
-    "backlog": 150,
-    "resolved": 364,
+    "backlog": 149,
+    "resolved": 365,
     "wontfix": 37
   }
 }

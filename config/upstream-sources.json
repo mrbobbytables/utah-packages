@@ -6279,6 +6279,34 @@
       "sha512": "c1676a4b7565d25c2948569005c503a0ca33908de6ed16536767da2c00c634e4ee345bcaf88a01bf6cd2996aaf722faaedff80061ab65ee77e5bc0f494f86a70"
     },
     {
+      "name": "libotf",
+      "version": "0.9.16",
+      "url": "https://download.savannah.gnu.org/releases/m17n/libotf-0.9.16.tar.gz",
+      "filename": "libotf-0.9.16.tar.gz",
+      "sha512": "0f68c45c1224f02dc0f1a8e9915dd9c1c70d71259b4e2f7bbd4fbec6426e58d4a26e4cbf28dbb8ed051ba6f532f99fc4e74b4ddf97a93ec947fa6260c875d0b4"
+    },
+    {
+      "name": "libXaw",
+      "version": "1.0.16",
+      "url": "https://www.x.org/pub/individual/lib/libXaw-1.0.16.tar.xz",
+      "filename": "libXaw-1.0.16.tar.xz",
+      "sha512": "1cabad1a9b06dec7de601b977e844536823ee1a0045244acc42ca6b6107da9b4953736d94898a96cab40845eab77dae21e20e1fa66a3dfc4dedf575dfbca04aa"
+    },
+    {
+      "name": "gd",
+      "version": "2.3.3",
+      "url": "https://github.com/libgd/libgd/releases/download/gd-2.3.3/libgd-2.3.3.tar.xz",
+      "filename": "libgd-2.3.3.tar.xz",
+      "sha512": "aa49d4381d604a4360d556419d603df2ffd689a6dcc10f8e5e1d158ddaa3ab89912f6077ca77da4e370055074007971cf6d356ec9bf26dcf39bcff3208bc7e6c"
+    },
+    {
+      "name": "anthy-unicode",
+      "version": "1.0.0.20260213",
+      "url": "https://github.com/fujiwarat/anthy-unicode/releases/download/1.0.0.20260213/anthy-unicode-1.0.0.20260213.tar.xz",
+      "filename": "anthy-unicode-1.0.0.20260213.tar.xz",
+      "sha512": "895d7f325214ae2174eafed98d3de466d59dd26b58e3220670c804078b94b718ab4a634bf5daddb9f6a0b13ffb9a132460f65ef512fa0af5e08077f85d84227e"
+    },
+    {
       "name": "leptonica",
       "version": "1.87.0",
       "url": "https://github.com/DanBloomberg/leptonica/archive/1.87.0/leptonica-1.87.0.tar.gz",
@@ -6536,6 +6564,36 @@
       "sha512": "a4720083fd581023ea78cc09e6df4b5d2f90894f916004cf28c7fa557da61d8c7a5539fa6b50647efcd9f771afd088889fdc40579a8e860c8ea20540b25eb26a",
       "fallback_urls": [
         "https://src.fedoraproject.org/repo/pkgs/rpms/phodav/phodav-3.0.tar.xz/sha512/a4720083fd581023ea78cc09e6df4b5d2f90894f916004cf28c7fa557da61d8c7a5539fa6b50647efcd9f771afd088889fdc40579a8e860c8ea20540b25eb26a/phodav-3.0.tar.xz"
+      ]
+    },
+    {
+      "name": "qt6-qtdeclarative",
+      "version": "6.11.2",
+      "url": "https://download.qt.io/official_releases/qt/6.11/6.11.2/submodules/qtdeclarative-everywhere-src-6.11.2.tar.xz",
+      "filename": "qtdeclarative-everywhere-src-6.11.2.tar.xz",
+      "sha512": "012eeaeb9c492d31a71d463a8abe13ebc5ae0661677977c738082f95576befe123df80cf45bd2733ef7a5ed897693234a3a6c5e7060be01757424dca397e0056",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/rpms/qt6-qtdeclarative/qtdeclarative-everywhere-src-6.11.2.tar.xz/sha512/012eeaeb9c492d31a71d463a8abe13ebc5ae0661677977c738082f95576befe123df80cf45bd2733ef7a5ed897693234a3a6c5e7060be01757424dca397e0056/qtdeclarative-everywhere-src-6.11.2.tar.xz"
+      ]
+    },
+    {
+      "name": "qt6-qttranslations",
+      "version": "6.11.2",
+      "url": "https://download.qt.io/official_releases/qt/6.11/6.11.2/submodules/qttranslations-everywhere-src-6.11.2.tar.xz",
+      "filename": "qttranslations-everywhere-src-6.11.2.tar.xz",
+      "sha512": "827b257708d83013b3dac75ca4275b7fbf48465addb96bac139ddb0ab518de83ca5a6aa7ebc24a38970b214bfbf0a99056d5ac4e9f3720876e11db6b7046eb67",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/rpms/qt6-qttranslations/qttranslations-everywhere-src-6.11.2.tar.xz/sha512/827b257708d83013b3dac75ca4275b7fbf48465addb96bac139ddb0ab518de83ca5a6aa7ebc24a38970b214bfbf0a99056d5ac4e9f3720876e11db6b7046eb67/qttranslations-everywhere-src-6.11.2.tar.xz"
+      ]
+    },
+    {
+      "name": "qt6-qtwayland",
+      "version": "6.11.2",
+      "url": "https://download.qt.io/official_releases/qt/6.11/6.11.2/submodules/qtwayland-everywhere-src-6.11.2.tar.xz",
+      "filename": "qtwayland-everywhere-src-6.11.2.tar.xz",
+      "sha512": "1bf50e38615010877e21f664b941d5227827cc4086631de885f7aff1e8c73fef9fcbbd7453b3132284134875458e748358fcdf3c823862f511178f63e6bc9918",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/rpms/qt6-qtwayland/qtwayland-everywhere-src-6.11.2.tar.xz/sha512/1bf50e38615010877e21f664b941d5227827cc4086631de885f7aff1e8c73fef9fcbbd7453b3132284134875458e748358fcdf3c823862f511178f63e6bc9918/qtwayland-everywhere-src-6.11.2.tar.xz"
       ]
     }
   ]
