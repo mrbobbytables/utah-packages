@@ -3550,6 +3550,18 @@ packages:
     downstream_package_name: tecla
     paths:
       - packages/tecla
+  tesseract:
+    specfile_path: tesseract.spec
+    upstream_package_name: tesseract
+    downstream_package_name: tesseract
+    paths:
+      - packages/tesseract
+  tesseract-tessdata:
+    specfile_path: tesseract-tessdata.spec
+    upstream_package_name: tesseract-tessdata
+    downstream_package_name: tesseract-tessdata
+    paths:
+      - packages/tesseract-tessdata
   thermald:
     specfile_path: thermald.spec
     upstream_package_name: thermald

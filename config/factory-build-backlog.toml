@@ -253,10 +253,6 @@ packages = [
     "slang",
     "solaar-udev",
     "sos",
-    "tesseract-common",
-    "tesseract-langpack-eng",
-    "tesseract-libs",
-    "tesseract-tessdata-doc",
     "uavs3d-libs",
     "ublue-os-akmods-addons",
     "v4l2loopback",
@@ -319,6 +315,12 @@ packages = [
     { name = "adcli", pr = 774 },
     { name = "adcli-selinux", pr = 774 },
     { name = "serd", pr = 773 },
+    # Long-tail tesseract family (recipe import only); build, publication and
+    # runtime proof remain on #507.
+    { name = "tesseract-libs", pr = 836 },
+    { name = "tesseract-common", pr = 836 },
+    { name = "tesseract-tessdata-doc", pr = 836 },
+    { name = "tesseract-langpack-eng", pr = 836 },
     # Recipe coverage only; slirp4netns uses the existing libslirp recipe.
     # Hosted build, publication, runtime solver and namespace tests remain on #507.
     { name = "slirp4netns", pr = 830 },
