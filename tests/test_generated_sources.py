@@ -476,6 +476,23 @@ class BluefinArtworkTransformTests(unittest.TestCase):
 
 
 class GeneratedMetadataTests(unittest.TestCase):
+    def test_distribution_gpg_keys_metadata_pins_its_tag_commit(self):
+        package_dir = ROOT / "packages" / "distribution-gpg-keys"
+        metadata = generated_sources.metadata_for("distribution-gpg-keys", package_dir)
+        self.assertEqual(metadata["filename"], "distribution-gpg-keys-1.123.tar.gz")
+        self.assertIn(
+            "tag distribution-gpg-keys-1.123-1 "
+            "(commit 6f5f4883ceabd6c3d389ecd913b60675b61563da)",
+            metadata["generate"]["input"],
+        )
+        lock = json.loads((ROOT / "config" / "upstream-sources.json").read_text())
+        entry = next(p for p in lock["packages"] if p["name"] == "distribution-gpg-keys")
+        self.assertEqual({key: entry[key] for key in metadata}, metadata)
+        self.assertIn(
+            f"SHA512 ({entry['filename']}) = {entry['sha512']}",
+            (package_dir / "sources").read_text(),
+        )
+
     def test_intel_media_metadata_uses_spec_version(self):
         metadata = generated_sources.metadata_for(
             "intel-media-driver-free", ROOT / "packages" / "intel-media-driver-free"

@@ -6,8 +6,8 @@
       "total": 21
     },
     "dev-tools": {
-      "pending": 55,
-      "total": 55
+      "pending": 53,
+      "total": 53
     },
     "fonts-i18n": {
       "pending": 15,
@@ -151,16 +151,6 @@
     {
       "area": "codecs-media",
       "name": "xavs2-libs",
-      "state": "pending"
-    },
-    {
-      "area": "dev-tools",
-      "name": "cryfs",
-      "state": "pending"
-    },
-    {
-      "area": "dev-tools",
-      "name": "distribution-gpg-keys",
       "state": "pending"
     },
     {
@@ -888,11 +878,11 @@
   "states": {
     "already_recipe": 7,
     "manifest_wants": 1,
-    "pending": 161
+    "pending": 159
   },
   "totals": {
-    "backlog": 169,
-    "resolved": 345,
+    "backlog": 167,
+    "resolved": 347,
     "wontfix": 37
   }
 }
