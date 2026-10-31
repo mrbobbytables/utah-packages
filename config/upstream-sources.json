@@ -6458,6 +6458,20 @@
       ]
     },
     {
+      "name": "tesseract",
+      "version": "5.5.4",
+      "url": "https://github.com/tesseract-ocr/tesseract/archive/5.5.4/tesseract-5.5.4.tar.gz",
+      "filename": "tesseract-5.5.4.tar.gz",
+      "sha512": "c1dd838f8c9cbba585d969c1c5edba52d1aa77dac2057775271f5bb8e22c0550f723d1de362e15263e2c540ae1175b08bff36c5a545dd5f84906c468036b4556"
+    },
+    {
+      "name": "tesseract-tessdata",
+      "version": "4.1.0",
+      "url": "https://github.com/tesseract-ocr/tessdata_fast/archive/4.1.0/tessdata_fast-4.1.0.tar.gz",
+      "filename": "tessdata_fast-4.1.0.tar.gz",
+      "sha512": "d5e3461d262e300ebf21abc39d19471a6aabed442eab8fdee772368a02c4fe0d2e5738701e31b2d0777989778c9db0169a57ea89537266bc66d2228fb96ea63e"
+    },
+    {
       "name": "uvg266",
       "version": "0.8.1",
       "url": "https://github.com/ultravideo/uvg266/archive/v0.8.1/uvg266-0.8.1.tar.gz",

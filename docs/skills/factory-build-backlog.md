@@ -163,6 +163,14 @@ from the hosted build run, binary NEVRA, factory image digest, and runtime
 exercise. Missing build or runtime evidence must remain explicit rather than
 being inferred from a green inventory check.
 
+For the partial Tesseract source family in PR #836, use `Refs #507` and
+preserve both `tesseract` and `tesseract-tessdata` source locks, recipe
+provenance and patches when integrating inventory changes. Recipe-import
+accounting does not close #507: hosted OCR builds and publication, dependency
+resolution, and a runtime OCR exercise using the English tessdata remain
+explicit acceptance gaps until evidence is recorded. Regenerating inventory
+does not establish any of that build or tessdata runtime evidence.
+
 Use the consumer issue named by the batch assignment when the area's
 `consumer_issue` is stale. Check the consumer's triage for each binary:
 `planned` records intent, while `untriaged` is not a waiver. For existing
