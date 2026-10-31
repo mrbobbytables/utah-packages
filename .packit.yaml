@@ -4042,6 +4042,12 @@ packages:
     downstream_package_name: ykpers
     paths:
       - packages/ykpers
+  yubikey-manager:
+    specfile_path: yubikey-manager.spec
+    upstream_package_name: yubikey-manager
+    downstream_package_name: yubikey-manager
+    paths:
+      - packages/yubikey-manager
   yyjson:
     specfile_path: yyjson.spec
     upstream_package_name: yyjson
