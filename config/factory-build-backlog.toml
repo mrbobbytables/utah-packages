@@ -95,8 +95,6 @@ packages = [
 consumer_issue = "projectbluefin/utah#391"
 packages = [
     "epiphany-runtime",
-    "imath",
-    "rygel",
 ]
 
 [areas.dev-tools]
@@ -225,10 +223,8 @@ packages = [
     "kmod-v4l2loopback",
     "kpartx",
     "kvazaar-libs",
-    "libev",
     "libijs",
     "liblqr-1",
-    "libmspack",
     "libnet",
     "libpaper",
     "libpfm",
@@ -267,7 +263,6 @@ packages = [
     "tesseract-tessdata-doc",
     "uavs3d-libs",
     "ublue-os-akmods-addons",
-    "uvg266-libs",
     "v4l2loopback",
     "virtualbox-guest-additions",
 ]
@@ -312,6 +307,14 @@ packages = [
     { name = "libwnck3", pr = 786 },
     # Recipe import only; hosted build, publication and runtime proof remain on #484.
     { name = "libmediaart", pr = 816 },
+    # imath is the C++ vector/matrix library OpenEXR builds on; recipe
+    # import only, hosted build, publication and runtime proof remain on #484.
+    { name = "imath", pr = 823 },
+    # rygel is a UPnP/DLNA home media server; recipe import only, hosted build,
+    # publication and runtime proof remain on #484. Build blocker: rygel
+    # BuildRequires pkgconfig(gupnp-av-1.0), but gupnp-av has no factory recipe
+    # yet (pending in [areas.long-tail], projectbluefin/utah#396).
+    { name = "rygel", pr = 823 },
     # NTFS-3G read-only plugin recipe for #488; hosted build, publication and runtime proof remain open.
     { name = "ntfs-3g-system-compression", pr = 771 },
     # Recipe import only; hosted build, publication and device validation remain on #485.
@@ -379,6 +382,10 @@ packages = [
     # Recipe/publication accounting only; dependency transactions and runtime proof remain in #502.
     { name = "libpasswdqc", commit = "dfd06b47175b8c94d511c12ac995ecb5e25d7efa", pr = 676, published_run = 40626803772, published_nevra = "libpasswdqc-0:2.0.3-10.hum1.bfin.x86_64" },
     { name = "libdeflate", pr = 695, published_run = 40626803772, published_nevra = "libdeflate-0:1.26-1.hum1.bfin.x86_64" },
+    # High-performance event loop library recipe import (#502); publication and runtime proof remain outstanding.
+    { name = "libev", pr = 844 },
+    # Microsoft CAB compression library recipe import (#502); hosted build, publication and runtime proof remain outstanding.
+    { name = "libmspack", pr = 846 },
     { name = "gnome-rounded-blur", commit = "f8589ccd95a48a1f26826c8764330c9f7811a09d", pr = 440, published_run = 40151594832, published_nevra = "gnome-rounded-blur-0:1.0.1^20260809gitf3bfcc7-1.hum1.bfin.x86_64" },
     # Disc-reading recipes; publication and runtime proof remain tracked in #475.
     { name = "libudfread", pr = 658 },
@@ -406,7 +413,7 @@ packages = [
     { name = "ifuse", pr = 703, published_run = 41111585693, published_nevra = "ifuse-0:1.2.1-1.hum1.bfin.x86_64" },
     # iwd source import includes its libell runtime library.
     { name = "iwd", pr = 793, published_run = 41111585693, published_nevra = "iwd-0:3.12-1.hum1.bfin.x86_64" },
-    { name = "libell", pr = 793 },
+    { name = "libell", pr = 793, published_run = 41173029071, published_nevra = "libell-0:0.83-1.hum1.bfin.x86_64" },
     # Flex source import; consumer validation remains tracked in #486.
     { name = "flex", pr = 654, published_run = 41111585693, published_nevra = "flex-0:2.6.4-25.hum1.bfin.x86_64" },
     # Existing GPU monitor recipe; publication/runtime proof remains in #488.
@@ -788,6 +795,8 @@ packages = [
     { name = "udftools", pr = 782 },
     { name = "uresourced", pr = 782 },
     { name = "xfsprogs", pr = 782 },
+    # VVC encoder library from the negativo17 uvg266 recipe (#508); hosted build, publication and runtime proof remain outstanding.
+    { name = "uvg266-libs" },
     # Terminal and VTE emulator outputs (PR #413); publication verified in run 40569848351.
     # vte-profile and vte291-gtk4 are subpackages of vte291.spec.
     # Recipe and publication closure for projectbluefin/utah-packages#484.

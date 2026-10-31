@@ -1180,6 +1180,12 @@ packages:
     downstream_package_name: ilbc
     paths:
       - packages/ilbc
+  imath:
+    specfile_path: imath.spec
+    upstream_package_name: imath
+    downstream_package_name: imath
+    paths:
+      - packages/imath
   inih:
     specfile_path: inih.spec
     upstream_package_name: inih
@@ -1666,6 +1672,12 @@ packages:
     downstream_package_name: libepoxy
     paths:
       - packages/libepoxy
+  libev:
+    specfile_path: libev.spec
+    upstream_package_name: libev
+    downstream_package_name: libev
+    paths:
+      - packages/libev
   libevdev:
     specfile_path: libevdev.spec
     upstream_package_name: libevdev
@@ -1930,6 +1942,12 @@ packages:
     downstream_package_name: libmpeg2
     paths:
       - packages/libmpeg2
+  libmspack:
+    specfile_path: libmspack.spec
+    upstream_package_name: libmspack
+    downstream_package_name: libmspack
+    paths:
+      - packages/libmspack
   libmtp:
     specfile_path: libmtp.spec
     upstream_package_name: libmtp
@@ -3232,6 +3250,12 @@ packages:
     downstream_package_name: rust-just
     paths:
       - packages/rust-just
+  rygel:
+    specfile_path: rygel.spec
+    upstream_package_name: rygel
+    downstream_package_name: rygel
+    paths:
+      - packages/rygel
   samba:
     specfile_path: samba.spec
     upstream_package_name: samba
@@ -3664,6 +3688,12 @@ packages:
     downstream_package_name: usermode
     paths:
       - packages/usermode
+  uvg266:
+    specfile_path: uvg266.spec
+    upstream_package_name: uvg266
+    downstream_package_name: uvg266
+    paths:
+      - packages/uvg266
   v4l-utils:
     specfile_path: v4l-utils.spec
     upstream_package_name: v4l-utils
