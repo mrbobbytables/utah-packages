@@ -23,13 +23,13 @@ Summary:        %{summary}
 
 %description -n python3-versioneer %_description
 
-# CryFS needs versioneer itself; its optional TOML extra requires python3-toml,
-# which is not available in the factory buildroot.
+%pyproject_extras_subpkg -n python3-versioneer toml
+
 %prep
 %autosetup -n versioneer-%{version}
 
 %generate_buildrequires
-%pyproject_buildrequires
+%pyproject_buildrequires -x toml
 
 %build
 %pyproject_wheel
