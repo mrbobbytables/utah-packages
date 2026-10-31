@@ -138,7 +138,6 @@ packages = [
     "restic",
     "rpm-ostree",
     "rpm-ostree-libs",
-    "spice-webdavd",
     "sssd-client",
     "sssd-common",
     "sssd-kcm",
@@ -265,6 +264,8 @@ packages = [
 # Packages that left the backlog because a recipe was imported.
 # Each entry: package name and the commit that closed the gap.
 packages = [
+    # Recipe import only; build, publication, dependency closure and guest file-transfer proof remain on #490.
+    { name = "spice-webdavd", pr = 761 },
     # Recipe coverage only; hosted build, publication and runtime proof remain on #486.
     { name = "hfsplus-tools", pr = 837 },
     # Recipe import only; build, publication and runtime proof remain on #478.
