@@ -6,22 +6,22 @@
       "total": 21
     },
     "dev-tools": {
-      "pending": 56,
-      "total": 56
+      "pending": 55,
+      "total": 55
     },
     "fonts-i18n": {
       "pending": 14,
       "total": 14
     },
     "gnome-apps": {
-      "pending": 3,
-      "total": 3
+      "pending": 1,
+      "total": 1
     },
     "long-tail": {
       "already_recipe": 2,
       "manifest_wants": 1,
-      "pending": 69,
-      "total": 72
+      "pending": 64,
+      "total": 67
     },
     "power": {
       "total": 0
@@ -191,11 +191,6 @@
     {
       "area": "dev-tools",
       "name": "generic-logos",
-      "state": "pending"
-    },
-    {
-      "area": "dev-tools",
-      "name": "hfsplus-tools",
       "state": "pending"
     },
     {
@@ -509,16 +504,6 @@
       "state": "pending"
     },
     {
-      "area": "gnome-apps",
-      "name": "imath",
-      "state": "pending"
-    },
-    {
-      "area": "gnome-apps",
-      "name": "rygel",
-      "state": "pending"
-    },
-    {
       "area": "long-tail",
       "name": "7zip",
       "state": "pending"
@@ -645,22 +630,12 @@
     },
     {
       "area": "long-tail",
-      "name": "libev",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "libijs",
       "state": "pending"
     },
     {
       "area": "long-tail",
       "name": "liblqr-1",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "libmspack",
       "state": "pending"
     },
     {
@@ -681,11 +656,6 @@
     {
       "area": "long-tail",
       "name": "libreport-filesystem",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "lilv-libs",
       "state": "pending"
     },
     {
@@ -820,17 +790,7 @@
     },
     {
       "area": "long-tail",
-      "name": "sord",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
       "name": "sos",
-      "state": "pending"
-    },
-    {
-      "area": "long-tail",
-      "name": "sratom",
       "state": "pending"
     },
     {
@@ -923,11 +883,11 @@
   "states": {
     "already_recipe": 7,
     "manifest_wants": 1,
-    "pending": 166
+    "pending": 158
   },
   "totals": {
-    "backlog": 174,
-    "resolved": 340,
+    "backlog": 166,
+    "resolved": 348,
     "wontfix": 37
   }
 }

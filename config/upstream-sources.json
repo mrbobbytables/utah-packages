@@ -9,6 +9,13 @@
       "sha512": "4ccbef47255bf3644a50242a79951b1f3720e71a55eb1e07dc6b8486df0245da99a77bba751b50197d489b4c5d738e5284aabc014c2f7f44816ddf6a1bb807ca"
     },
     {
+      "name": "imath",
+      "version": "3.1.12",
+      "url": "https://github.com/AcademySoftwareFoundation/Imath/archive/v3.1.12/Imath-3.1.12.tar.gz",
+      "filename": "Imath-3.1.12.tar.gz",
+      "sha512": "32628dfcacb610310b81ffe017a66215cf5fb84c2e0a6ac8c94a68c048be3d2b97eb57965dd253770184d5824cce1e5440b8eefb2834666b273b3193ff108343"
+    },
+    {
       "name": "jbig2dec",
       "version": "0.20",
       "url": "https://github.com/ArtifexSoftware/jbig2dec/releases/download/0.20/jbig2dec-0.20.tar.gz",
@@ -42,6 +49,13 @@
       "url": "https://github.com/acoustid/chromaprint/releases/download/v1.6.2/chromaprint-1.6.2.tar.gz",
       "filename": "chromaprint-1.6.2.tar.gz",
       "sha512": "73d9612abe689f290b333e89506449bfc3c9b1f2c2c5a9302bef01b87d14ac37f612c9979f07e7c409b3e9fd7a89f384caaf5892c0b27b700fee015de7a704a4"
+    },
+    {
+      "name": "rygel",
+      "version": "46.1",
+      "url": "https://download.gnome.org/sources/rygel/46/rygel-46.1.tar.xz",
+      "filename": "rygel-46.1.tar.xz",
+      "sha512": "186db4a17dfbeb5ba67300265c7d33e9afb9f6d5658969c6fa611da6e23c34fd6a3f0d7600ba468f63649a05ca462883018f43478d181d9008d58821e2e726a7"
     },
     {
       "name": "spice-protocol",
@@ -6397,6 +6411,64 @@
       "sha512": "47ac85452d28ab238474b1f724383aca362bac41caa5ade6b34f5b53d43a7c4eacf3d6a2a6d4c7f39080bd041cc823f9b1de343c855249c45b342d37f1f084a7",
       "fallback_urls": [
         "https://src.fedoraproject.org/repo/pkgs/rpms/iwd/iwd-3.12.tar.xz/sha512/47ac85452d28ab238474b1f724383aca362bac41caa5ade6b34f5b53d43a7c4eacf3d6a2a6d4c7f39080bd041cc823f9b1de343c855249c45b342d37f1f084a7/iwd-3.12.tar.xz"
+      ]
+    },
+    {
+      "name": "hfsplus-tools",
+      "version": "540.1.linux3",
+      "url": "https://cavan.codon.org.uk/~mjg59/diskdev_cmds/diskdev_cmds-540.1.linux3.tar.gz",
+      "filename": "diskdev_cmds-540.1.linux3.tar.gz",
+      "sha512": "3d88fcdec4bfd32a75b6dc75899748d8585371b641be86cfdfe54ade738a0612662dd008c1506c7e216325303217d0b5f188a9c4fdccfb48b2ce50333f212d9e",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/hfsplus-tools/diskdev_cmds-540.1.linux3.tar.gz/0435afc389b919027b69616ad1b05709/diskdev_cmds-540.1.linux3.tar.gz"
+      ]
+    },
+    {
+      "name": "lv2",
+      "version": "1.18.10",
+      "url": "https://lv2plug.in/spec/lv2-1.18.10.tar.xz",
+      "filename": "lv2-1.18.10.tar.xz",
+      "sha512": "ab4bcf593f633b1ed16c0eb6aa4525458a00655ef9c87619bf85eaa966f8fd094a8e871b825f679e0d97923f8bbbf11841ff467022390ca2f1a5b5f66ccd5d1b"
+    },
+    {
+      "name": "sord",
+      "version": "0.16.22",
+      "url": "https://download.drobilla.net/sord-0.16.22.tar.xz",
+      "filename": "sord-0.16.22.tar.xz",
+      "sha512": "3821500f810e3b1cdbd763db419445c931d8b61de571f475646f11a5740c521c93c47ecab2e81a580a0d94bf432faa0de78fe3be1138c87bf9baca8fe23bb0cd"
+    },
+    {
+      "name": "sratom",
+      "version": "0.6.22",
+      "url": "https://download.drobilla.net/sratom-0.6.22.tar.xz",
+      "filename": "sratom-0.6.22.tar.xz",
+      "sha512": "bb3a46e88faf1596d2f10ac9d22f063e52f7c068a0712b0234168346727f179ea236280dae89e4136e97c243d0815444af1dcc6b86d70b99f5f88008481288b0"
+    },
+    {
+      "name": "lilv",
+      "version": "0.28.0",
+      "url": "https://download.drobilla.net/lilv-0.28.0.tar.xz",
+      "filename": "lilv-0.28.0.tar.xz",
+      "sha512": "754c9996670235766b84e416bbcb5352a7376e86f7fa373f9428125552294a5d6b032a363ea51fbbf81b88c8f2e47b3566a07bf0992e6e6ebd1bbf31651d9024"
+    },
+    {
+      "name": "libev",
+      "version": "4.33",
+      "url": "https://dist.schmorp.de/libev/Attic/libev-4.33.tar.gz",
+      "filename": "libev-4.33.tar.gz",
+      "sha512": "c662a65360115e0b2598e3e8824cf7b33360c43a96ac9233f6b6ea2873a10102551773cad0e89e738541e75af9fd4f3e3c11cd2f251c5703aa24f193128b896b",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/rpms/libev/libev-4.33.tar.gz/sha512/c662a65360115e0b2598e3e8824cf7b33360c43a96ac9233f6b6ea2873a10102551773cad0e89e738541e75af9fd4f3e3c11cd2f251c5703aa24f193128b896b/libev-4.33.tar.gz"
+      ]
+    },
+    {
+      "name": "libmspack",
+      "version": "0.11",
+      "url": "https://www.cabextract.org.uk/libmspack/libmspack-0.11alpha.tar.gz",
+      "filename": "libmspack-0.11alpha.tar.gz",
+      "sha512": "40c487e5b4e2f63a6cada26d29db51f605e8c29525a1cb088566d02cf2b1cc9dba263f80e2101d7f8e9d69cf7684a15bcaf791fb4891ad013a56afc7256dfa62",
+      "fallback_urls": [
+        "https://src.fedoraproject.org/repo/pkgs/rpms/libmspack/libmspack-0.11alpha.tar.gz/sha512/40c487e5b4e2f63a6cada26d29db51f605e8c29525a1cb088566d02cf2b1cc9dba263f80e2101d7f8e9d69cf7684a15bcaf791fb4891ad013a56afc7256dfa62/libmspack-0.11alpha.tar.gz"
       ]
     }
   ]
