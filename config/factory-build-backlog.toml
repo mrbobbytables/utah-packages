@@ -152,7 +152,6 @@ packages = [
     "adobe-mappings-cmap",
     "adobe-mappings-cmap-deprecated",
     "adobe-mappings-pdf",
-    "anthy-unicode",
     "cldr-emoji-annotation",
     "cldr-emoji-annotation-dtd",
     "ibus-anthy",
@@ -340,6 +339,7 @@ packages = [
     { name = "davfs2", pr = 696 },
     { name = "neon", pr = 696 },
     { name = "libntlm", pr = 696, published_run = 40626803772, published_nevra = "libntlm-0:1.8-1.hum1.bfin.x86_64" },
+    { name = "anthy-unicode", pr = 788 },
     # FireWire recipe coverage; hosted builds and runtime proof remain outstanding.
     { name = "libavc1394", pr = 681 },
     # FFmpeg family recipe coverage. The recipe exists under packages/ffmpeg and
