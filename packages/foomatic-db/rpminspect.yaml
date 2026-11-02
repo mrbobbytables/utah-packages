@@ -1,0 +1,3 @@
+---
+unicode:
+  exclude: foomatic-db-*/db/source/PPD/Lexmark/Lexmark_MS910_Series.ppd

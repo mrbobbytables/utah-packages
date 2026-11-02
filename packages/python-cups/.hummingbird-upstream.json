@@ -1,0 +1,8 @@
+{
+  "package": "python-cups",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/python-cups.git",
+  "commit": "8f556f1333ac133e8f2280d0e5de6d6bba1bf74e",
+  "tree": "559907a95f33a304f80dbd29fe20e84a5e25d7de",
+  "imported_at": "2026-10-24T12:24:45.919107+00:00"
+}

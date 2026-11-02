@@ -1,0 +1,8 @@
+{
+  "package": "python-llfuse",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/python-llfuse.git",
+  "commit": "88c587d2093e77453bc1421b770e2e7b61a66b55",
+  "tree": "1f6cf3b32c78b5ad06549c5ad0653c61186a3f3d",
+  "imported_at": "2026-10-24T04:13:43.342165+00:00"
+}

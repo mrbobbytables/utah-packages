@@ -1,0 +1,8 @@
+{
+  "package": "djvulibre",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/djvulibre.git",
+  "commit": "b8ea7b3a4f6b6593e4c440a6ba6bd259da97c75f",
+  "tree": "1e14b2f76ff9d009be0aeac7ed58c47899399f1f",
+  "imported_at": "2026-10-24T12:23:46.410545+00:00"
+}

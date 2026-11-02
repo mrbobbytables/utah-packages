@@ -1,0 +1,225 @@
+From cf5864f5922e4f40357d9f75a35cd448e671dddf Mon Sep 17 00:00:00 2001
+From: Arne Schwabe <arne@rfc2549.org>
+Date: Fri, 3 Jun 2022 11:52:19 +0200
+Subject: [PATCH] Allow running a default configuration with TLS libraries
+ without BF-CBC
+
+Modern TLS libraries might drop Blowfish by default or distributions
+might disable Blowfish in OpenSSL/mbed TLS. We still signal OCC
+options with BF-CBC compatible strings. To avoid requiring BF-CBC
+for this, special this one usage of BF-CBC enough to avoid a hard
+requirement on Blowfish in the default configuration.
+
+This patch is cherry-picked from 79ff3f79 and the missing
+ciphername = "none"; has been added in the OCC code.
+
+Due to uncrustify complains, a few extra whitespace fixes had to be
+done to options.c.
+
+Signed-off-by: Arne Schwabe <arne@rfc2549.org>
+Acked-by: Gert Doering <gert@greenie.muc.de>
+Message-Id: <20220603095219.637361-1-arne@rfc2549.org>
+URL: https://www.mail-archive.com/openvpn-devel@lists.sourceforge.net/msg24456.html
+Signed-off-by: Gert Doering <gert@greenie.muc.de>
+---
+ src/openvpn/crypto_backend.h |  2 ++
+ src/openvpn/init.c           | 37 ++++++++++++++++-----
+ src/openvpn/options.c        | 62 ++++++++++++++++++++++++++++--------
+ 3 files changed, 80 insertions(+), 21 deletions(-)
+
+diff --git a/src/openvpn/crypto_backend.h b/src/openvpn/crypto_backend.h
+index a9bb38ed..aebda3d6 100644
+--- a/src/openvpn/crypto_backend.h
++++ b/src/openvpn/crypto_backend.h
+@@ -256,6 +256,8 @@ const cipher_kt_t *cipher_kt_get(const char *ciphername);
+  * The returned name is normalised to the OpenVPN config name in case the
+  * name differs from the name used by the crypto library.
+  *
++ * Returns [null-cipher] in case the cipher_kt is NULL.
++ *
+  * @param cipher_kt     Static cipher parameters
+  *
+  * @return a statically allocated string describing the cipher.
+diff --git a/src/openvpn/init.c b/src/openvpn/init.c
+index da4d60af..b1b7b350 100644
+--- a/src/openvpn/init.c
++++ b/src/openvpn/init.c
+@@ -2764,14 +2764,35 @@ do_init_crypto_tls_c1(struct context *c)
+ #endif /* if P2MP */
+         }
+ 
+-        /* Do not warn if we only have BF-CBC in options->ciphername
+-         * because it is still the default cipher */
+-        bool warn = !streq(options->ciphername, "BF-CBC")
+-             || options->enable_ncp_fallback;
+-        /* Get cipher & hash algorithms */
+-        init_key_type(&c->c1.ks.key_type, options->ciphername, options->authname,
+-                      options->keysize, true, warn);
+-
++        /*
++         * BF-CBC is allowed to be used only when explicitly configured
++         * as NCP-fallback or when NCP has been disabled or explicitly
++         * allowed in the in ncp_ciphers list.
++         * In all other cases do not attempt to initialize BF-CBC as it
++         * may not even be supported by the underlying SSL library.
++         *
++         * Therefore, the key structure has to be initialized when:
++         * - any non-BF-CBC cipher was selected; or
++         * - BF-CBC is selected and NCP is disabled (explicit request to
++         *   use the BF-CBC cipher); or
++         * - BF-CBC is selected, NCP is enabled and fallback is enabled
++         *   (BF-CBC will be the fallback).
++         * - BF-CBC is in data-ciphers and we negotiate to use BF-CBC:
++         *   If the negotiated cipher and options->ciphername are the
++         *   same we do not reinit the cipher
++         *
++         * Note that BF-CBC will still be part of the OCC string to retain
++         * backwards compatibility with older clients.
++         */
++        if (!streq(options->ciphername, "BF-CBC") || !options->ncp_enabled
++            || (options->ncp_enabled && tls_item_in_cipher_list("BF-CBC", options->ncp_ciphers))
++            || options->enable_ncp_fallback)
++        {
++            /* Do not warn if the if the cipher is used only in OCC */
++            bool warn = !options->ncp_enabled || options->enable_ncp_fallback;
++            init_key_type(&c->c1.ks.key_type, options->ciphername, options->authname,
++                          options->keysize, true, warn);
++        }
+         /* Initialize PRNG with config-specified digest */
+         prng_init(options->prng_hash, options->prng_nonce_secret_len);
+ 
+diff --git a/src/openvpn/options.c b/src/openvpn/options.c
+index f6ef02ae..2206d9f4 100644
+--- a/src/openvpn/options.c
++++ b/src/openvpn/options.c
+@@ -1135,7 +1135,7 @@ parse_hash_fingerprint(const char *str, int nbytes, int msglevel, struct gc_aren
+ #ifndef ENABLE_SMALL
+ 
+ static void
+-show_dhcp_option_list(const char *name, const char * const*array, int len)
++show_dhcp_option_list(const char *name, const char *const *array, int len)
+ {
+     int i;
+     for (i = 0; i < len; ++i)
+@@ -2288,7 +2288,7 @@ options_postprocess_verify_ce(const struct options *options,
+     if (options->mode == MODE_SERVER)
+     {
+ #define USAGE_VALID_SERVER_PROTOS "--mode server currently only supports " \
+-      "--proto values of udp, tcp-server, tcp4-server, or tcp6-server"
++    "--proto values of udp, tcp-server, tcp4-server, or tcp6-server"
+ #ifdef TARGET_ANDROID
+         msg(M_FATAL, "--mode server not supported on Android");
+ #endif
+@@ -3103,7 +3103,7 @@ options_postprocess_cipher(struct options *o)
+         if (!o->ncp_enabled)
+         {
+             msg(M_USAGE, "--ncp-disable needs an explicit --cipher or "
+-                         "--data-ciphers-fallback config option");
++                "--data-ciphers-fallback config option");
+         }
+ 
+         msg(M_WARN, "--cipher is not set. Previous OpenVPN version defaulted to "
+@@ -3681,9 +3681,30 @@ calc_options_string_link_mtu(const struct options *o, const struct frame *frame)
+     {
+         struct frame fake_frame = *frame;
+         struct key_type fake_kt;
+-        init_key_type(&fake_kt, o->ciphername, o->authname, o->keysize, true,
+-                      false);
++
+         frame_remove_from_extra_frame(&fake_frame, crypto_max_overhead());
++
++
++        /* o->ciphername might be BF-CBC even though the underlying SSL library
++         * does not support it. For this reason we workaround this corner case
++         * by pretending to have no encryption enabled and by manually adding
++         * the required packet overhead to the MTU computation.
++         */
++        const char *ciphername = o->ciphername;
++
++        if (strcmp(o->ciphername, "BF-CBC") == 0)
++        {
++            /* none has no overhead, so use this to later add only --auth
++             * overhead */
++
++            /* overhead of BF-CBC: 64 bit block size, 64 bit IV size */
++            frame_add_to_extra_frame(&fake_frame, 64/8 + 64/8);
++            ciphername = "none";
++        }
++
++        init_key_type(&fake_kt, ciphername, o->authname, o->keysize, true,
++                      false);
++
+         crypto_adjust_frame_parameters(&fake_frame, &fake_kt, o->replay,
+                                        cipher_kt_mode_ofb_cfb(fake_kt.cipher));
+         frame_finalize(&fake_frame, o->ce.link_mtu_defined, o->ce.link_mtu,
+@@ -3853,18 +3874,33 @@ options_string(const struct options *o,
+                + (TLS_SERVER == true)
+                <= 1);
+ 
+-        init_key_type(&kt, o->ciphername, o->authname, o->keysize, true,
+-                      false);
++        /* Skip resolving BF-CBC to allow SSL libraries without BF-CBC
++         * to work here in the default configuration */
++        const char *ciphername = o->ciphername;
++        int keysize;
++
++        if (strcmp(o->ciphername, "BF-CBC") == 0)
++        {
++            init_key_type(&kt, "none", o->authname, o->keysize, true,
++                          false);
++            keysize = 128;
++        }
++        else
++        {
++            init_key_type(&kt, o->ciphername, o->authname, o->keysize, true,
++                          false);
++            ciphername = cipher_kt_name(kt.cipher);
++            keysize = kt.cipher_length * 8;
++        }
+         /* Only announce the cipher to our peer if we are willing to
+          * support it */
+-        const char *ciphername = cipher_kt_name(kt.cipher);
+         if (p2p_nopull || !o->ncp_enabled
+             || tls_item_in_cipher_list(ciphername, o->ncp_ciphers))
+         {
+             buf_printf(&out, ",cipher %s", ciphername);
+         }
+         buf_printf(&out, ",auth %s", md_kt_name(kt.digest));
+-        buf_printf(&out, ",keysize %d", kt.cipher_length * 8);
++        buf_printf(&out, ",keysize %d", keysize);
+         if (o->shared_secret_file)
+         {
+             buf_printf(&out, ",secret");
+@@ -6168,9 +6204,9 @@ add_option(struct options *options,
+         }
+     }
+ #ifdef TARGET_LINUX
+-    else if (streq (p[0], "bind-dev") && p[1])
++    else if (streq(p[0], "bind-dev") && p[1])
+     {
+-        VERIFY_PERMISSION (OPT_P_SOCKFLAGS);
++        VERIFY_PERMISSION(OPT_P_SOCKFLAGS);
+         options->bind_dev = p[1];
+     }
+ #endif
+@@ -6248,7 +6284,7 @@ add_option(struct options *options,
+         {
+             int64_t val = atoll(p[2]);
+             options->inactivity_minimum_bytes = (val < 0) ? 0 : val;
+-            if ( options->inactivity_minimum_bytes > INT_MAX )
++            if (options->inactivity_minimum_bytes > INT_MAX)
+             {
+                 msg(M_WARN, "WARNING: '--inactive' with a 'bytes' value"
+                     " >2 Gbyte was silently ignored in older versions.  If "
+@@ -8132,7 +8168,7 @@ add_option(struct options *options,
+ #endif
+     else if (streq(p[0], "providers") && p[1])
+     {
+-        for (size_t j = 1; j < MAX_PARMS && p[j] != NULL;j++)
++        for (size_t j = 1; j < MAX_PARMS && p[j] != NULL; j++)
+         {
+             options->providers.names[j] = p[j];
+         }
+-- 
+2.31.1
+

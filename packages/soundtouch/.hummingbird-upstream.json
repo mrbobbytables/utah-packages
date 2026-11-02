@@ -1,0 +1,8 @@
+{
+  "package": "soundtouch",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/soundtouch.git",
+  "commit": "24d56ff3fc69af6ffd0995067994206acc896e1f",
+  "tree": "5362fa90365d3d81829bda8399942bb81a433023",
+  "imported_at": "2026-10-18T09:00:08.286061+00:00"
+}

@@ -1,0 +1,23 @@
+From 697cfb8115054fb95b9e91d54d68f47ee3805060 Mon Sep 17 00:00:00 2001
+From: Matthias Bock <mail@matthiasbock.net>
+Date: Thu, 22 Mar 2018 18:44:08 +0100
+Subject: [PATCH] Fixed #1: Replaced deprecated type std::auto_ptr by
+ std::unique_ptr
+
+---
+ src/common/CupsFilter.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/common/CupsFilter.h b/src/common/CupsFilter.h
+index a17dae8..614c48d 100644
+--- a/src/common/CupsFilter.h
++++ b/src/common/CupsFilter.h
+@@ -133,7 +133,7 @@ CCupsFilter<D, DI, LM>::Run(int argc, char* argv[])
+     bool UseCustomHalftoning    = PageHeader.cupsBitsPerPixel > 1;
+     bool IsProcessLineSupported = true;
+ 
+-    std::auto_ptr<CHalftoneFilter> H;
++    std::unique_ptr<CHalftoneFilter> H;
+     if (UseCustomHalftoning)
+     {
+       if (HalftoningMethod_ == "NLL")

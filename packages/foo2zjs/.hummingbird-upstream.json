@@ -1,0 +1,8 @@
+{
+  "package": "foo2zjs",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/foo2zjs.git",
+  "commit": "213c7a7958b38aa83aab59bd07c0232a3e2612ae",
+  "tree": "ee97564b7087b767722e1af78a067788f66a5d27",
+  "imported_at": "2026-10-24T03:58:56.233097+00:00"
+}

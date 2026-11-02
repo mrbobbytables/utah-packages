@@ -1,0 +1,8 @@
+{
+  "package": "libgedit-gfls",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libgedit-gfls.git",
+  "commit": "33f91b97a735323496d9544d68460150291cfcbf",
+  "tree": "0b71244dca58a367869e7b04eccaf3568de62675",
+  "imported_at": "2026-10-20T22:31:20.296992+00:00"
+}

@@ -5,6 +5,12 @@ The canary runs rebuild-rpms.yml itself over a fixed handful of packages. The
 workflow is plumbing; what it concludes lives here, where it is under test:
 
     canary.py touches-pipeline < changed-paths   exit 0 when the canary must run
+    canary.py pr-relevant --repository R --pr N --set JSON
+                                                 the same, judged on a pull request's
+                                                 files and the lock entries they change
+    canary.py merge-group --repository R --head-ref REF --head-sha SHA --set JSON
+                                                 exit 0 when a merge queue group is proven
+                                                 without building (see merge_group_proof)
     canary.py salt                               the cache namespace for pass1
     canary.py verify-image REF@DIGEST --utah-reader PATH --expect JSON
     canary.py verify-cache JOBS.json --set JSON --perturbed NAME
@@ -24,6 +30,7 @@ import sys
 import tempfile
 import urllib.parse
 import urllib.request
+from collections.abc import Sequence
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -62,6 +69,206 @@ BUILD_JOB = re.compile(r"^(?P<pass>pass\d+) / rebuild\d+ .*/ build \((?P<package
 
 def touches_pipeline(paths: list[str]) -> bool:
     return any(path.startswith(PIPELINE_PATHS) for path in paths if path)
+
+
+# Recipe inventory, not pipeline. The canary reads only the canary set's own
+# entries in these files, so a pull request that adds recipes and new entries
+# changes nothing it can prove anything about. They stay under config/ for the
+# tools that read them; PIPELINE_PATHS only counts a change to them when it
+# could reach the canary set (pipeline_relevant).
+SOURCES_LOCK = "config/upstream-sources.json"
+DATA_FILES = frozenset({
+    SOURCES_LOCK,
+    "config/factory-build-backlog.toml",
+    "config/fedora-primary-sources.txt",
+})
+# pass3 perturbs this recipe and reads its lock entry; it is not in CANARY_SET.
+PERTURBED = ("python-typing-inspection",)
+
+
+def sources_touch_existing(base: object, head: object) -> bool:
+    """Whether head changes anything base already had in the lock.
+
+    Adding entries is the import case and cannot affect packages that were
+    already locked. Any modified or removed entry, any change outside the
+    package list, or anything unparseable counts as touching.
+    """
+    try:
+        base_rows, head_rows = base["packages"], head["packages"]  # type: ignore[index]
+        before = {row["name"]: row for row in base_rows}
+        after = {row["name"]: row for row in head_rows}
+        other_before = {key: value for key, value in base.items() if key != "packages"}  # type: ignore[union-attr]
+        other_after = {key: value for key, value in head.items() if key != "packages"}  # type: ignore[union-attr]
+    except (KeyError, TypeError, AttributeError):
+        return True
+    if len(before) != len(base_rows) or len(after) != len(head_rows):
+        return True
+    if other_before != other_after:
+        return True
+    return any(name not in after or after[name] != row for name, row in before.items())
+
+
+def patch_mentions(patch: str, names: Sequence[str]) -> bool:
+    """Whether a changed line of a unified diff names one of these packages."""
+    changed = [
+        line[1:] for line in patch.splitlines()
+        if line[:1] in "+-" and not line.startswith(("+++", "---"))
+    ]
+    return any(
+        re.search(rf"(?<![\w.+-]){re.escape(name)}(?![\w.+-])", line)
+        for line in changed for name in names
+    )
+
+
+def pipeline_relevant(
+    files: Sequence[dict],
+    canary_set: Sequence[str],
+    base_sources: object = None,
+    head_sources: object = None,
+) -> bool:
+    """Whether a pull request's files can change what the canary proves.
+
+    Everything under PIPELINE_PATHS counts, except the inventory files above:
+    those count only when the change reaches an entry that already existed or
+    names a canary package. A file whose diff GitHub did not return (binary,
+    too large) is judged relevant.
+    """
+    for entry in files:
+        for path in {entry.get("filename"), entry.get("previous_filename")} - {None, ""}:
+            if not path.startswith(PIPELINE_PATHS):
+                continue
+            if path not in DATA_FILES:
+                return True
+            if path == SOURCES_LOCK:
+                if base_sources is None or head_sources is None:
+                    return True
+                if sources_touch_existing(base_sources, head_sources):
+                    return True
+            elif entry.get("patch") is None or patch_mentions(entry["patch"], canary_set):
+                return True
+    return False
+
+
+def _gh(args: Sequence[str]) -> str:
+    return subprocess.run(["gh", *args], capture_output=True, text=True, check=True).stdout
+
+
+def _json_stream(text: str) -> list[dict]:
+    """Every JSON value in text (gh --paginate prints one array per page)."""
+    decoder, index, items = json.JSONDecoder(), 0, []
+    while index < len(text):
+        while index < len(text) and text[index].isspace():
+            index += 1
+        if index >= len(text):
+            break
+        value, index = decoder.raw_decode(text, index)
+        items.extend(value if isinstance(value, list) else [value])
+    return items
+
+
+def pr_relevant(repository: str, pr: int, canary_set: Sequence[str], gh=_gh) -> bool:
+    """pipeline_relevant for a pull request, fetching what the rule needs."""
+    files = _json_stream(gh(["api", "--paginate", f"repos/{repository}/pulls/{pr}/files"]))
+    touches_lock = any(
+        SOURCES_LOCK in (entry.get("filename"), entry.get("previous_filename")) for entry in files
+    )
+    base_sources = head_sources = None
+    if touches_lock:
+        meta = json.loads(gh(["api", f"repos/{repository}/pulls/{pr}"]))
+        head = meta["head"]["sha"]
+        compare = json.loads(gh(["api", f"repos/{repository}/compare/{meta['base']['sha']}...{head}"]))
+        merge_base = compare["merge_base_commit"]["sha"]
+        raw = ["-H", "Accept: application/vnd.github.raw"]
+        try:
+            base_sources = json.loads(gh(["api", *raw, f"repos/{repository}/contents/{SOURCES_LOCK}?ref={merge_base}"]))
+            head_sources = json.loads(gh(["api", *raw, f"repos/{repository}/contents/{SOURCES_LOCK}?ref={head}"]))
+        except (subprocess.CalledProcessError, json.JSONDecodeError):
+            base_sources = head_sources = None
+    return pipeline_relevant(files, [*canary_set, *PERTURBED], base_sources, head_sources)
+
+
+# A GitHub queue ref supplies a candidate PR number, not proof of all group
+# members. Always compare its full pipeline tree with the synthetic commit;
+# a docs-only candidate must not bless pipeline changes elsewhere in the group.
+QUEUE_REF = re.compile(r"^(?:refs/heads/)?gh-readonly-queue/.+/pr-(?P<pr>[1-9][0-9]*)-[0-9a-f]{40}$")
+FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+
+
+def queue_pr(head_ref: str) -> int | None:
+    """The pull request a merge queue ref was created for, or None."""
+    match = QUEUE_REF.match(head_ref or "")
+    return int(match["pr"]) if match else None
+
+
+def _git(args: Sequence[str]) -> str:
+    return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout
+
+
+def range_files(base: str, head: str, git=_git) -> list[dict]:
+    """What base..head changes, shaped like the pull request files API."""
+    fields = git(["diff", "--name-status", "-z", "-M", base, head]).split("\0")
+    files, index = [], 0
+    while index < len(fields) and fields[index]:
+        status = fields[index]
+        if status[:1] in ("R", "C"):
+            files.append({"filename": fields[index + 2], "previous_filename": fields[index + 1]})
+            index += 3
+        else:
+            files.append({"filename": fields[index + 1]})
+            index += 2
+    return files
+
+
+def range_relevant(base: str, head: str, canary_set: Sequence[str], git=_git) -> bool:
+    """pipeline_relevant for two local commits, judged exactly as pr_relevant judges a pull request."""
+    files = range_files(base, head, git)
+    for entry in files:
+        if entry["filename"] in DATA_FILES and entry["filename"] != SOURCES_LOCK:
+            entry["patch"] = git(["diff", "--text", "--no-color", base, head, "--", entry["filename"]])
+    base_sources = head_sources = None
+    if any(SOURCES_LOCK in (entry.get("filename"), entry.get("previous_filename")) for entry in files):
+        try:
+            base_sources = json.loads(git(["show", f"{base}:{SOURCES_LOCK}"]))
+            head_sources = json.loads(git(["show", f"{head}:{SOURCES_LOCK}"]))
+        except (subprocess.CalledProcessError, json.JSONDecodeError):
+            base_sources = head_sources = None
+    return pipeline_relevant(files, [*canary_set, *PERTURBED], base_sources, head_sources)
+
+
+def merge_group_proof(
+    repository: str, head_ref: str, head_sha: str, canary_set: Sequence[str], gh=_gh, git=_git,
+) -> tuple[bool, str]:
+    """Whether the Canary a queued pull request passed still proves its merge group.
+
+    A merge group run never builds: every build pushes a package-cache image
+    and pass1 publishes and signs a canary tag, and the queue must not publish.
+    The pull request's own Canary must have passed on its head before GitHub
+    admits it. Its pipeline proves this group only when nothing
+    pipeline-relevant differs between that head and the full group commit.
+    Inspect that range even for a docs-only pull request: another queued
+    member or main may have changed the pipeline. Anything unreadable, moved
+    or pipeline-different fails closed.
+    """
+    pr = queue_pr(head_ref)
+    if pr is None:
+        return False, f"cannot name the pull request from merge group ref {head_ref!r}"
+    if not FULL_SHA.match(head_sha or ""):
+        return False, f"not a full merge group commit: {head_sha!r}"
+    pr_head = json.loads(gh(["api", f"repos/{repository}/pulls/{pr}"]))["head"]["sha"]
+    git(["fetch", "--no-tags", "--depth=1", "origin", f"refs/pull/{pr}/head"])
+    fetched = git(["rev-parse", "FETCH_HEAD"]).strip()
+    if fetched != pr_head:
+        return False, f"pull request #{pr} head moved ({pr_head[:12]} in the API, {fetched[:12]} fetched)"
+    if range_relevant(pr_head, head_sha, canary_set, git=git):
+        return False, (
+            f"the pipeline in this merge group differs from pull request #{pr} head "
+            f"{pr_head[:12]}: main or another member changed a pipeline path. "
+            "Update the branch so Canary proves the merged pipeline, then queue it again"
+        )
+    return True, (
+        f"pull request #{pr}'s Canary proved {pr_head[:12]}, and nothing "
+        "pipeline-relevant differs between that commit and this merge group"
+    )
 
 
 def salt(root: Path = ROOT) -> str:
@@ -193,9 +400,24 @@ def build_outcomes(jobs: list[dict]) -> dict[str, dict[str, str]]:
     return outcomes
 
 
+def lock_nevras(lock: dict) -> list[str]:
+    """Sorted NEVRAs recorded in a buildroot_lock.json."""
+    rpms = lock.get("buildroot", {}).get("rpms", [])
+    nevras = []
+    for r in rpms:
+        epoch = f"{r['epoch']}:" if r.get("epoch") else ""
+        nevras.append(f"{r['name']}-{epoch}{r['version']}-{r['release']}.{r['arch']}")
+    return sorted(nevras)
+
+
 def cache_problems(
-    outcomes: dict[str, dict[str, str]], canary_set: set[str], perturbed: str
+    outcomes: dict[str, dict[str, str]], canary_set: set[str], perturbed: str,
+    locks: dict[str, dict[str, dict]] | None = None,
+    tolerated: list[str] | None = None,
 ) -> list[str]:
+    """Cache-verdict problems. A pass2/pass3 compile whose buildroot NEVRAs
+    moved since pass1 is a legitimate invalidation, not a problem: it is
+    appended to ``tolerated`` (or printed to stderr when none is given)."""
     problems = []
     for name, expected in (("pass2", canary_set), ("pass3", canary_set | {perturbed})):
         seen = outcomes.get(name, {})
@@ -205,6 +427,26 @@ def cache_problems(
         for name in ("pass2", "pass3"):
             outcome = outcomes.get(name, {}).get(package)
             if outcome is not None and outcome != "cache hit":
+                if (
+                    locks
+                    and outcome == "compiled"
+                    and name in locks
+                    and "pass1" in locks
+                    and package in locks[name]
+                    and package in locks["pass1"]
+                ):
+                    p1_nevras = lock_nevras(locks["pass1"][package])
+                    pn_nevras = lock_nevras(locks[name][package])
+                    if p1_nevras != pn_nevras:
+                        added = [f"+{n}" for n in pn_nevras if n not in p1_nevras]
+                        removed = [f"-{n}" for n in p1_nevras if n not in pn_nevras]
+                        diff_str = ", ".join((added + removed)[:5])
+                        note = f"{name}: {package} recompiled due to buildroot NEVRA changes ({diff_str})"
+                        if tolerated is None:
+                            print(f"info: {note}", file=sys.stderr)
+                        else:
+                            tolerated.append(note)
+                        continue
                 problems.append(f"{name}: {package} was {outcome}, not a cache hit")
     perturbed_outcome = outcomes.get("pass3", {}).get(perturbed)
     if perturbed_outcome is not None and perturbed_outcome != "compiled":
@@ -259,6 +501,7 @@ def built_problems(outcomes: dict[str, str], expected: set[str], name: str = "pa
 
 
 LOCK_ARTIFACT = re.compile(r"lock-s\d+-(?P<package>.+)$")
+PASS_LOCK_ARTIFACT = re.compile(r"^(?:(?P<pass>p\d+)-)?lock-s\d+-(?P<package>.+)$")
 
 
 def read_locks(directory: Path) -> dict[str, dict]:
@@ -270,6 +513,19 @@ def read_locks(directory: Path) -> dict[str, dict]:
         if match:
             locks[match["package"]] = json.loads(path.read_text())
     return locks
+
+
+def read_pass_locks(directory: Path) -> dict[str, dict[str, dict]]:
+    """pass -> package -> lock, from downloaded p<N>-lock-s<stage>-<package> artifacts."""
+    pass_locks: dict[str, dict[str, dict]] = {}
+    for path in sorted(directory.rglob("buildroot_lock.json")):
+        artifact = path.relative_to(directory).parts[0]
+        match = PASS_LOCK_ARTIFACT.search(artifact)
+        if match:
+            prefix = match["pass"] or "p1"
+            pass_name = f"pass{prefix[1:]}"
+            pass_locks.setdefault(pass_name, {})[match["package"]] = json.loads(path.read_text())
+    return pass_locks
 
 
 def hermetic_problems(
@@ -315,7 +571,9 @@ def early_publish_problems(jobs: list[dict], pass_name: str, wave: int) -> list[
     return problems
 
 
-def summary(outcomes: dict[str, dict[str, str]], problems: list[str]) -> str:
+def summary(
+    outcomes: dict[str, dict[str, str]], problems: list[str], tolerated: Sequence[str] = (),
+) -> str:
     lines = ["### Canary cache", "", "| pass | package | outcome |", "| --- | --- | --- |"]
     for name in sorted(outcomes):
         for package, outcome in sorted(outcomes[name].items()):
@@ -323,6 +581,20 @@ def summary(outcomes: dict[str, dict[str, str]], problems: list[str]) -> str:
     lines.append("")
     if problems:
         lines += ["**Failed:**", ""] + [f"- {problem}" for problem in problems]
+        if tolerated:
+            lines += [
+                "",
+                "**Tolerated compiles** (buildroot NEVRAs moved since pass1, so the cache key legitimately changed):",
+                "",
+            ] + [f"- {note}" for note in tolerated]
+    elif tolerated:
+        lines += [
+            "**Tolerated compiles** (buildroot NEVRAs moved since pass1, so the cache key legitimately changed):",
+            "",
+        ] + [f"- {note}" for note in tolerated] + [
+            "",
+            "Every other pass2/pass3 build was a cache hit; pass3 compiled the perturbed package.",
+        ]
     else:
         lines.append("pass2 compiled nothing; pass3 compiled only the perturbed package.")
     return "\n".join(lines) + "\n"
@@ -333,6 +605,15 @@ def main(argv: list[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("touches-pipeline")
     commands.add_parser("salt")
+    relevant = commands.add_parser("pr-relevant")
+    relevant.add_argument("--repository", required=True)
+    relevant.add_argument("--pr", required=True, type=int)
+    relevant.add_argument("--set", required=True, help="JSON array of canary package names")
+    group = commands.add_parser("merge-group")
+    group.add_argument("--repository", required=True)
+    group.add_argument("--head-ref", required=True, help="github.event.merge_group.head_ref")
+    group.add_argument("--head-sha", required=True, help="github.event.merge_group.head_sha")
+    group.add_argument("--set", required=True, help="JSON array of canary package names")
     image = commands.add_parser("verify-image")
     image.add_argument("image")
     image.add_argument("--utah-reader", type=Path, required=True)
@@ -365,10 +646,21 @@ def main(argv: list[str] | None = None) -> int:
     cache.add_argument("jobs", type=Path)
     cache.add_argument("--set", required=True)
     cache.add_argument("--perturbed", required=True)
+    cache.add_argument("--locks", type=Path, help="Directory containing downloaded pass lock artifacts")
     args = parser.parse_args(argv)
 
     if args.command == "touches-pipeline":
         return 0 if touches_pipeline(sys.stdin.read().splitlines()) else 1
+    if args.command == "pr-relevant":
+        return 0 if pr_relevant(args.repository, args.pr, json.loads(args.set)) else 1
+    if args.command == "merge-group":
+        proven, reason = merge_group_proof(args.repository, args.head_ref, args.head_sha,
+                                           json.loads(args.set))
+        if proven:
+            print(reason)
+            return 0
+        print(f"::error title=canary merge group::{reason}", file=sys.stderr)
+        return 1
     if args.command == "salt":
         print(salt())
         return 0
@@ -441,8 +733,14 @@ def main(argv: list[str] | None = None) -> int:
         return 1 if problems else 0
     if args.command == "verify-cache":
         outcomes = build_outcomes(json.loads(args.jobs.read_text()))
-        problems = cache_problems(outcomes, set(json.loads(args.set)), args.perturbed)
-        print(summary(outcomes, problems))
+        locks = read_pass_locks(args.locks) if args.locks else None
+        tolerated: list[str] = []
+        problems = cache_problems(
+            outcomes, set(json.loads(args.set)), args.perturbed, locks=locks, tolerated=tolerated
+        )
+        print(summary(outcomes, problems, tolerated))
+        for note in tolerated:
+            print(f"::notice title=canary cache::{note}", file=sys.stderr)
         for problem in problems:
             print(f"::error title=canary cache::{problem}", file=sys.stderr)
         return 1 if problems else 0

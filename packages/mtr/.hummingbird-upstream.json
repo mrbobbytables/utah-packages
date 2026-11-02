@@ -1,0 +1,8 @@
+{
+  "package": "mtr",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/mtr.git",
+  "commit": "0e6bf9856ebdf7bca119b6d6ef0398e5c4888b9a",
+  "tree": "7f6bf807f831d6a59a19e36138127635446771e9",
+  "imported_at": "2026-10-24T04:00:05.282433+00:00"
+}

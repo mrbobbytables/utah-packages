@@ -1,0 +1,8 @@
+{
+  "package": "libhandy",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libhandy.git",
+  "commit": "fe8bcd5835da8cbe20942044c11932cca6c67e0e",
+  "tree": "f366cdcbf6aa2c61d0a91673a2cb222f9edb1151",
+  "imported_at": "2026-10-24T12:25:42.393739+00:00"
+}

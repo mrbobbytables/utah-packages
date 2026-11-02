@@ -1,0 +1,8 @@
+{
+  "package": "libao",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libao.git",
+  "commit": "12f9e321e5c4e2ee12bf04b85672538e4447b858",
+  "tree": "e41492028d467f6dc62daa4324a9863b5a6df607",
+  "imported_at": "2026-10-15T19:23:14.285826+00:00"
+}

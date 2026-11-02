@@ -1,0 +1,8 @@
+{
+  "package": "vpnc-script",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/vpnc-script.git",
+  "commit": "c70c94a2a2ed3e766679c31fb69376801cc3e99c",
+  "tree": "73845f385fe4ff65ca6e6df65d53cdb1b2698a14",
+  "imported_at": "2026-10-24T03:56:57.911073+00:00"
+}

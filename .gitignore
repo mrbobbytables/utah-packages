@@ -27,6 +27,9 @@ packages/*/*.asc
 !packages/*/[0-9A-F][0-9A-F]*.asc
 !packages/*/*key*.asc
 !packages/*/*keyring*.asc
+!packages/bc/kevin_pizzini.asc
+!packages/pkcs11-provider/simo_redhat.asc
+!packages/python-pskc/*.asc
 packages/*/*.sha256sum
 packages/*/*.upstream
 
@@ -38,3 +41,10 @@ packages/icu/metaZones.txt
 packages/icu/timezoneTypes.txt
 packages/icu/windowsZones.txt
 packages/icu/zoneinfo64.txt
+
+# The Pages catalog payload; .github/workflows/pages.yml renders it at deploy.
+site/packages.json
+
+# Leftovers from patch / git apply --reject; never a tracked input.
+*.orig
+*.rej

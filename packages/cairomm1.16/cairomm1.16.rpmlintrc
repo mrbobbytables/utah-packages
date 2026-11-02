@@ -1,0 +1,6 @@
+# It is normal for the -devel package to lack documentation of its own.
+# Furthermore, all interesting documentation has been packaged in the -doc
+# subpackage.
+addFilter(r"^cairomm1\.16(-devel)?\..*: no-documentation")
+# Normal Doxygen JavaScript unbundling:
+addFilter(r"^cairomm1\.16-doc?\..*: dangling-relative-symlink .*\.js$")

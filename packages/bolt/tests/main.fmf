@@ -1,0 +1,12 @@
+summary:
+    Test for bolt
+prepare:
+    how: install
+    package:
+        - bolt-tests
+        - python3-gobject-base
+        - python3-dbus
+        - python3-dbusmock
+        - umockdev-devel
+execute:
+    script: tests/run-it.sh /usr/libexec/installed-tests/bolt/test-integration

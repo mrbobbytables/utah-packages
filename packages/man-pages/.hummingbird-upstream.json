@@ -1,0 +1,8 @@
+{
+  "package": "man-pages",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/man-pages.git",
+  "commit": "7584ee1222a16d91b1d9629a98dd095541f9239a",
+  "tree": "8f913a6b5a5d98f015e8abfaa3ad6ebdba13d868",
+  "imported_at": "2026-10-24T03:59:59.183163+00:00"
+}

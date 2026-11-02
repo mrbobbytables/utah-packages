@@ -1,0 +1,8 @@
+{
+  "package": "gamemode",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gamemode.git",
+  "commit": "5e85b92a85978bc29b01a42a74221e9569f96612",
+  "tree": "956318da03da2311f2299af1e836759688da3066",
+  "imported_at": "2026-10-24T03:59:45.695277+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "package": "gnome-app-list",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-app-list.git",
+  "commit": "6fc02bbe90c8d4f5b175d429dfc771ae53059e0c",
+  "tree": "adfdc79650d226e42687cfeb1b267208418b77dd",
+  "imported_at": "2026-10-20T20:24:34.565743+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "package": "NetworkManager-openvpn",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/NetworkManager-openvpn.git",
+  "commit": "efa5e4ad8c397ad8d97eb9b95f85f3392a95f451",
+  "tree": "d1e45494bb22b0d03b66272c0fe69aa4fcf15da1",
+  "imported_at": "2026-10-18T08:53:50.147563+00:00"
+}

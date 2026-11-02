@@ -1,0 +1,8 @@
+{
+  "package": "pinfo",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/pinfo.git",
+  "commit": "e6206a311d22b2a00eea33ad52a046474d393298",
+  "tree": "2dd2d15ef56827919a251866065be5bf731fa753",
+  "imported_at": "2026-10-24T04:00:14.097187+00:00"
+}

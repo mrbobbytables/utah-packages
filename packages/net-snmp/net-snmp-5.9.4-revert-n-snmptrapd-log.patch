@@ -1,0 +1,13 @@
+diff --git a/apps/snmptrapd_log.c b/apps/snmptrapd_log.c
+index 067c7f6..e6f0f1e 100644
+--- a/apps/snmptrapd_log.c
++++ b/apps/snmptrapd_log.c
+@@ -596,7 +596,7 @@ realloc_handle_time_fmt(u_char ** buf, size_t * buf_len, size_t * out_len,
+ static
+ void convert_agent_addr(struct in_addr agent_addr, char *name, size_t size)
+ {
+-    const int numeric = !netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID,
++    const int numeric = netsnmp_ds_get_boolean(NETSNMP_DS_APPLICATION_ID,
+                                                 NETSNMP_DS_APP_NUMERIC_IP);
+     struct sockaddr_in sin;
+ 

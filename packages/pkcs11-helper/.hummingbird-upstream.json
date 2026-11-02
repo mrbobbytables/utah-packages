@@ -1,0 +1,8 @@
+{
+  "package": "pkcs11-helper",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/pkcs11-helper.git",
+  "commit": "36918040db703a54f9cf74cebe87addb85832659",
+  "tree": "9ca5cb64f790c3fa6b87a1b8fa211dd4f7cca7e3",
+  "imported_at": "2026-10-24T03:57:01.843392+00:00"
+}

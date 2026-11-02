@@ -1,0 +1,8 @@
+{
+  "package": "pv",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/pv.git",
+  "commit": "45569fe8d0c21709514c432be289fda6ad301490",
+  "tree": "b061ea1def248531228f8f746370db115abd7a60",
+  "imported_at": "2026-10-18T08:53:24.442098+00:00"
+}

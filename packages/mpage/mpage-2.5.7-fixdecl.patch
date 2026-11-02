@@ -1,0 +1,438 @@
+diff -up mpage-2.5.7/file.c.fixdecl mpage-2.5.7/file.c
+--- mpage-2.5.7/file.c.fixdecl	2017-06-28 10:07:41.000000000 +0200
++++ mpage-2.5.7/file.c	2025-01-22 13:38:00.448333869 +0100
+@@ -390,12 +390,7 @@ iswanted(int sn)
+  * do_sheets() is called from do_xxx_doc() to render the sheets;
+  * it does sheet selection and reversal.
+  */
+-void
+-do_sheets(sheetfunc, inf, asheet, outf)
+-    int (*sheetfunc)();
+-    FILE *inf;
+-    struct sheet *asheet;
+-    FILE *outf;
++void do_sheets(int (*sheetfunc)(FILE *, struct sheet *, FILE *), FILE *inf, struct sheet *asheet, FILE *outf)
+ {
+     FILE *nullf = NULL;
+     register int sheetno;
+diff -up mpage-2.5.7/mpage.c.fixdecl mpage-2.5.7/mpage.c
+--- mpage-2.5.7/mpage.c.fixdecl	2017-06-28 10:07:41.000000000 +0200
++++ mpage-2.5.7/mpage.c	2025-01-22 13:38:00.448333869 +0100
+@@ -37,7 +37,7 @@
+ /*
+  * Function Declarations
+  */
+-static void ps_title();
++static void ps_title(char *name, FILE *outfd);
+ 
+ char *current_locale;
+ 
+@@ -214,10 +214,7 @@ char **argv;
+ /*
+  * ps_title prints a post script header suitable for PS processors
+  */
+-static void
+-ps_title(name, outfd)
+- char *name;
+- FILE *outfd;
++static void ps_title(char *name, FILE *outfd)
+ {
+     time_t curr_time;
+     char *time_str;
+diff -up mpage-2.5.7/mpage.h.fixdecl mpage-2.5.7/mpage.h
+--- mpage-2.5.7/mpage.h.fixdecl	2017-06-28 10:08:58.000000000 +0200
++++ mpage-2.5.7/mpage.h	2025-01-22 13:38:00.449333879 +0100
+@@ -183,7 +183,7 @@ struct sheet {
+ 	int (*sh_width)();	/* postscript width across a printed page */
+ 	int (*sh_height)();	/* postscript height of a printed page */
+ 	int sh_rotate;		/* angle to rotate the page */
+-	void (*sh_outline)();	/* text to print as outline for */
++	void (*sh_outline)(FILE *fd);	/* text to print as outline for */
+ 				/*    the printed sheet*/
+ 	struct	pagepoints *sh_pagepoints; /* where to put pages on */
+ 					     /*    the printed sheet */
+@@ -337,39 +337,39 @@ extern int check_utf8;          /* do we
+ 
+ 
+ /* args.c */
+-int do_args();
++int do_args(int argc, char **argv, int envflag);
+ int do_env();
+ /* file.c */
+-void do_file();
+-void do_pr_file();
+-void do_stdin();
+-void do_sheets();
++void do_file(char *fname, struct sheet *asheet, FILE *outfd);
++void do_pr_file( char *fname, struct sheet *asheet, FILE *outfd);
++void do_stdin(struct sheet *asheet, FILE *outfd);
++void do_sheets(int (*sheetfunc)(FILE *, struct sheet *, FILE *), FILE *inf, struct sheet *asheet, FILE *outf);
+ /* glob.c */
+-void usage();
++void usage(int errcode);
+ /* page.c */
+ void check_papersize();
+ void set_page();
+-int select_pagetype();
++int select_pagetype(char *pt);
+ void show_pagetypes();
+ int xbase1(), xbase2();
+ int ybase1(), ybase2(), ybase3(), ybase4();
+ int ytop1(), ytop2(), ytop3(), ytop4();
+ int xwid1(), xwid2();
+ int yht1(), yht2(), yht4();
+-void outline_1();       
+-void outline_2();       
+-void outline_4();       
+-void outline_8();       
+-void sheetheader();
+-void mp_outline();
++void outline_1(FILE *outfd);       
++void outline_2(FILE *outfd);       
++void outline_4(FILE *outfd);       
++void outline_8(FILE *outfd);       
++void sheetheader(FILE *outfd, char *fname);
++void mp_outline(FILE *outfd, struct sheet *asheet);
+ /* post.c */
+-int ps_check();
+-void do_ps_doc();
++int ps_check(FILE *infd);
++void do_ps_doc(FILE *fd, struct sheet *asheet, FILE *outfd, char * fname);
+ /* text.c */
+-void do_text_doc();
++void do_text_doc(FILE *fd, struct sheet *asheet, FILE *outfd, char * fname);
+ /* util.c */
+-void memgets_init();
+-char *memgets();
++void memgets_init(char *memarea, int size);
++char *memgets(char *output, int maxitems);
+ 
+ /*
+  * For OS/2
+diff -up mpage-2.5.7/post.c.fixdecl mpage-2.5.7/post.c
+--- mpage-2.5.7/post.c.fixdecl	2017-06-28 10:07:41.000000000 +0200
++++ mpage-2.5.7/post.c	2025-01-22 13:38:00.449333879 +0100
+@@ -70,35 +70,32 @@ static char * tex2;
+ /*
+  * Function declarations 
+  */
+-static int   ps_gettype();
+-static void  do_post_doc();
++static int   ps_gettype(FILE *fd,  FILE *outfd);
++static void  do_post_doc(FILE *fd, struct sheet *asheet, FILE *outfd);
+ #if 0
+ static void  do_other_doc();
+ #endif
+-static void  ps_copyprolog();
+-static void  ps_roff_copyprolog();
+-static void  ps_mpage_copyprolog();
+-static void  ps_skip_to_page();
+-static int   do_post_sheet();
+-static void  ps_sheetsetup();
+-static int   post_onepage();
+-static int   post_flush_onepage();
+-static int   post_one_line();
+-static void  do_roff_tailer();
+-int   ps_check();
+-void  do_ps_doc();
++static void  ps_copyprolog(FILE *fd, FILE *outfd);
++static void  ps_roff_copyprolog(FILE *fd, FILE *outfd);
++static void  ps_mpage_copyprolog(FILE *fd, FILE *outfd);
++static void  ps_skip_to_page(FILE *fd);
++static int   do_post_sheet(FILE *fd, struct sheet *asheet, FILE *outfd);
++static void  ps_sheetsetup(FILE *outfd);
++static int   post_onepage(FILE *fd, struct sheet *asheet, FILE *outfd);
++static int   post_flush_onepage(int totlen, struct sheet *asheet, FILE *outfd);
++static int   post_one_line(char * line, FILE *fd, FILE *outfd, int * indoc, int flush_page);
++static void  do_roff_tailer(FILE *fd, FILE *outfd);
++int   ps_check(FILE *infd);
++void do_ps_doc(FILE *fd, struct sheet *asheet, FILE *outfd, char * fname);
+ 
+-static int post_flush_onepage();
+-static int  ps_store_to_page();
++static int  ps_store_to_page(FILE *fd);
+ 
+ /*
+  * Peek at the first two chacters on the open file and check for the
+  * two character postscript flag "%!".  If the file is not postscript
+  * then the characters are pushed back into the input stream (hopefully).
+  */
+-int
+-ps_check(infd)
+- FILE *infd;
++int ps_check(FILE *infd)
+ {
+     int firstchar;
+     int secondchar;
+@@ -174,10 +171,7 @@ ps_check(infd)
+ 
+ 
+ 
+-static int
+-ps_gettype(fd, outfd)
+- FILE *fd;
+- FILE *outfd;
++static int ps_gettype(FILE *fd,  FILE *outfd)
+ {
+     int ps_type, end_comments;
+ 
+@@ -292,12 +286,7 @@ ps_gettype(fd, outfd)
+ 
+ 
+ 
+-void
+-do_ps_doc(fd, asheet, outfd, fname)
+- FILE *fd;
+- struct sheet *asheet;
+- FILE *outfd;
+- char * fname;
++void do_ps_doc(FILE *fd, struct sheet *asheet, FILE *outfd, char * fname)
+ {
+ 
+     Debug(DB_PSDOC, "%%do_ps_doc: postscript document\n", 0);
+@@ -314,11 +303,7 @@ do_ps_doc(fd, asheet, outfd, fname)
+ 
+ 
+ 
+-static void
+-do_post_doc(fd, asheet, outfd)
+- FILE *fd;
+- struct sheet *asheet;
+- FILE *outfd;
++static void do_post_doc(FILE *fd, struct sheet *asheet, FILE *outfd)
+ {
+ 
+     ps_at_trailer = FALSE;
+@@ -356,10 +341,7 @@ do_other_doc(fd, asheet, outfd)
+ 
+ 
+ 
+-static void
+-ps_copyprolog(fd, outfd)
+- FILE *fd;
+- FILE *outfd;
++static void ps_copyprolog(FILE *fd, FILE *outfd)
+ {
+ 
+     Debug(DB_PSDOC, "%%ps_copyprolog: adding mpage prolog\n", 0);
+@@ -429,10 +411,7 @@ ps_copyprolog(fd, outfd)
+ 
+ 
+ 
+-static void
+-ps_roff_copyprolog(fd, outfd)
+- FILE *fd;
+- FILE *outfd;
++static void ps_roff_copyprolog(FILE *fd, FILE *outfd)
+ {
+ 
+     Debug(DB_PSDOC, "%%ps_roff_copyprolog: copying psroff prolog\n", 0);
+@@ -465,10 +444,7 @@ ps_roff_copyprolog(fd, outfd)
+ 
+ 
+ 
+-static void
+-ps_mpage_copyprolog(fd, outfd)
+- FILE *fd;
+- FILE *outfd;
++static void ps_mpage_copyprolog(FILE *fd, FILE *outfd)
+ {
+ 
+     Debug(DB_PSDOC, "%%ps_mpage_copyprolog: skipping mpage prolog\n", 0);
+@@ -483,9 +459,7 @@ ps_mpage_copyprolog(fd, outfd)
+ 
+ 
+ 
+-static void
+-ps_skip_to_page(fd)
+- FILE *fd;
++static void ps_skip_to_page(FILE *fd)
+ {
+ 
+     Debug(DB_PSDOC, "%%ps_skip to page: reading until %%%%Page:\n", 0);
+@@ -505,9 +479,7 @@ ps_skip_to_page(fd)
+ static char *stored_page = NULL;
+ static int stored_page_size = 0;
+ 
+-static int
+-ps_store_to_page(fd)
+- FILE *fd;
++static int ps_store_to_page(FILE *fd)
+ {
+     int totlen = 0;
+ 
+@@ -556,11 +528,7 @@ char *NScale =  "/gpnsavematrix {orgmatr
+                 "/gpnys gpnys gscurrentresolution 1 get 72 div mul def\n";
+ #endif /* NSCALE */
+ 
+-static int
+-do_post_sheet(fd, asheet, outfd)
+- FILE *fd;
+- struct sheet *asheet;
+- FILE *outfd;
++static int do_post_sheet(FILE *fd, struct sheet *asheet, FILE *outfd)
+ {
+     int rtn_val = FILE_MORE;
+     int sh_high, sh_wide;
+@@ -922,9 +890,7 @@ do_post_sheet(fd, asheet, outfd)
+ 
+ 
+ 
+-static void
+-ps_sheetsetup(outfd)
+- FILE *outfd;
++static void ps_sheetsetup(FILE *outfd)
+ {
+ 
+     switch (ps_posttype) {
+@@ -943,11 +909,7 @@ ps_sheetsetup(outfd)
+ 
+ 
+ 
+-static int
+-post_onepage(fd, asheet, outfd)
+- FILE *fd;
+- struct sheet *asheet;
+- FILE *outfd;
++static int post_onepage(FILE *fd, struct sheet *asheet, FILE *outfd)
+ {
+     int indoc = 0;
+ 
+@@ -976,11 +938,7 @@ post_onepage(fd, asheet, outfd)
+ 
+ 
+ 
+-static int
+-post_flush_onepage(totlen, asheet, outfd)
+- int totlen;
+- struct sheet *asheet;
+- FILE *outfd;
++static int post_flush_onepage(int totlen, struct sheet *asheet, FILE *outfd)
+ {
+     int indoc = 0;
+ 
+@@ -1013,13 +971,7 @@ post_flush_onepage(totlen, asheet, outfd
+ 
+ 
+ 
+-static int
+-post_one_line(line, fd, outfd, indoc, flush_page)
+- char * line;
+- FILE *fd;
+- FILE *outfd;
+- int * indoc;
+- int flush_page;
++static int post_one_line(char * line, FILE *fd, FILE *outfd, int * indoc, int flush_page)
+ {
+         if (strncmp(line, "%%BeginDocument", 15) == 0) {
+             (*indoc)++;
+@@ -1092,9 +1044,7 @@ post_one_line(line, fd, outfd, indoc, fl
+ 
+ 
+ 
+-static void
+-do_roff_tailer(fd, outfd)
+- FILE *fd, *outfd;
++static void do_roff_tailer(FILE *fd, FILE *outfd)
+ {
+ #ifdef DEBUG
+         int i = 0;
+diff -up mpage-2.5.7/sample.c.fixdecl mpage-2.5.7/sample.c
+--- mpage-2.5.7/sample.c.fixdecl	2025-01-22 13:39:37.489325964 +0100
++++ mpage-2.5.7/sample.c	2025-01-22 13:40:27.406837867 +0100
+@@ -29,11 +29,11 @@
+  * Function Declarations
+  */
+ static void do_sample();
+-static void urshow();
+-static void lrshow();
+-static void ulshow();
+-static void llshow();
+-static void box();
++static void urshow(int x, int y);
++static void lrshow(int x, int y);
++static void ulshow(int x, int y);
++static void llshow(int x, int y);
++static void box(int x, int y);
+ 
+ int
+ main(argc, argv)
+diff -up mpage-2.5.7/text.c.fixdecl mpage-2.5.7/text.c
+--- mpage-2.5.7/text.c.fixdecl	2017-06-28 10:07:41.000000000 +0200
++++ mpage-2.5.7/text.c	2025-01-22 13:38:00.449333879 +0100
+@@ -55,9 +55,13 @@ static char file_date[LINESIZE];
+ /*
+  * Function Declarations
+  */
+-static int do_text_sheet();
+-static int text_onepage();
+-static char *mp_get_text();
++static int do_text_sheet(FILE *fd, struct sheet *asheet, FILE *outfd);
++static int text_onepage(FILE *file, struct sheet *asheet, FILE *outfd);
++#ifndef KANJI
++static char *mp_get_text(FILE *infile, struct pageloc *locp, struct sheet *asheet);
++#else
++static char *mp_get_text(FILE *infile, struct pageloc *locp, struct sheet *asheet, int *kp);
++#endif
+ 
+ #ifdef KANJI
+ int get_wc( FILE * );
+@@ -66,12 +70,7 @@ int get_wc( FILE * );
+  * do_text_doc processes an input stream fd, reducing output to fit on
+  * a printed page as decribed by asheet, and prints this on outfd.
+  */
+-void
+-do_text_doc(fd, asheet, outfd, fname)
+- FILE *fd;
+- struct sheet *asheet;
+- FILE *outfd;
+- char * fname;
++void do_text_doc(FILE *fd, struct sheet *asheet, FILE *outfd, char * fname)
+ {
+     struct stat file_stat;
+ 
+@@ -99,11 +98,7 @@ do_text_doc(fd, asheet, outfd, fname)
+ /*
+  * do_text_sheet creates one printed sheet consisting of several reduced pages
+  */
+-static int
+-do_text_sheet(fd, asheet, outfd)
+- FILE *fd;
+- struct sheet *asheet;
+- FILE *outfd;
++static int do_text_sheet(FILE *fd, struct sheet *asheet, FILE *outfd)
+ {
+     int rtn_val = FILE_MORE;
+     int peekc;
+@@ -283,11 +278,7 @@ do_text_sheet(fd, asheet, outfd)
+  * text_onepage places on page of reduced output on the printed page
+  * all scaling, translation, and rotation has already been done before
+  */
+-static int
+-text_onepage(file, asheet, outfd)
+- FILE *file;
+- struct sheet *asheet;
+- FILE *outfd;
++static int text_onepage(FILE *file, struct sheet *asheet, FILE *outfd)
+ {
+     char *text;
+ #ifdef KANJI
+@@ -395,16 +386,11 @@ text_onepage(file, asheet, outfd)
+ 
+ 
+ 
+-static char *
+ #ifndef KANJI
+-mp_get_text(infile, locp, asheet)
++static char *mp_get_text(FILE *infile, struct pageloc *locp, struct sheet *asheet)
+ #else
+-mp_get_text(infile, locp, asheet, kp)
+- int *kp;
++static char *mp_get_text(FILE *infile, struct pageloc *locp, struct sheet *asheet, int *kp)
+ #endif
+- FILE *infile;
+- struct pageloc *locp;
+- struct sheet *asheet;
+ {
+     int gathering;
+     int tabcnt;

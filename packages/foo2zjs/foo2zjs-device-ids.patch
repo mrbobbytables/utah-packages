@@ -1,0 +1,100 @@
+diff --git a/PPD/Minolta-magicolor_2300_DL.ppd b/PPD/Minolta-magicolor_2300_DL.ppd
+index 37aabc5..811e48a 100644
+--- a/PPD/Minolta-magicolor_2300_DL.ppd
++++ b/PPD/Minolta-magicolor_2300_DL.ppd
+@@ -61,6 +61,7 @@
+ *Throughput:	"1"
+ *LandscapeOrientation: Plus90
+ *TTRasterizer:	Type42
++*1284DeviceID: "MANUFACTURER:KONICA MINOLTA;MODEL:magicolor 2300 DL;COMMAND SET:ZJS,PJL;DRV:Dfoo2zjs,R1,M0,TF;"
+ *1284DeviceID: "MANUFACTURER:MINOLTA-QMS;MODEL:magicolor 2300 DL;COMMAND SET:ZJS,PJL;DRV:Dfoo2zjs,R1,M0,TF;"
+ 
+ *driverName foo2zjs: ""
+diff --git a/PPD/Minolta-magicolor_2430_DL.ppd b/PPD/Minolta-magicolor_2430_DL.ppd
+index 1bfddf3..c612f97 100644
+--- a/PPD/Minolta-magicolor_2430_DL.ppd
++++ b/PPD/Minolta-magicolor_2430_DL.ppd
+@@ -61,6 +61,7 @@
+ *Throughput:	"1"
+ *LandscapeOrientation: Plus90
+ *TTRasterizer:	Type42
++*1284DeviceID: "MANUFACTURER:KONICA MINOLTA;MODEL:magicolor 2430 DL;COMMAND SET:ZJS,PJL;DRV:Dfoo2zjs,R1,M0,TF;"
+ *1284DeviceID: "MANUFACTURER:MINOLTA-QMS;MODEL:magicolor 2430 DL;COMMAND SET:ZJS,PJL;DRV:Dfoo2zjs,R1,M0,TF;"
+ 
+ *driverName foo2zjs: ""
+diff --git a/PPD/Xerox-WorkCentre_3045.ppd b/PPD/Xerox-WorkCentre_3045.ppd
+index c223d5d..1de1b2e 100644
+--- a/PPD/Xerox-WorkCentre_3045.ppd
++++ b/PPD/Xerox-WorkCentre_3045.ppd
+@@ -61,6 +61,7 @@
+ *Throughput:	"1"
+ *LandscapeOrientation: Plus90
+ *TTRasterizer:	Type42
++*1284DeviceID: "MFG:Xerox;CMD:HBPL;MDL:WorkCentre 3045B;CLS:Printer;DES:Xerox WorkCentre 3045B;"
+ *1284DeviceID: "DRV:Dfoo2hbpl2,R1,M0,TF;"
+ 
+ *driverName foo2hbpl2: ""
+diff --git a/foomatic-db/printer/Minolta-magicolor_2300_DL.xml b/foomatic-db/printer/Minolta-magicolor_2300_DL.xml
+index fd6e316..3b53c77 100644
+--- a/foomatic-db/printer/Minolta-magicolor_2300_DL.xml
++++ b/foomatic-db/printer/Minolta-magicolor_2300_DL.xml
+@@ -48,9 +48,18 @@
+ 	    <model>magicolor 2300 DL</model>
+ 	    <commandset>ZJS,PJL</commandset>
+ 	</parallel>
++	<parallel>
++	    <ieee1284>CLASS:PRINTER;MODEL:magicolor 2300 DL;MANUFACTURER:KONICA MINOLTA;COMMAND SET:ZJS,PJL;</ieee1284>
++	    <manufacturer>KONICA MINOLTA</manufacturer>
++	    <model>magicolor 2300 DL</model>
++	    <commandset>ZJS,PJL</commandset>
++	</parallel>
+ 	<snmp>
+ 	    <description>MINOLTA-QMS magicolor 2300 DL</description>
+ 	</snmp>
++	<snmp>
++	    <description>KONICA MINOLTA magicolor 2300 DL</description>
++	</snmp>
+     </autodetect>
+     <functionality>B</functionality>
+     <driver>foo2zjs</driver>
+diff --git a/foomatic-db/printer/Minolta-magicolor_2430_DL.xml b/foomatic-db/printer/Minolta-magicolor_2430_DL.xml
+index 8438805..5cfbd1b 100644
+--- a/foomatic-db/printer/Minolta-magicolor_2430_DL.xml
++++ b/foomatic-db/printer/Minolta-magicolor_2430_DL.xml
+@@ -46,9 +46,18 @@
+ 	    <model>magicolor 2430 DL</model>
+ 	    <commandset>ZJS,PJL</commandset>
+ 	</parallel>
++	<parallel>
++	    <ieee1284>CLASS:PRINTER;MODEL:magicolor 2430 DL;MANUFACTURER:KONICA MINOLTA;COMMAND SET:ZJS,PJL;</ieee1284>
++	    <manufacturer>KONICA MINOLTA</manufacturer>
++	    <model>magicolor 2430 DL</model>
++	    <commandset>ZJS,PJL</commandset>
++	</parallel>
+ 	<snmp>
+ 	    <description>MINOLTA-QMS magicolor 2430 DL</description>
+ 	</snmp>
++	<snmp>
++	    <description>KONICA MINOLTA magicolor 2430 DL</description>
++	</snmp>
+     </autodetect>
+     <functionality>B</functionality>
+     <driver>foo2zjs</driver>
+diff --git a/foomatic-db/printer/Xerox-WorkCentre_3045.xml b/foomatic-db/printer/Xerox-WorkCentre_3045.xml
+index 72ceb69..befab87 100644
+--- a/foomatic-db/printer/Xerox-WorkCentre_3045.xml
++++ b/foomatic-db/printer/Xerox-WorkCentre_3045.xml
+@@ -55,6 +55,13 @@
+ 	<snmp>
+ 	    <description>Xerox WorkCentre 3045</description>
+ 	</snmp>
++        <usb>
++          <ieee1284>MFG:Xerox;CMD:HBPL;MDL:WorkCentre 3045B;CLS:Printer;DES:Xerox WorkCentre 3045B;</ieee1284>
++          <manufacturer>Xerox</manufacturer>
++          <model>WorkCentre 3045B</model>
++          <commandset>HBPL</commandset>
++          <description>Xerox WorkCentre 3045B</description>
++        </usb>
+     </autodetect>
+     <functionality>C</functionality>
+     <driver>foo2hbpl2</driver>

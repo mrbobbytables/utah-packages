@@ -1,0 +1,8 @@
+{
+  "package": "yelp-xsl",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/yelp-xsl.git",
+  "commit": "1639146ad4cb875e4f41ae88275f9bab357f5ace",
+  "tree": "2980e19cf0080a1ebbf18697e3b17df4f9cf4ba7",
+  "imported_at": "2026-10-20T20:25:00.165112+00:00"
+}

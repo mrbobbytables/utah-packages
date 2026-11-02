@@ -1,0 +1,8 @@
+{
+  "package": "argyllcms",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/argyllcms.git",
+  "commit": "aaa21b0d99918d02e7877d4ab24f636ed2a8c8df",
+  "tree": "e3d06c96da33a3c8ed5a2521a9a124d4974ee7ee",
+  "imported_at": "2026-10-24T04:28:23.207100+00:00"
+}

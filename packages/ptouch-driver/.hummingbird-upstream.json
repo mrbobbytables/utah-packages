@@ -1,0 +1,8 @@
+{
+  "package": "ptouch-driver",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/ptouch-driver.git",
+  "commit": "40636a5fb89fbb54477c2828365000d03676e75e",
+  "tree": "b6c4ccd7c9261042d368c95dd3ccd7c7b021b00c",
+  "imported_at": "2026-10-24T03:59:14.458635+00:00"
+}

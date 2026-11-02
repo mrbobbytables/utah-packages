@@ -1,0 +1,1478 @@
+From 1b96129392aa6aabb9ff72a8714d9edfc7137af6 Mon Sep 17 00:00:00 2001
+From: Andrew Bauer <knnniggett@hotmail.com>
+Date: Sat, 15 Dec 2018 08:02:41 -0600
+Subject: [PATCH] fixes incorrect-fsf-address
+
+---
+ Makefile.am                                       | 2 +-
+ Makefile.in                                       | 2 +-
+ configure.ac                                      | 2 +-
+ docs/Makefile.am                                  | 2 +-
+ docs/Makefile.in                                  | 2 +-
+ dymo-cups-drivers.spec                            | 2 +-
+ ppd/Makefile.am                                   | 2 +-
+ ppd/Makefile.in                                   | 2 +-
+ ppd/lm400.ppd                                     | 2 +-
+ ppd/lm450.ppd                                     | 2 +-
+ ppd/lmpc.ppd                                      | 2 +-
+ ppd/lmpc2.ppd                                     | 2 +-
+ ppd/lmpnp.ppd                                     | 2 +-
+ ppd/lp350.ppd                                     | 2 +-
+ ppd/lw300.ppd                                     | 2 +-
+ ppd/lw310.ppd                                     | 2 +-
+ ppd/lw315.ppd                                     | 2 +-
+ ppd/lw320.ppd                                     | 2 +-
+ ppd/lw330.ppd                                     | 2 +-
+ ppd/lw330t.ppd                                    | 2 +-
+ ppd/lw400.ppd                                     | 2 +-
+ ppd/lw400t.ppd                                    | 2 +-
+ ppd/lw450.ppd                                     | 2 +-
+ ppd/lw450dl.ppd                                   | 2 +-
+ ppd/lw450dt.ppd                                   | 2 +-
+ ppd/lw450t.ppd                                    | 2 +-
+ ppd/lw450tt.ppd                                   | 2 +-
+ ppd/lw4xl.ppd                                     | 2 +-
+ ppd/lwduol.ppd                                    | 2 +-
+ ppd/lwduot.ppd                                    | 2 +-
+ ppd/lwduot2.ppd                                   | 2 +-
+ ppd/lwtt.ppd                                      | 2 +-
+ ppd/se450.ppd                                     | 2 +-
+ samples/Makefile.am                               | 2 +-
+ samples/Makefile.in                               | 2 +-
+ samples/custom_paper/Makefile.am                  | 2 +-
+ samples/custom_paper/Makefile.in                  | 2 +-
+ samples/custom_paper_tape/Makefile.am             | 2 +-
+ samples/custom_paper_tape/Makefile.in             | 2 +-
+ samples/paper_bounds/Makefile.am                  | 2 +-
+ samples/paper_bounds/Makefile.in                  | 2 +-
+ samples/paper_list/Makefile.am                    | 2 +-
+ samples/paper_list/Makefile.in                    | 2 +-
+ samples/test_label/Makefile.am                    | 2 +-
+ samples/test_label/Makefile.in                    | 2 +-
+ src/Makefile.am                                   | 2 +-
+ src/Makefile.in                                   | 2 +-
+ src/common/CommonTypedefs.h                       | 2 +-
+ src/common/CupsFilter.h                           | 2 +-
+ src/common/CupsPrintEnvironment.cpp               | 2 +-
+ src/common/CupsPrintEnvironment.h                 | 2 +-
+ src/common/DummyLanguageMonitor.cpp               | 2 +-
+ src/common/DummyLanguageMonitor.h                 | 2 +-
+ src/common/ErrorDiffusionHalftoning.cpp           | 2 +-
+ src/common/ErrorDiffusionHalftoning.h             | 2 +-
+ src/common/Halftoning.cpp                         | 2 +-
+ src/common/Halftoning.h                           | 2 +-
+ src/common/NonLinearLaplacianHalftoning.cpp       | 2 +-
+ src/common/NonLinearLaplacianHalftoning.h         | 2 +-
+ src/common/PrinterDriver.h                        | 2 +-
+ src/common/tests/MOCK_PrintEnvironment.cpp        | 2 +-
+ src/common/tests/MOCK_PrintEnvironment.h          | 2 +-
+ src/common/tests/Makefile.am                      | 2 +-
+ src/common/tests/Makefile.in                      | 2 +-
+ src/common/tests/TestCommon.cpp                   | 2 +-
+ src/common/tests/TestCommon.h                     | 2 +-
+ src/common/tests/TestErrorDiffusionHalftoning.cpp | 2 +-
+ src/common/tests/TestErrorDiffusionHalftoning.h   | 2 +-
+ src/common/tests/TestNLLHalftoning.cpp            | 2 +-
+ src/common/tests/TestNLLHalftoning.h              | 2 +-
+ src/common/tests/testsMain.cpp                    | 2 +-
+ src/lm/CupsFilterLabelManager.cpp                 | 2 +-
+ src/lm/CupsFilterLabelManager.h                   | 2 +-
+ src/lm/LabelManagerDriver.cpp                     | 2 +-
+ src/lm/LabelManagerDriver.h                       | 2 +-
+ src/lm/LabelManagerLanguageMonitor.cpp            | 2 +-
+ src/lm/LabelManagerLanguageMonitor.h              | 2 +-
+ src/lm/Makefile.am                                | 2 +-
+ src/lm/Makefile.in                                | 2 +-
+ src/lm/raster2dymolm.cpp                          | 2 +-
+ src/lm/tests/Makefile.am                          | 2 +-
+ src/lm/tests/Makefile.in                          | 2 +-
+ src/lm/tests/TestLabelManagerDriver.cpp           | 2 +-
+ src/lm/tests/TestLabelManagerDriver.h             | 2 +-
+ src/lm/tests/TestLabelManagerFilter.cpp           | 2 +-
+ src/lm/tests/TestLabelManagerFilter.h             | 2 +-
+ src/lw/CupsFilterLabelWriter.cpp                  | 2 +-
+ src/lw/CupsFilterLabelWriter.h                    | 2 +-
+ src/lw/LabelWriterDriver.cpp                      | 2 +-
+ src/lw/LabelWriterDriver.h                        | 2 +-
+ src/lw/LabelWriterLanguageMonitor.cpp             | 2 +-
+ src/lw/LabelWriterLanguageMonitor.h               | 2 +-
+ src/lw/Makefile.am                                | 2 +-
+ src/lw/Makefile.in                                | 2 +-
+ src/lw/raster2dymolw.cpp                          | 2 +-
+ src/lw/tests/MOCK_LWLMPrintEnvironment.cpp        | 2 +-
+ src/lw/tests/MOCK_LWLMPrintEnvironment.h          | 2 +-
+ src/lw/tests/Makefile.am                          | 2 +-
+ src/lw/tests/Makefile.in                          | 2 +-
+ src/lw/tests/TestLabelWriterDriver.cpp            | 2 +-
+ src/lw/tests/TestLabelWriterDriver.h              | 2 +-
+ src/lw/tests/TestLabelWriterFilter.cpp            | 2 +-
+ src/lw/tests/TestLabelWriterFilter.h              | 2 +-
+ src/lw/tests/TestLabelWriterLanguageMonitor.cpp   | 2 +-
+ src/lw/tests/TestLabelWriterLanguageMonitor.h     | 2 +-
+ 105 files changed, 105 insertions(+), 105 deletions(-)
+
+diff --git a/Makefile.am b/Makefile.am
+index effd644..e69a9f9 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ SUBDIRS = src ppd docs samples
+ EXTRA_DIST = dymo-cups-drivers.spec LICENSE
+diff --git a/Makefile.in b/Makefile.in
+index 299db32..2fcead3 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+diff --git a/configure.ac b/configure.ac
+index 6f8e05e..c923904 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ AC_PREREQ(2.59)
+ AC_INIT(dymo-cups-drivers, 1.4.0.5, vbuzuev@dymo.com)
+diff --git a/docs/Makefile.am b/docs/Makefile.am
+index eab35ba..025ce71 100644
+--- a/docs/Makefile.am
++++ b/docs/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ EXTRA_DIST = SAMPLES TestImage.png longtest.txt test.ps test.txt testprint.ps DYMO_SDK_for_Linux.rtf
+ 
+diff --git a/docs/Makefile.in b/docs/Makefile.in
+index 47237b6..500ce8e 100644
+--- a/docs/Makefile.in
++++ b/docs/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+diff --git a/dymo-cups-drivers.spec b/dymo-cups-drivers.spec
+index bc2f773..643edf6 100644
+--- a/dymo-cups-drivers.spec
++++ b/dymo-cups-drivers.spec
+@@ -15,7 +15,7 @@
+ 
+ #    You should have received a copy of the GNU General Public License
+ #    along with this program; if not, write to the Free Software
+-#    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++#    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ Summary: DYMO LabelWriter Drivers for CUPS
+ Name: dymo-cups-drivers
+diff --git a/ppd/Makefile.am b/ppd/Makefile.am
+index e7a69d9..bfff7c5 100644
+--- a/ppd/Makefile.am
++++ b/ppd/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ dist_cupsmodel_DATA = \
+diff --git a/ppd/Makefile.in b/ppd/Makefile.in
+index 8838629..01456f4 100644
+--- a/ppd/Makefile.in
++++ b/ppd/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+diff --git a/ppd/lm400.ppd b/ppd/lm400.ppd
+index e84c892..9a86322 100644
+--- a/ppd/lm400.ppd
++++ b/ppd/lm400.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lm450.ppd b/ppd/lm450.ppd
+index df4f390..ee483d8 100644
+--- a/ppd/lm450.ppd
++++ b/ppd/lm450.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lmpc.ppd b/ppd/lmpc.ppd
+index 2bbc696..bf8dcf0 100644
+--- a/ppd/lmpc.ppd
++++ b/ppd/lmpc.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lmpc2.ppd b/ppd/lmpc2.ppd
+index 9db4df6..5abc293 100644
+--- a/ppd/lmpc2.ppd
++++ b/ppd/lmpc2.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lmpnp.ppd b/ppd/lmpnp.ppd
+index a9ca079..438777f 100644
+--- a/ppd/lmpnp.ppd
++++ b/ppd/lmpnp.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lp350.ppd b/ppd/lp350.ppd
+index 6039756..41a56b1 100644
+--- a/ppd/lp350.ppd
++++ b/ppd/lp350.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw300.ppd b/ppd/lw300.ppd
+index 61b6e1c..4419149 100644
+--- a/ppd/lw300.ppd
++++ b/ppd/lw300.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw310.ppd b/ppd/lw310.ppd
+index 9375b39..66e11da 100644
+--- a/ppd/lw310.ppd
++++ b/ppd/lw310.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw315.ppd b/ppd/lw315.ppd
+index c3577b8..31edfc6 100644
+--- a/ppd/lw315.ppd
++++ b/ppd/lw315.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw320.ppd b/ppd/lw320.ppd
+index 71778ae..9d7c60f 100644
+--- a/ppd/lw320.ppd
++++ b/ppd/lw320.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw330.ppd b/ppd/lw330.ppd
+index 8d89585..9d348c1 100644
+--- a/ppd/lw330.ppd
++++ b/ppd/lw330.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw330t.ppd b/ppd/lw330t.ppd
+index fc84610..e89d4ef 100644
+--- a/ppd/lw330t.ppd
++++ b/ppd/lw330t.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw400.ppd b/ppd/lw400.ppd
+index 3958408..17ceef3 100644
+--- a/ppd/lw400.ppd
++++ b/ppd/lw400.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw400t.ppd b/ppd/lw400t.ppd
+index f7e55d6..b313db1 100644
+--- a/ppd/lw400t.ppd
++++ b/ppd/lw400t.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw450.ppd b/ppd/lw450.ppd
+index 92d51bc..a0c07ab 100644
+--- a/ppd/lw450.ppd
++++ b/ppd/lw450.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw450dl.ppd b/ppd/lw450dl.ppd
+index 49a960e..29122c6 100644
+--- a/ppd/lw450dl.ppd
++++ b/ppd/lw450dl.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw450dt.ppd b/ppd/lw450dt.ppd
+index ed92d1e..71415ed 100644
+--- a/ppd/lw450dt.ppd
++++ b/ppd/lw450dt.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw450t.ppd b/ppd/lw450t.ppd
+index 4899328..9262aaa 100644
+--- a/ppd/lw450t.ppd
++++ b/ppd/lw450t.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw450tt.ppd b/ppd/lw450tt.ppd
+index baa4bbb..c0184b3 100644
+--- a/ppd/lw450tt.ppd
++++ b/ppd/lw450tt.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lw4xl.ppd b/ppd/lw4xl.ppd
+index 6fa90a9..a1774bc 100644
+--- a/ppd/lw4xl.ppd
++++ b/ppd/lw4xl.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lwduol.ppd b/ppd/lwduol.ppd
+index 5e1ac70..b15df5f 100644
+--- a/ppd/lwduol.ppd
++++ b/ppd/lwduol.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lwduot.ppd b/ppd/lwduot.ppd
+index 4ce2ec1..ff0ad9b 100644
+--- a/ppd/lwduot.ppd
++++ b/ppd/lwduot.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lwduot2.ppd b/ppd/lwduot2.ppd
+index 0e6ba1d..3b37de7 100644
+--- a/ppd/lwduot2.ppd
++++ b/ppd/lwduot2.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/lwtt.ppd b/ppd/lwtt.ppd
+index fdf7990..23b7071 100644
+--- a/ppd/lwtt.ppd
++++ b/ppd/lwtt.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/ppd/se450.ppd b/ppd/se450.ppd
+index f991dcb..84f5441 100644
+--- a/ppd/se450.ppd
++++ b/ppd/se450.ppd
+@@ -17,7 +17,7 @@
+ 
+ *% You should have received a copy of the GNU General Public License
+ *% along with this program; if not, write to the Free Software
+-*% Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++*% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ *FormatVersion: "4.3"
+ *FileVersion:   "3.0"
+diff --git a/samples/Makefile.am b/samples/Makefile.am
+index c0856e8..4efd4a3 100644
+--- a/samples/Makefile.am
++++ b/samples/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ SUBDIRS = paper_bounds paper_list test_label custom_paper custom_paper_tape
+ 
+diff --git a/samples/Makefile.in b/samples/Makefile.in
+index d4f90d3..2492851 100644
+--- a/samples/Makefile.in
++++ b/samples/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+diff --git a/samples/custom_paper/Makefile.am b/samples/custom_paper/Makefile.am
+index b1336a9..f6fcdca 100644
+--- a/samples/custom_paper/Makefile.am
++++ b/samples/custom_paper/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ EXTRA_PROGRAMS = CustomPaper
+ 
+diff --git a/samples/custom_paper/Makefile.in b/samples/custom_paper/Makefile.in
+index cc83691..0d2853c 100644
+--- a/samples/custom_paper/Makefile.in
++++ b/samples/custom_paper/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+diff --git a/samples/custom_paper_tape/Makefile.am b/samples/custom_paper_tape/Makefile.am
+index 6166ebe..3d5397c 100644
+--- a/samples/custom_paper_tape/Makefile.am
++++ b/samples/custom_paper_tape/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ EXTRA_PROGRAMS = CustomPaperTape
+ 
+diff --git a/samples/custom_paper_tape/Makefile.in b/samples/custom_paper_tape/Makefile.in
+index 610f6e5..68cfc95 100644
+--- a/samples/custom_paper_tape/Makefile.in
++++ b/samples/custom_paper_tape/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+diff --git a/samples/paper_bounds/Makefile.am b/samples/paper_bounds/Makefile.am
+index f783157..8abf373 100644
+--- a/samples/paper_bounds/Makefile.am
++++ b/samples/paper_bounds/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ EXTRA_PROGRAMS = PaperBounds
+ 
+diff --git a/samples/paper_bounds/Makefile.in b/samples/paper_bounds/Makefile.in
+index eb6f9a4..bb52c4a 100644
+--- a/samples/paper_bounds/Makefile.in
++++ b/samples/paper_bounds/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+diff --git a/samples/paper_list/Makefile.am b/samples/paper_list/Makefile.am
+index 8359602..3e49018 100644
+--- a/samples/paper_list/Makefile.am
++++ b/samples/paper_list/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #samples_PROGRAMS = paperlist
+ #PROGRAMS = paperlist
+diff --git a/samples/paper_list/Makefile.in b/samples/paper_list/Makefile.in
+index fa92263..839e2f4 100644
+--- a/samples/paper_list/Makefile.in
++++ b/samples/paper_list/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #samples_PROGRAMS = paperlist
+ #PROGRAMS = paperlist
+diff --git a/samples/test_label/Makefile.am b/samples/test_label/Makefile.am
+index 8964e83..1934b39 100644
+--- a/samples/test_label/Makefile.am
++++ b/samples/test_label/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ EXTRA_PROGRAMS = TestLabel
+ 
+diff --git a/samples/test_label/Makefile.in b/samples/test_label/Makefile.in
+index c69ec39..56becc2 100644
+--- a/samples/test_label/Makefile.in
++++ b/samples/test_label/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 96fe885..455465e 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ SUBDIRS = lw lm common/tests
+ 
+diff --git a/src/Makefile.in b/src/Makefile.in
+index 951471c..d9ee38b 100644
+--- a/src/Makefile.in
++++ b/src/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+diff --git a/src/common/CommonTypedefs.h b/src/common/CommonTypedefs.h
+index 87e9ce4..9ebbd4b 100644
+--- a/src/common/CommonTypedefs.h
++++ b/src/common/CommonTypedefs.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ #ifndef haf1c6298_a459_4417_83c1_ed084705400a
+diff --git a/src/common/CupsFilter.h b/src/common/CupsFilter.h
+index 614c48d..c4c4f3b 100644
+--- a/src/common/CupsFilter.h
++++ b/src/common/CupsFilter.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef hfc4bbdea_8a1b_427c_9ab5_50b84576b19e
+ #define hfc4bbdea_8a1b_427c_9ab5_50b84576b19e
+diff --git a/src/common/CupsPrintEnvironment.cpp b/src/common/CupsPrintEnvironment.cpp
+index 1bee24d..a3f400d 100644
+--- a/src/common/CupsPrintEnvironment.cpp
++++ b/src/common/CupsPrintEnvironment.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include <stdio.h>
+ #include <string>
+diff --git a/src/common/CupsPrintEnvironment.h b/src/common/CupsPrintEnvironment.h
+index 7dadb0f..23043d8 100644
+--- a/src/common/CupsPrintEnvironment.h
++++ b/src/common/CupsPrintEnvironment.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h952b1c81_8931_433a_8479_7ae6d8e85a86
+ #define h952b1c81_8931_433a_8479_7ae6d8e85a86
+diff --git a/src/common/DummyLanguageMonitor.cpp b/src/common/DummyLanguageMonitor.cpp
+index 0e03800..df6154a 100644
+--- a/src/common/DummyLanguageMonitor.cpp
++++ b/src/common/DummyLanguageMonitor.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ #include "DummyLanguageMonitor.h"
+diff --git a/src/common/DummyLanguageMonitor.h b/src/common/DummyLanguageMonitor.h
+index 36134a2..3d584fb 100644
+--- a/src/common/DummyLanguageMonitor.h
++++ b/src/common/DummyLanguageMonitor.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h4fe065b4_5177_4f82_ba6f_1a3b42b475ef
+ #define h4fe065b4_5177_4f82_ba6f_1a3b42b475ef
+diff --git a/src/common/ErrorDiffusionHalftoning.cpp b/src/common/ErrorDiffusionHalftoning.cpp
+index 273ced7..bebc87d 100644
+--- a/src/common/ErrorDiffusionHalftoning.cpp
++++ b/src/common/ErrorDiffusionHalftoning.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "ErrorDiffusionHalftoning.h"
+ #include <algorithm>
+diff --git a/src/common/ErrorDiffusionHalftoning.h b/src/common/ErrorDiffusionHalftoning.h
+index e03a3af..2f6b8ba 100644
+--- a/src/common/ErrorDiffusionHalftoning.h
++++ b/src/common/ErrorDiffusionHalftoning.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ #ifndef h70F89562_C051_4c11_80E4_E5BE22A3C400
+diff --git a/src/common/Halftoning.cpp b/src/common/Halftoning.cpp
+index 6465e96..d222515 100644
+--- a/src/common/Halftoning.cpp
++++ b/src/common/Halftoning.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "Halftoning.h"
+ #include <algorithm>
+diff --git a/src/common/Halftoning.h b/src/common/Halftoning.h
+index 4d91291..abb5485 100644
+--- a/src/common/Halftoning.h
++++ b/src/common/Halftoning.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ #ifndef h4D098F6A_47C6_4e9d_BD74_2DC6034F8EEF
+diff --git a/src/common/NonLinearLaplacianHalftoning.cpp b/src/common/NonLinearLaplacianHalftoning.cpp
+index 0eac298..d305527 100644
+--- a/src/common/NonLinearLaplacianHalftoning.cpp
++++ b/src/common/NonLinearLaplacianHalftoning.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "NonLinearLaplacianHalftoning.h"
+ #include <algorithm>
+diff --git a/src/common/NonLinearLaplacianHalftoning.h b/src/common/NonLinearLaplacianHalftoning.h
+index 113a2c1..db2c8ee 100644
+--- a/src/common/NonLinearLaplacianHalftoning.h
++++ b/src/common/NonLinearLaplacianHalftoning.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ #ifndef heebf43e9_0acf_490a_8385_1a339afa4da1
+diff --git a/src/common/PrinterDriver.h b/src/common/PrinterDriver.h
+index 004035a..6698e88 100644
+--- a/src/common/PrinterDriver.h
++++ b/src/common/PrinterDriver.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h6125e012_f7b5_4377_aa47_e2cdad351cc6
+ #define h6125e012_f7b5_4377_aa47_e2cdad351cc6
+diff --git a/src/common/tests/MOCK_PrintEnvironment.cpp b/src/common/tests/MOCK_PrintEnvironment.cpp
+index 1b66c5a..a091d0d 100644
+--- a/src/common/tests/MOCK_PrintEnvironment.cpp
++++ b/src/common/tests/MOCK_PrintEnvironment.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "MOCK_PrintEnvironment.h"
+ 
+diff --git a/src/common/tests/MOCK_PrintEnvironment.h b/src/common/tests/MOCK_PrintEnvironment.h
+index 44b3ea8..da93308 100644
+--- a/src/common/tests/MOCK_PrintEnvironment.h
++++ b/src/common/tests/MOCK_PrintEnvironment.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef c002c15c_0f9e_4cc5_b38a_b5928c2348b1
+ #define c002c15c_0f9e_4cc5_b38a_b5928c2348b1
+diff --git a/src/common/tests/Makefile.am b/src/common/tests/Makefile.am
+index f322480..0f8bfb3 100644
+--- a/src/common/tests/Makefile.am
++++ b/src/common/tests/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ TESTS = tests
+ 
+diff --git a/src/common/tests/Makefile.in b/src/common/tests/Makefile.in
+index f79bba4..4dbf7ec 100644
+--- a/src/common/tests/Makefile.in
++++ b/src/common/tests/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+diff --git a/src/common/tests/TestCommon.cpp b/src/common/tests/TestCommon.cpp
+index fa55cfc..cb9bacb 100644
+--- a/src/common/tests/TestCommon.cpp
++++ b/src/common/tests/TestCommon.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include <ostream>
+ #include "TestCommon.h"
+diff --git a/src/common/tests/TestCommon.h b/src/common/tests/TestCommon.h
+index 5be1fd4..9058ce9 100644
+--- a/src/common/tests/TestCommon.h
++++ b/src/common/tests/TestCommon.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h0ec9edba_c55d_43ab_ba47_ad936cbb8d74
+ #define h0ec9edba_c55d_43ab_ba47_ad936cbb8d74
+diff --git a/src/common/tests/TestErrorDiffusionHalftoning.cpp b/src/common/tests/TestErrorDiffusionHalftoning.cpp
+index 3ed100b..a4c2d2d 100644
+--- a/src/common/tests/TestErrorDiffusionHalftoning.cpp
++++ b/src/common/tests/TestErrorDiffusionHalftoning.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "TestErrorDiffusionHalftoning.h"
+ #include "TestCommon.h"
+diff --git a/src/common/tests/TestErrorDiffusionHalftoning.h b/src/common/tests/TestErrorDiffusionHalftoning.h
+index 773f5ac..8650b75 100644
+--- a/src/common/tests/TestErrorDiffusionHalftoning.h
++++ b/src/common/tests/TestErrorDiffusionHalftoning.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef hd5e4ea9d_d3c3_4d2e_8235_830809f13fbf
+ #define hd5e4ea9d_d3c3_4d2e_8235_830809f13fbf
+diff --git a/src/common/tests/TestNLLHalftoning.cpp b/src/common/tests/TestNLLHalftoning.cpp
+index cfa6199..86932a8 100644
+--- a/src/common/tests/TestNLLHalftoning.cpp
++++ b/src/common/tests/TestNLLHalftoning.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "TestNLLHalftoning.h"
+ #include "TestCommon.h"
+diff --git a/src/common/tests/TestNLLHalftoning.h b/src/common/tests/TestNLLHalftoning.h
+index 379cea4..37ae994 100644
+--- a/src/common/tests/TestNLLHalftoning.h
++++ b/src/common/tests/TestNLLHalftoning.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h93317978_9c29_4c43_9de5_263975cb8c69
+ #define h93317978_9c29_4c43_9de5_263975cb8c69
+diff --git a/src/common/tests/testsMain.cpp b/src/common/tests/testsMain.cpp
+index b47dc87..7849c27 100644
+--- a/src/common/tests/testsMain.cpp
++++ b/src/common/tests/testsMain.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include <cppunit/CompilerOutputter.h>
+ #include <cppunit/extensions/TestFactoryRegistry.h>
+diff --git a/src/lm/CupsFilterLabelManager.cpp b/src/lm/CupsFilterLabelManager.cpp
+index c01446f..06b9aec 100644
+--- a/src/lm/CupsFilterLabelManager.cpp
++++ b/src/lm/CupsFilterLabelManager.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "CupsFilterLabelManager.h"
+
+diff --git a/src/lm/CupsFilterLabelManager.h b/src/lm/CupsFilterLabelManager.h
+index a777392..76db13f 100644
+--- a/src/lm/CupsFilterLabelManager.h
++++ b/src/lm/CupsFilterLabelManager.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef he780684b_6efc_428d_bfdb_c5422b1ed982
+ #define he780684b_6efc_428d_bfdb_c5422b1ed982
+diff --git a/src/lm/LabelManagerDriver.cpp b/src/lm/LabelManagerDriver.cpp
+index f8a2adb..94345d9 100644
+--- a/src/lm/LabelManagerDriver.cpp
++++ b/src/lm/LabelManagerDriver.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "LabelManagerDriver.h"
+ 
+diff --git a/src/lm/LabelManagerDriver.h b/src/lm/LabelManagerDriver.h
+index 423f209..3144bfb 100644
+--- a/src/lm/LabelManagerDriver.h
++++ b/src/lm/LabelManagerDriver.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef ha9145701_1d7d_46f6_a726_773510223757
+ #define ha9145701_1d7d_46f6_a726_773510223757
+diff --git a/src/lm/LabelManagerLanguageMonitor.cpp b/src/lm/LabelManagerLanguageMonitor.cpp
+index 8d3d5c4..3387284 100644
+--- a/src/lm/LabelManagerLanguageMonitor.cpp
++++ b/src/lm/LabelManagerLanguageMonitor.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ #include "LabelManagerLanguageMonitor.h"
+diff --git a/src/lm/LabelManagerLanguageMonitor.h b/src/lm/LabelManagerLanguageMonitor.h
+index 772aa4e..0192bf9 100644
+--- a/src/lm/LabelManagerLanguageMonitor.h
++++ b/src/lm/LabelManagerLanguageMonitor.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef __LabelManagerLanguageMonitorH__
+ #define __LabelManagerLanguageMonitorH__
+diff --git a/src/lm/Makefile.am b/src/lm/Makefile.am
+index 2832953..5d096d3 100644
+--- a/src/lm/Makefile.am
++++ b/src/lm/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ SUBDIRS = tests
+ 
+diff --git a/src/lm/Makefile.in b/src/lm/Makefile.in
+index e75bea7..4517c42 100644
+--- a/src/lm/Makefile.in
++++ b/src/lm/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+diff --git a/src/lm/raster2dymolm.cpp b/src/lm/raster2dymolm.cpp
+index e41ac71..80a4a4b 100644
+--- a/src/lm/raster2dymolm.cpp
++++ b/src/lm/raster2dymolm.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include <cups/cups.h>
+ #include <cups/raster.h>
+diff --git a/src/lm/tests/Makefile.am b/src/lm/tests/Makefile.am
+index c890ac3..5d43371 100644
+--- a/src/lm/tests/Makefile.am
++++ b/src/lm/tests/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ TESTS = tests
+ 
+diff --git a/src/lm/tests/Makefile.in b/src/lm/tests/Makefile.in
+index 36be0e9..6925266 100644
+--- a/src/lm/tests/Makefile.in
++++ b/src/lm/tests/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+diff --git a/src/lm/tests/TestLabelManagerDriver.cpp b/src/lm/tests/TestLabelManagerDriver.cpp
+index d976367..ae0f999 100644
+--- a/src/lm/tests/TestLabelManagerDriver.cpp
++++ b/src/lm/tests/TestLabelManagerDriver.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "TestCommon.h"
+ #include "TestLabelManagerDriver.h"
+diff --git a/src/lm/tests/TestLabelManagerDriver.h b/src/lm/tests/TestLabelManagerDriver.h
+index 3268824..b09d2d9 100644
+--- a/src/lm/tests/TestLabelManagerDriver.h
++++ b/src/lm/tests/TestLabelManagerDriver.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h89cd8614_1576_42a1_a747_8ce1ccab21c3
+ #define h89cd8614_1576_42a1_a747_8ce1ccab21c3
+diff --git a/src/lm/tests/TestLabelManagerFilter.cpp b/src/lm/tests/TestLabelManagerFilter.cpp
+index b87ca09..c314b71 100644
+--- a/src/lm/tests/TestLabelManagerFilter.cpp
++++ b/src/lm/tests/TestLabelManagerFilter.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "TestCommon.h"
+ #include "TestLabelManagerFilter.h"
+diff --git a/src/lm/tests/TestLabelManagerFilter.h b/src/lm/tests/TestLabelManagerFilter.h
+index c6342a4..5681234 100644
+--- a/src/lm/tests/TestLabelManagerFilter.h
++++ b/src/lm/tests/TestLabelManagerFilter.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h51475713_0568_480f_b711_ddf8f09a3e15
+ #define h51475713_0568_480f_b711_ddf8f09a3e15
+diff --git a/src/lw/CupsFilterLabelWriter.cpp b/src/lw/CupsFilterLabelWriter.cpp
+index ae8a612..9d28588 100644
+--- a/src/lw/CupsFilterLabelWriter.cpp
++++ b/src/lw/CupsFilterLabelWriter.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "CupsFilterLabelWriter.h"
+ 
+diff --git a/src/lw/CupsFilterLabelWriter.h b/src/lw/CupsFilterLabelWriter.h
+index eaa6077..2ed7aeb 100644
+--- a/src/lw/CupsFilterLabelWriter.h
++++ b/src/lw/CupsFilterLabelWriter.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef hd8574b83_b264_47b2_8d33_a46ae75691d2
+ #define hd8574b83_b264_47b2_8d33_a46ae75691d2
+diff --git a/src/lw/LabelWriterDriver.cpp b/src/lw/LabelWriterDriver.cpp
+index 0dca07c..f39ca21 100644
+--- a/src/lw/LabelWriterDriver.cpp
++++ b/src/lw/LabelWriterDriver.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ #include "LabelWriterDriver.h"
+diff --git a/src/lw/LabelWriterDriver.h b/src/lw/LabelWriterDriver.h
+index 0a4788e..b0e8afb 100644
+--- a/src/lw/LabelWriterDriver.h
++++ b/src/lw/LabelWriterDriver.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h53a93353_4968_443a_a5aa_1167526295fc
+ #define h53a93353_4968_443a_a5aa_1167526295fc
+diff --git a/src/lw/LabelWriterLanguageMonitor.cpp b/src/lw/LabelWriterLanguageMonitor.cpp
+index 00222e9..87ca08a 100644
+--- a/src/lw/LabelWriterLanguageMonitor.cpp
++++ b/src/lw/LabelWriterLanguageMonitor.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ 
+ #include "LabelWriterLanguageMonitor.h"
+diff --git a/src/lw/LabelWriterLanguageMonitor.h b/src/lw/LabelWriterLanguageMonitor.h
+index b3340a7..b1e4d6f 100644
+--- a/src/lw/LabelWriterLanguageMonitor.h
++++ b/src/lw/LabelWriterLanguageMonitor.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h6d0799cd_6eab_4e0d_9c2b_acb6fbb54d11
+ #define h6d0799cd_6eab_4e0d_9c2b_acb6fbb54d11
+diff --git a/src/lw/Makefile.am b/src/lw/Makefile.am
+index ea9a223..36c560b 100644
+--- a/src/lw/Makefile.am
++++ b/src/lw/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ SUBDIRS = tests
+ 
+diff --git a/src/lw/Makefile.in b/src/lw/Makefile.in
+index 6ae8095..e6a77f0 100644
+--- a/src/lw/Makefile.in
++++ b/src/lw/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+diff --git a/src/lw/raster2dymolw.cpp b/src/lw/raster2dymolw.cpp
+index bdfb174..0dc0104 100644
+--- a/src/lw/raster2dymolw.cpp
++++ b/src/lw/raster2dymolw.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include <cups/cups.h>
+ #include <cups/raster.h>
+diff --git a/src/lw/tests/MOCK_LWLMPrintEnvironment.cpp b/src/lw/tests/MOCK_LWLMPrintEnvironment.cpp
+index 2d58bc9..f3b7943 100644
+--- a/src/lw/tests/MOCK_LWLMPrintEnvironment.cpp
++++ b/src/lw/tests/MOCK_LWLMPrintEnvironment.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "MOCK_LWLMPrintEnvironment.h"
+ #include "../LabelWriterDriver.h"
+diff --git a/src/lw/tests/MOCK_LWLMPrintEnvironment.h b/src/lw/tests/MOCK_LWLMPrintEnvironment.h
+index 01de4db..2d9d836 100644
+--- a/src/lw/tests/MOCK_LWLMPrintEnvironment.h
++++ b/src/lw/tests/MOCK_LWLMPrintEnvironment.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef hc8e31bb3_01a5_4422_84b8_64c017e18521
+ #define hc8e31bb3_01a5_4422_84b8_64c017e18521
+diff --git a/src/lw/tests/Makefile.am b/src/lw/tests/Makefile.am
+index 05c0ee8..8bca177 100644
+--- a/src/lw/tests/Makefile.am
++++ b/src/lw/tests/Makefile.am
+@@ -15,7 +15,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ TESTS = tests
+ 
+diff --git a/src/lw/tests/Makefile.in b/src/lw/tests/Makefile.in
+index 326a317..b98ac1c 100644
+--- a/src/lw/tests/Makefile.in
++++ b/src/lw/tests/Makefile.in
+@@ -32,7 +32,7 @@
+ 
+ # You should have received a copy of the GNU General Public License
+ # along with this program; if not, write to the Free Software
+-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ VPATH = @srcdir@
+ pkgdatadir = $(datadir)/@PACKAGE@
+ pkgincludedir = $(includedir)/@PACKAGE@
+diff --git a/src/lw/tests/TestLabelWriterDriver.cpp b/src/lw/tests/TestLabelWriterDriver.cpp
+index d4d9d49..b39d88e 100644
+--- a/src/lw/tests/TestLabelWriterDriver.cpp
++++ b/src/lw/tests/TestLabelWriterDriver.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "TestLabelWriterDriver.h"
+ #include "MOCK_PrintEnvironment.h"
+diff --git a/src/lw/tests/TestLabelWriterDriver.h b/src/lw/tests/TestLabelWriterDriver.h
+index 4865d9c..3c5f561 100644
+--- a/src/lw/tests/TestLabelWriterDriver.h
++++ b/src/lw/tests/TestLabelWriterDriver.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h32c7cec0_3fa1_46d1_af3b_834205cd3ce8
+ #define h32c7cec0_3fa1_46d1_af3b_834205cd3ce8
+diff --git a/src/lw/tests/TestLabelWriterFilter.cpp b/src/lw/tests/TestLabelWriterFilter.cpp
+index 6a69ae9..8df7fa4 100644
+--- a/src/lw/tests/TestLabelWriterFilter.cpp
++++ b/src/lw/tests/TestLabelWriterFilter.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "TestCommon.h"
+ #include "TestLabelWriterFilter.h"
+diff --git a/src/lw/tests/TestLabelWriterFilter.h b/src/lw/tests/TestLabelWriterFilter.h
+index 0ec8a57..495b6a7 100644
+--- a/src/lw/tests/TestLabelWriterFilter.h
++++ b/src/lw/tests/TestLabelWriterFilter.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef hdc29f4ef_802f_478b_97c1_e61ddf654005
+ #define hdc29f4ef_802f_478b_97c1_e61ddf654005
+diff --git a/src/lw/tests/TestLabelWriterLanguageMonitor.cpp b/src/lw/tests/TestLabelWriterLanguageMonitor.cpp
+index 0d3f6ed..75008c7 100644
+--- a/src/lw/tests/TestLabelWriterLanguageMonitor.cpp
++++ b/src/lw/tests/TestLabelWriterLanguageMonitor.cpp
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #include "TestLabelWriterLanguageMonitor.h"
+ #include "MOCK_PrintEnvironment.h"
+diff --git a/src/lw/tests/TestLabelWriterLanguageMonitor.h b/src/lw/tests/TestLabelWriterLanguageMonitor.h
+index d972ade..7adfa2a 100644
+--- a/src/lw/tests/TestLabelWriterLanguageMonitor.h
++++ b/src/lw/tests/TestLabelWriterLanguageMonitor.h
+@@ -16,7 +16,7 @@
+ 
+ // You should have received a copy of the GNU General Public License
+ // along with this program; if not, write to the Free Software
+-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
++// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ 
+ #ifndef h017d33d9_70fc_470f_a55d_19c2eb5f0263
+ #define h017d33d9_70fc_470f_a55d_19c2eb5f0263

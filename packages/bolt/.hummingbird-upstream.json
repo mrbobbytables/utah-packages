@@ -1,0 +1,8 @@
+{
+  "package": "bolt",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/bolt.git",
+  "commit": "259d6ba6e4142756848040e0e9eae38c105cdb49",
+  "tree": "4b4e4d785d2f6acd0395b2e7f60b2de351daa632",
+  "imported_at": "2026-10-24T03:59:09.114928+00:00"
+}

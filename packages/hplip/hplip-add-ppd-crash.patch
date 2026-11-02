@@ -1,0 +1,17 @@
+diff -up hplip-3.26.6/ui5/setupdialog.py.add-ppd-crash hplip-3.26.6/ui5/setupdialog.py
+--- hplip-3.26.6/ui5/setupdialog.py.add-ppd-crash	2026-09-22 15:44:33.786000592 +0200
++++ hplip-3.26.6/ui5/setupdialog.py	2026-09-22 15:47:18.858699815 +0200
+@@ -767,10 +767,9 @@ class SetupDialog(QDialog, Ui_Dialog):
+                 pass
+ 
+     def OtherPPDButton_clicked(self, b):
+-        ppd_file = to_unicode(QFileDialog.getOpenFileName(self, self.__tr("Select PPD File"),
+-                                                          sys_conf.get(
+-            'dirs', 'ppd'),
+-            self.__tr("PPD Files (*.ppd *.ppd.gz);;All Files (*)")))
++        ppd_file = QFileDialog.getOpenFileName(self, self.__tr("Select PPD File"),
++                                                sys_conf.get('dirs', 'ppd'),
++                                                self.__tr("PPD Files (*.ppd *.ppd.gz);;All Files (*)"))[0]
+ 
+         if ppd_file:
+             is_valid, validation_err = utils.validate_alternative_ppd(ppd_file, sys_conf.get('dirs', 'ppd'))

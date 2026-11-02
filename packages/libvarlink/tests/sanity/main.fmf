@@ -1,0 +1,9 @@
+summary: Sanity test
+framework: beakerlib
+test: ./runtest.sh
+require:
+  - meson
+  - ninja-build
+  - gcc
+  - git
+  - cargo

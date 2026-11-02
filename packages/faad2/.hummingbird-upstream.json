@@ -1,0 +1,8 @@
+{
+  "package": "faad2",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/faad2.git",
+  "commit": "8bb3bb6dea0904b2ce8f23a4040a5bf40728df99",
+  "tree": "c9b25ce962651a5d561b54e07ddea8f1d884b471",
+  "imported_at": "2026-10-18T09:01:00.738721+00:00"
+}

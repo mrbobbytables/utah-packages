@@ -1,0 +1,8 @@
+{
+  "package": "libmpeg2",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libmpeg2.git",
+  "commit": "c5e0c730b10562d0bef650a9adf47a9d75c05b63",
+  "tree": "acd253f4ec97835c8abe6057847657479bf05c70",
+  "imported_at": "2026-10-24T12:23:53.464181+00:00"
+}

@@ -1,0 +1,160 @@
+From cfef06cdd5564a0d64126b2b7f430b32a051fe8a Mon Sep 17 00:00:00 2001
+From: Andrew Bauer <knnniggett@hotmail.com>
+Date: Tue, 8 Jan 2019 12:43:23 -0600
+Subject: [PATCH] fix autotools deprecation warnings
+
+---
+ configure.ac                          | 2 +-
+ ppd/Makefile.am                       | 2 +-
+ samples/custom_paper/Makefile.am      | 2 +-
+ samples/custom_paper_tape/Makefile.am | 2 +-
+ samples/paper_bounds/Makefile.am      | 2 +-
+ samples/test_label/Makefile.am        | 2 +-
+ src/common/tests/Makefile.am          | 2 +-
+ src/lm/Makefile.am                    | 2 +-
+ src/lm/tests/Makefile.am              | 2 +-
+ src/lw/Makefile.am                    | 2 +-
+ src/lw/tests/Makefile.am              | 2 +-
+ 11 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index c923904..2602fcd 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -19,7 +19,7 @@
+ 
+ AC_PREREQ(2.59)
+ AC_INIT(dymo-cups-drivers, 1.4.0.5, vbuzuev@dymo.com)
+-AM_INIT_AUTOMAKE(dymo-cups-drivers, 1.4.0.5)
++AM_INIT_AUTOMAKE([subdir-objects])
+ AC_CONFIG_SRCDIR([src/lw/CupsFilterLabelWriter.h])
+ AC_CONFIG_HEADER([src/config.h])
+ 
+diff --git a/ppd/Makefile.am b/ppd/Makefile.am
+index bfff7c5..604b1f7 100644
+--- a/ppd/Makefile.am
++++ b/ppd/Makefile.am
+@@ -50,5 +50,5 @@ check_PROGRAMS = testppd
+ 
+ testppd_SOURCES=
+ 
+-testppd:
++testppd$(EXEEXT):
+ 	cupstestppd $(dist_cupsmodel_DATA)
+diff --git a/samples/custom_paper/Makefile.am b/samples/custom_paper/Makefile.am
+index f6fcdca..147f8b8 100644
+--- a/samples/custom_paper/Makefile.am
++++ b/samples/custom_paper/Makefile.am
+@@ -25,7 +25,7 @@ CustomPaper_SOURCES = \
+ 
+ CustomPaper_LDADD = $(CUPS_LIBS) -lcairo
+ 
+-INCLUDES = -I/usr/include/cairo
++AM_CPPFLAGS = -I/usr/include/cairo
+ 
+ if SAMPLES
+      SAMPLE_PROGS = CustomPaper
+diff --git a/samples/custom_paper_tape/Makefile.am b/samples/custom_paper_tape/Makefile.am
+index 3d5397c..370065d 100644
+--- a/samples/custom_paper_tape/Makefile.am
++++ b/samples/custom_paper_tape/Makefile.am
+@@ -25,7 +25,7 @@ CustomPaperTape_SOURCES = \
+ 
+ CustomPaperTape_LDADD = $(CUPS_LIBS) -lcairo
+ 
+-INCLUDES = -I/usr/include/cairo
++AM_CPPFLAGS = -I/usr/include/cairo
+ 
+ if SAMPLES
+      SAMPLE_PROGS = CustomPaperTape
+diff --git a/samples/paper_bounds/Makefile.am b/samples/paper_bounds/Makefile.am
+index 8abf373..20a409d 100644
+--- a/samples/paper_bounds/Makefile.am
++++ b/samples/paper_bounds/Makefile.am
+@@ -25,7 +25,7 @@ PaperBounds_SOURCES = \
+ 
+ PaperBounds_LDADD = $(CUPS_LIBS) -lcairo
+ 
+-INCLUDES = -I/usr/include/cairo
++AM_CPPFLAGS = -I/usr/include/cairo
+ 
+ if SAMPLES
+      SAMPLE_PROGS = PaperBounds
+diff --git a/samples/test_label/Makefile.am b/samples/test_label/Makefile.am
+index 1934b39..a3b7248 100644
+--- a/samples/test_label/Makefile.am
++++ b/samples/test_label/Makefile.am
+@@ -27,7 +27,7 @@ TestLabel_LDADD = $(CUPS_LIBS) -lcairo
+ 
+ EXTRA_DIST = tel.png photo.png barcode.png
+ 
+-INCLUDES = -I/usr/include/cairo
++AM_CPPFLAGS = -I/usr/include/cairo
+ 
+ if SAMPLES
+      SAMPLE_PROGS = TestLabel
+diff --git a/src/common/tests/Makefile.am b/src/common/tests/Makefile.am
+index 0f8bfb3..0f041d8 100644
+--- a/src/common/tests/Makefile.am
++++ b/src/common/tests/Makefile.am
+@@ -38,7 +38,7 @@ tests_SOURCES = \
+     
+ tests_LDADD = $(CUPS_LIBS) -lcppunit -ldl
+ 
+-INCLUDES = -I.. -I.
++AM_CPPFLAGS = -I.. -I.
+ 
+ #
+ #  End of $Id: Makefile.am 4759 2008-06-19 19:02:27Z vbuzuev $
+diff --git a/src/lm/Makefile.am b/src/lm/Makefile.am
+index 5d096d3..ffaf027 100644
+--- a/src/lm/Makefile.am
++++ b/src/lm/Makefile.am
+@@ -19,7 +19,7 @@
+ 
+ SUBDIRS = tests
+ 
+-INCLUDES = -I../common
++AM_CPPFLAGS = -I../common
+ 
+ cupsfilter_PROGRAMS = raster2dymolm
+ 
+diff --git a/src/lm/tests/Makefile.am b/src/lm/tests/Makefile.am
+index 5d43371..4a1f7f3 100644
+--- a/src/lm/tests/Makefile.am
++++ b/src/lm/tests/Makefile.am
+@@ -41,7 +41,7 @@ tests_SOURCES = \
+     
+ tests_LDADD = $(CUPS_LIBS) -lcppunit -ldl
+ 
+-INCLUDES = -I../../common -I../../common/tests
++AM_CPPFLAGS = -I../../common -I../../common/tests
+ 
+ #
+ #  End of $Id: Makefile.am 15968 2011-09-02 14:56:33Z pineichen $
+diff --git a/src/lw/Makefile.am b/src/lw/Makefile.am
+index 36c560b..a70eeb0 100644
+--- a/src/lw/Makefile.am
++++ b/src/lw/Makefile.am
+@@ -45,7 +45,7 @@ raster2dymolw_SOURCES = \
+     
+ raster2dymolw_LDADD = $(CUPS_LIBS)
+ 
+-INCLUDES = -I../common
++AM_CPPFLAGS = -I../common
+ 
+ #
+ #  End of $Id: Makefile.am 4759 2008-06-19 19:02:27Z vbuzuev $
+diff --git a/src/lw/tests/Makefile.am b/src/lw/tests/Makefile.am
+index 8bca177..eac7f02 100644
+--- a/src/lw/tests/Makefile.am
++++ b/src/lw/tests/Makefile.am
+@@ -46,7 +46,7 @@ tests_SOURCES = \
+     
+ tests_LDADD = $(CUPS_LIBS) -lcppunit -ldl
+ 
+-INCLUDES = -I../../common -I../../common/tests
++AM_CPPFLAGS = -I../../common -I../../common/tests
+ 
+ #
+ #  End of $Id: Makefile.am 4759 2008-06-19 19:02:27Z vbuzuev $

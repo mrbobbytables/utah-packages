@@ -1,0 +1,14 @@
+summary: Run all tests
+discover:
+  how: fmf
+prepare:
+  - name: Disable installing everything from srpm
+    how: install
+    exclude: ".*"
+  - name: Install the main package
+    how: install
+    package:
+      - libvarlink
+      - libvarlink-util
+execute:
+  how: tmt

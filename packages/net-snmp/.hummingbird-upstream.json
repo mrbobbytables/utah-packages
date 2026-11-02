@@ -1,0 +1,8 @@
+{
+  "package": "net-snmp",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/net-snmp.git",
+  "commit": "28e611c95877f50f1bd9adc9bc5513f544261966",
+  "tree": "f6360e311a802462444d4bfe7b161ad2dc50177a",
+  "imported_at": "2026-10-24T12:24:43.495283+00:00"
+}

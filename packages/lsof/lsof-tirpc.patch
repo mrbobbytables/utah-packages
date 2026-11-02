@@ -1,0 +1,11 @@
+--- lsof_4.91-rh/Configure.orig	2018-05-22 15:54:57.275682247 +0200
++++ lsof_4.91-rh/Configure	2018-05-22 15:55:22.314556548 +0200
+@@ -2945,7 +2945,7 @@ return(0); }
+ 
+     # Test for <rpc/rpc.h>.
+ 
+-    if ! test -r ${LSOF_INCLUDE}/rpc/rpc.h	# {
++    if ! test -r ${LSOF_INCLUDE}/tirpc/rpc/rpc.h	# {
+     then
+       LSOF_CFGF="$LSOF_CFGF -DHASNORPC_H"
+     fi	# }

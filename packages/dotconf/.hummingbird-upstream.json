@@ -1,0 +1,8 @@
+{
+  "package": "dotconf",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/dotconf.git",
+  "commit": "99f1ba8c813fb6659a8b3369a234246f56c04329",
+  "tree": "41fa66e177f1ed79fa24f77af67a69ae8be4ca65",
+  "imported_at": "2026-10-15T19:19:30.566541+00:00"
+}

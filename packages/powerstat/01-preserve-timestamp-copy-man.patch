@@ -1,0 +1,29 @@
+diff -ruN powerstat-0.04.02/Makefile powerstat-0.04.02-mod/Makefile
+--- powerstat-0.04.02/Makefile	2024-01-12 13:42:47.000000000 +0300
++++ powerstat-0.04.02-mod/Makefile	2024-02-14 20:19:14.748886596 +0300
+@@ -39,8 +39,6 @@
+ powerstat: powerstat.o
+ 	$(CC) $(CFLAGS) $< -lm -o $@ $(LDFLAGS)
+ 
+-powerstat.8.gz: powerstat.8
+-	gzip -c $< > $@
+ 
+ dist:
+ 	rm -rf powerstat-$(VERSION)
+@@ -51,13 +49,13 @@
+ 	rm -rf powerstat-$(VERSION)
+ 
+ clean:
+-	rm -f powerstat powerstat.o powerstat.8.gz
++	rm -f powerstat powerstat.o
+ 	rm -f powerstat-$(VERSION).tar.gz
+ 
+-install: powerstat powerstat.8.gz
++install: powerstat powerstat.8
+ 	mkdir -p ${DESTDIR}${BINDIR}
+ 	cp powerstat ${DESTDIR}${BINDIR}
+ 	mkdir -p ${DESTDIR}${MANDIR}
+-	cp powerstat.8.gz ${DESTDIR}${MANDIR}
++	cp -p powerstat.8 ${DESTDIR}${MANDIR}
+ 	mkdir -p ${DESTDIR}${BASHDIR}
+ 	cp -p bash-completion/powerstat ${DESTDIR}${BASHDIR}

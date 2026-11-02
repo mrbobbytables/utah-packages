@@ -1,0 +1,24 @@
+diff --git a/ui5/devmgr5.py b/ui5/devmgr5.py
+index 79f8fa8..28a77b3 100644
+--- a/ui5/devmgr5.py
++++ b/ui5/devmgr5.py
+@@ -816,6 +816,9 @@ class DevMgr5(Ui_MainWindow_Derived, Ui_MainWindow, QMainWindow):
+ 
+ 
+     def updateWindowTitle(self):
++        if self.cur_device is None or self.cur_device_uri is None:
++            return
++
+         if self.cur_device.device_type == DEVICE_TYPE_FAX:
+                 self.setWindowTitle(self.__tr("HP Device Manager - %s (Fax)"%self.cur_device.model_ui))
+         else:
+@@ -1876,6 +1879,9 @@ class DevMgr5(Ui_MainWindow_Derived, Ui_MainWindow, QMainWindow):
+ 
+ 
+     def updatePrintControlTab(self):
++        if self.cur_device is None or self.cur_printer is None:
++            return
++
+         if self.cur_device.device_type == DEVICE_TYPE_PRINTER:
+             self.PrintControlPrinterNameLabel.setText(self.__tr("Printer Name:"))
+             self.groupBox.setTitle(QApplication.translate("MainWindow", "Printer Queue Control", None))

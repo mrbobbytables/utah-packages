@@ -1,0 +1,13 @@
+diff -up hplip-3.26.6/prnt/hpcups/HPCupsFilter.cpp.logdir hplip-3.26.6/prnt/hpcups/HPCupsFilter.cpp
+diff -up hplip-3.26.6/prnt/hpcups/SystemServices.cpp.logdir hplip-3.26.6/prnt/hpcups/SystemServices.cpp
+--- hplip-3.26.6/prnt/hpcups/SystemServices.cpp.logdir	2026-09-11 13:22:00.000000000 +0200
++++ hplip-3.26.6/prnt/hpcups/SystemServices.cpp	2026-09-22 15:36:27.355377560 +0200
+@@ -38,7 +38,7 @@ SystemServices::SystemServices(int iLogL
+     if (iLogLevel & SAVE_OUT_FILE)
+     {
+         char    fname[MAX_FILE_PATH_LEN];
+-        sprintf(fname, "%s/hpcups_%s_out_job%d_XXXXXX",CUPS_TMP_DIR, user_name, job_id);
++        snprintf(fname, sizeof(fname), "%s/hpcups_%s_out_job%d_XXXXXX",CUPS_TMP_DIR, user_name, job_id);
+         createTempFile(fname, &m_fp);
+         if (m_fp)
+         {

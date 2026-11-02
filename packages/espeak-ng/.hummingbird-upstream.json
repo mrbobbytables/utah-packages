@@ -1,0 +1,8 @@
+{
+  "package": "espeak-ng",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/espeak-ng.git",
+  "commit": "87796740c708794c5c57401f6bc91ee0f00717e2",
+  "tree": "032c6a0b5440e3ebe1139869e01ca5f7dd30160d",
+  "imported_at": "2026-10-15T19:19:19.236603+00:00"
+}

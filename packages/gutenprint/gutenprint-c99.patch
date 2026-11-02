@@ -1,0 +1,24 @@
+commit 75af7caf4d3369de2d0c5432220da15fae64f58b
+Author: Solomon Peachy <pizza@shaftnet.org>
+Date:   Fri Dec 22 08:56:32 2023 -0500
+
+    gimpui:  Fix two implicit-pointer-cast-to-int instances
+    
+    (The GIMP API uses an opaque 32-bit "handle")
+
+diff --git a/src/gimp2/print.c b/src/gimp2/print.c
+index fc1344f6..2ebdb352 100644
+--- a/src/gimp2/print.c
++++ b/src/gimp2/print.c
+@@ -114,8 +114,8 @@ stpui_get_thumbnail_data_function(void *image_ID, gint *width, gint *height,
+ {
+   if (gimp_thumbnail_data)
+     g_free(gimp_thumbnail_data);
+-  gint x = gimp_image_width(image_ID);
+-  gint y = gimp_image_height(image_ID);
++  gint x = gimp_image_width(p2gint(image_ID));
++  gint y = gimp_image_height(p2gint(image_ID));
+   if (*width > x)
+     *width = x;
+   if (*height > y)
+

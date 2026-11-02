@@ -1,0 +1,8 @@
+{
+  "package": "virt-what",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/virt-what.git",
+  "commit": "4720d9b751d436c14933d969df96ede6f39c2952",
+  "tree": "f89f4c2842c8e77221cef03396696dd8df950e70",
+  "imported_at": "2026-10-24T12:24:28.046487+00:00"
+}

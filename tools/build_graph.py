@@ -9,6 +9,9 @@ numbers; it solves them. This does the same:
 1. `prepare` runs rpmspec in the build root over every recipe
    (`rpmspec -q --buildrequires`, `--provides`, and the subpackage names) and
    leaves one directory per package: `br`, `provides`, `names`, `rc`, `err`.
+   `provides` also carries `pkgconfig(X)` for every `X.pc` path a `%files`
+   section lists, so a provider imported alongside its consumer orders
+   before it without having been published first.
 2. `graph()` maps each BuildRequires capability to the factory source
    packages that provide it -- from the spec's own subpackage names and
    explicit Provides, and from the published repository's primary.xml, which

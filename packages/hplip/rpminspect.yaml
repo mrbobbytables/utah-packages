@@ -1,0 +1,10 @@
+---
+badfuncs:
+  allowed:
+    # printers usually do not live on networks which would require
+    # IPv6 due having too many hosts on one network, so it is not
+    # a priority to have IPv6 support.
+    # It is reported upstream at https://bugzilla.redhat.com/show_bug.cgi?id=2275938
+    /usr/lib*/libhpmud.so.*:
+      - gethostbyname
+      - inet_addr

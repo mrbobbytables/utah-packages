@@ -1,0 +1,8 @@
+{
+  "package": "oath-toolkit",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/oath-toolkit.git",
+  "commit": "ba44cb7631bba82c6fe970f08f317a6434f2dc5c",
+  "tree": "aaf1deaa437f7b0394bb9ab14b9fa752deeedb37",
+  "imported_at": "2026-10-24T04:05:26.234271+00:00"
+}

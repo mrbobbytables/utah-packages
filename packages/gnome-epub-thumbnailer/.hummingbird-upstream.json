@@ -1,0 +1,8 @@
+{
+  "package": "gnome-epub-thumbnailer",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-epub-thumbnailer.git",
+  "commit": "9184ca422761a2d5de081011ed758878026ce26b",
+  "tree": "10c862712464928cf327b8107a9363babadc3e19",
+  "imported_at": "2026-10-18T08:54:11.445964+00:00"
+}

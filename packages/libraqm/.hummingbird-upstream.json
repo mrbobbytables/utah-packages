@@ -1,0 +1,8 @@
+{
+  "package": "libraqm",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libraqm.git",
+  "commit": "50bb38e595b98ba3c20b03a6368feb2687927f9f",
+  "tree": "c15b73d61233e19cafec612f06292491eced8de6",
+  "imported_at": "2026-10-24T13:04:34.072053+00:00"
+}

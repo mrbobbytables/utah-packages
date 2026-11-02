@@ -1,0 +1,8 @@
+{
+  "package": "gnome-user-docs",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-user-docs.git",
+  "commit": "b0f6c0d3debf2bdeabf6aa867bf55b00c627c179",
+  "tree": "786bd086858c9dee497eb255f5c96e6f30500201",
+  "imported_at": "2026-10-20T20:24:41.873851+00:00"
+}

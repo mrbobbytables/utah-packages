@@ -1,0 +1,8 @@
+{
+  "package": "hplip",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/hplip.git",
+  "commit": "d6541eb793ef187d2587ddae37befd88e6bfcd0d",
+  "tree": "34c4b8433a2c49149d45d914eb04f8a02ffd3269",
+  "imported_at": "2026-10-18T08:53:36.861795+00:00"
+}

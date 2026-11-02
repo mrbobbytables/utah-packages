@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ "$USERHELPER_UID" = "0" ]; then
+    # if started by root, forward all arguments
+    /usr/libexec/vpnc "$@"
+else
+    # if started as unprivileged user, discard all arguments
+    # vpnc will use its default config file /etc/vpnc/default.conf
+    /usr/libexec/vpnc
+fi

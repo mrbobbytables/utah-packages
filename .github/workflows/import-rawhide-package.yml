@@ -1,19 +1,16 @@
 name: Import Rawhide package
 
-# Imports one Fedora dist-git recipe into this factory, then writes every
-# artifact the recipe-set agreement gate (`tests/test_recipe_set_agreement.py`)
-# checks for it, so the pull request is born green rather than needing a
-# follow-up like #320.
+# Imports one Fedora dist-git recipe into this factory and keeps its package
+# name in agreement across packages/, the source lock, and .packit.yaml
+# (`tests/test_recipe_set_agreement.py`). No document quotes inventory
+# counts, so an import edits no prose.
 #
-# Four files must move together or the gate fails: the recipe directory
-# (`tools/import_rawhide.py`), the SHA-512 source lock
-# (`tools/bootstrap_upstream_sources.py --package <name> --merge`; runs inside
-# the pinned `quay.io/packit/packit` image because it needs `rpmspec`), the
-# regenerated `.packit.yaml` block (`tools/render_packit_config.py --write`),
-# and the recipe counts in the four count tests plus `docs/architecture.md`
-# (they used to be hardcoded literals; this workflow keeps them as
-# data-driven assertions so adding or removing a recipe does not require a
-# hand edit of every count).
+# Bootstrap runs in the pinned image because it needs rpmspec. It writes an
+# isolated --output candidate and --report, without --merge. A fresh proposal
+# job uses tools/import_proposal.py to validate the uploaded data and merge
+# the candidate into the source lock, then regenerates .packit.yaml. The
+# bootstrap report is diagnostic data carried in
+# the pull request, not another inventory compared by the agreement gate.
 
 on:
   workflow_dispatch:
@@ -69,13 +66,18 @@ jobs:
           set -euo pipefail
           python3 -c 'import pathlib, sys; p = pathlib.Path("packages") / sys.argv[1]; assert not any(f.is_symlink() for f in p.rglob("*"))' "$PACKAGE"
           mkdir -p "$RUNNER_TEMP/import-output"
+          # Run as the runner user, not root: with every capability dropped,
+          # CAP_DAC_OVERRIDE included, root could not write the runner-owned
+          # output directory ("Permission denied: /output/candidate.json"), and
+          # the untrusted spec expansion has no reason to run as uid 0 anyway.
           docker run --rm --cap-drop=ALL --security-opt=no-new-privileges \
+            --user "$(id -u):$(id -g)" -e HOME=/tmp \
             -e PACKAGE \
             -v "$PWD/tools:/trusted/tools:ro" \
             -v "$PWD/packages/$PACKAGE:/input/packages/$PACKAGE:ro" \
             -v "$RUNNER_TEMP/import-output:/output:rw" \
             -w /input \
-            quay.io/packit/packit:latest@sha256:b4667f390c25f4a871e458bddc62003db30c60fac64f17a925dfaaa9279a8af7 bash -exc '
+            quay.io/packit/packit:latest@sha256:67042bc007aefa24e30064e49dbcbacb0ecdf62d629ff5d059f2c14b5de5aa86 bash -exc '
               python3 /trusted/tools/bootstrap_upstream_sources.py \
                 --root /input --package "$PACKAGE" \
                 --output /output/candidate.json --report /output/report.json
@@ -122,12 +124,6 @@ jobs:
           PACKAGE: ${{ inputs.package }}
         run: |
           python3 tools/render_packit_config.py --write
-      - name: Refresh the architecture.md inventory counts
-        # tests/test_architecture_counts.py reads docs/architecture.md and
-        # compares its numbers to the live inventory; an import that adds
-        # a recipe makes that comparison fail unless the doc moves with it.
-        run: |
-          python3 tools/render_architecture_counts.py --write
       - name: Run the same gates a contributor runs
         # A PR that cannot pass these is not opened. Runs the unit suite,
         # validate (which itself reports the new inventory size), and the
@@ -142,14 +138,13 @@ jobs:
         with:
           branch: import/rawhide-${{ inputs.package }}
           delete-branch: true
-          # The five files the agreement gate compares. Anything outside this
-          # list does not belong on the import branch.
+          # Recipe, source lock, generated config, and diagnostic report.
+          # Anything outside this list does not belong on the import branch.
           add-paths: |
             packages/${{ inputs.package }}/
             .packit.yaml
             config/upstream-sources.json
             reports/import-source-bootstrap.json
-            docs/architecture.md
           title: 'import: Rawhide ${{ inputs.package }}'
           commit-message: 'import: Rawhide ${{ inputs.package }}'
           body: |
@@ -158,9 +153,7 @@ jobs:
             writes the SHA-512 source lock via
             an isolated `bootstrap_upstream_sources.py` candidate accepted
             as data by the fresh proposal job’s trusted `import_proposal.py`, regenerates
-            `.packit.yaml` via `tools/render_packit_config.py --write`,
-            refreshes the inventory counts in `docs/architecture.md` via
-            `tools/render_architecture_counts.py --write`, and passes
+            `.packit.yaml` via `tools/render_packit_config.py --write`, and passes
             `pytest`, `tools/validate.py` and
             `tools/check_workflow_quoting.py` before opening.
 

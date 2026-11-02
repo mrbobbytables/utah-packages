@@ -1,0 +1,8 @@
+{
+  "package": "liblouis",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/liblouis.git",
+  "commit": "8e0a8171d2d017f363f63033a67605d89448b731",
+  "tree": "38eb4a88e330d84961a40f75da0040181bb2c6da",
+  "imported_at": "2026-10-15T19:19:29.614173+00:00"
+}

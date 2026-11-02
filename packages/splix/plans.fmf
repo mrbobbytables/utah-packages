@@ -1,0 +1,32 @@
+/tier1-internal:
+  plan:
+    import:
+      url: https://gitlab.com/redhat/centos-stream/tests/splix.git
+      name: /plans/tier1/internal
+  adjust:
+    enabled: false
+    when: distro == centos-stream, fedora
+    because: They don't have access to internal repos.
+
+/tier1-public:
+  plan:
+    import:
+      url: https://gitlab.com/redhat/centos-stream/tests/splix.git
+      name: /plans/tier1/public
+
+/others-internal:
+  plan:
+    import:
+      url: https://gitlab.com/redhat/centos-stream/tests/splix.git
+      name: /plans/others/internal
+  adjust:
+    enabled: false
+    when: distro == centos-stream, fedora
+    because: They don't have access to internal repos.
+
+/others-public:
+  plan:
+    import:
+      url: https://gitlab.com/redhat/centos-stream/tests/splix.git
+      name: /plans/others/public
+

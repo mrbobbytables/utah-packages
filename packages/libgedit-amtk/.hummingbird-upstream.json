@@ -1,0 +1,8 @@
+{
+  "package": "libgedit-amtk",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libgedit-amtk.git",
+  "commit": "7c09bb404d14aa92bc8e51c55c64426b17346a4b",
+  "tree": "2a432168c856658d616bd9936b8be7f86a7a5095",
+  "imported_at": "2026-10-20T22:31:19.912177+00:00"
+}

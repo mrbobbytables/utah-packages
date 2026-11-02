@@ -1,0 +1,8 @@
+{
+  "package": "NetworkManager-openconnect",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/NetworkManager-openconnect.git",
+  "commit": "16aebe44a8e2c5b87bf97ea733d0ef9c7c6817b0",
+  "tree": "efcc50c342172d7e520ffa131d18423a22592c37",
+  "imported_at": "2026-10-24T03:56:56.353389+00:00"
+}

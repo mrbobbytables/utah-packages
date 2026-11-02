@@ -1,0 +1,8 @@
+{
+  "package": "redhat-menus",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/redhat-menus.git",
+  "commit": "35c5e292ea3f383bc1352fed244ae8e53c7f50d2",
+  "tree": "e2ad181dc5beb61d2544437f700e038355d15b6d",
+  "imported_at": "2026-10-23T02:03:05.983163+00:00"
+}

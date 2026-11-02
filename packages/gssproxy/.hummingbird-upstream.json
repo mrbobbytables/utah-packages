@@ -1,0 +1,8 @@
+{
+  "package": "gssproxy",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gssproxy.git",
+  "commit": "34f26c7ab97ed6f9fca5b8ecb76298f33a5e3550",
+  "tree": "73a1775c6e748d31db97625d80863259fb141b09",
+  "imported_at": "2026-10-24T12:25:44.952443+00:00"
+}

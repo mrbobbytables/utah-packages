@@ -13,17 +13,19 @@
 
 Name:           flatpak
 Version:        1.19.0
-Release:        %autorelease
+# Utah: -b 2 because this recipe drops Fedora's flatpak-add-fedora-repos.service
+# (see the Source list), which changes the binary package at the same Version.
+# %%autorelease resolves to 1 in this factory, so the base is what moves.
+Release:        %autorelease -b 2
 Summary:        Application deployment framework for desktop apps
 
 License:        LGPL-2.1-or-later
 URL:            https://flatpak.org/
 Source0:        https://github.com/flatpak/flatpak/releases/download/%{version}/%{name}-%{version}.tar.xz
 
-%if 0%{?fedora}
-# Add Fedora flatpak repositories
-Source1:        flatpak-add-fedora-repos.service
-%endif
+# Utah: Fedora's Source1, flatpak-add-fedora-repos.service, is dropped. It
+# adds Fedora's OCI flatpak remotes on first boot; Bluefin/Utah ships Flathub
+# only. Keep it out when re-importing from Fedora.
 
 # https://github.com/flatpak/flatpak/pull/6785
 Patch:          fd-conflation.patch
@@ -177,33 +179,11 @@ install -d %{buildroot}%{_sysconfdir}/%{name}/installations.d
 install -d %{buildroot}%{_sysconfdir}/%{name}/preinstall.d
 install -d %{buildroot}%{_sysconfdir}/flatpak/remotes.d
 
-%if 0%{?fedora}
-install -D -p -m 0644 -t %{buildroot}%{_unitdir} %{SOURCE1}
-%endif
-
 %find_lang %{name}
-
-
-%if 0%{?fedora}
-%post
-%systemd_post flatpak-add-fedora-repos.service
-%endif
 
 
 %post selinux
 %selinux_modules_install %{_datadir}/selinux/packages/flatpak.pp.bz2
-
-
-%if 0%{?fedora}
-%preun
-%systemd_preun flatpak-add-fedora-repos.service
-%endif
-
-
-%if 0%{?fedora}
-%postun
-%systemd_postun_with_restart flatpak-add-fedora-repos.service
-%endif
 
 
 %postun selinux
@@ -259,10 +239,6 @@ fi
 %{_systemd_system_env_generator_dir}/60-flatpak-system-only
 %{_systemd_user_env_generator_dir}/60-flatpak
 %{_tmpfilesdir}/%{name}.conf
-
-%if 0%{?fedora}
-%{_unitdir}/flatpak-add-fedora-repos.service
-%endif
 
 %files devel
 %{_datadir}/gir-1.0/Flatpak-1.0.gir

@@ -1,0 +1,26 @@
+--- a/docs/conf.py	2017-10-08 01:30:43.000000000 +0200
++++ b/docs/conf.py	2017-10-09 17:43:10.519266708 +0200
+@@ -99,10 +99,10 @@
+ 
+ # The theme to use for HTML and HTML Help pages.  See the documentation for
+ # a list of builtin themes.
+-import guzzle_sphinx_theme
++#import guzzle_sphinx_theme
+ 
+-html_theme_path = guzzle_sphinx_theme.html_theme_path()
+-html_theme = 'guzzle_sphinx_theme'
++#html_theme_path = guzzle_sphinx_theme.html_theme_path()
++#html_theme = 'guzzle_sphinx_theme'
+ 
+ 
+ def set_rst_settings(app):
+@@ -260,7 +260,7 @@ extensions = [
+     'sphinx.ext.coverage',
+     'sphinx.ext.viewcode',
+     'sphinxcontrib.jquery',  # jquery is not included anymore by default
+-    'guzzle_sphinx_theme',  # register the theme as an extension to generate a sitemap.xml
++    #'guzzle_sphinx_theme',  # register the theme as an extension to generate a sitemap.xml
+ ]
+ 
+ extlinks = {
+

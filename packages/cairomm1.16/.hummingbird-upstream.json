@@ -1,0 +1,8 @@
+{
+  "package": "cairomm1.16",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/cairomm1.16.git",
+  "commit": "592bfc862d20a1d348e02b0020a267a78abdead5",
+  "tree": "e704afa178eb5f13f2cea110cf0533f75471423e",
+  "imported_at": "2026-10-20T18:44:26.637103+00:00"
+}

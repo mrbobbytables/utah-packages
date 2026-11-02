@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-linux-procfs"
+version = "0.7.4"
+description = "Linux /proc abstraction classes"
+readme = "README.md"
+license = {text = "GPL-2.0-only"}
+authors = [
+    {name = "Arnaldo Carvalho de Melo", email = "acme@redhat.com"},
+    {name = "John Kacur", email = "jkacur@redhat.com"}
+]
+maintainers = [
+    {name = "John Kacur", email = "jkacur@redhat.com"}
+]
+requires-python = ">=3.10"
+dependencies = []
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Operating System Kernels :: Linux",
+]
+
+[project.urls]
+Homepage = "https://www.kernel.org/pub/software/libs/python/python-linux-procfs"
+
+[tool.setuptools.packages.find]
+include = ["procfs*"]
+
+[tool.setuptools]
+script-files = ["pflags"]

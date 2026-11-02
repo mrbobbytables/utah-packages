@@ -1,0 +1,29 @@
+diff -up hplip-3.26.6/installer/pluginhandler.py.curl-fallback hplip-3.26.6/installer/pluginhandler.py
+--- hplip-3.26.6/installer/pluginhandler.py.curl-fallback	2026-09-23 12:57:09.452450795 +0200
++++ hplip-3.26.6/installer/pluginhandler.py	2026-09-23 13:40:36.665628402 +0200
+@@ -46,6 +46,7 @@ PLUGIN_FALLBACK_URLS = {
+     '3.25.6': 'https://developers.hp.com/sites/default/files/2025-08/hplip-3.25.6-plugin.run',
+     '3.25.8': 'https://developers.hp.com/sites/default/files/2025-11/hplip-3.25.8-plugin.run',
+     '3.26.4': 'https://developers.hp.com/sites/default/files/2026-05/hplip-3.26.4-plugin.run',
++    '3.26.6': 'https://developers.hp.com/sites/default/files/2026-09/hplip-3.26.6-plugin.run',
+ }
+ 
+ WGET_FALLBACK_HEADERS = (
+@@ -328,7 +329,7 @@ class PluginHandle(object):
+             else:
+                 curl = utils.which("curl", True)
+                 if curl:
+-                    cmd = "%s --create-dirs -O --output-dir %s --location %s" % (curl,self.__plugin_path,src)
++                    cmd = "%s -f --create-dirs -O --output-dir %s --location %s" % (curl,self.__plugin_path,src)
+                     log.debug(cmd)
+                     status, output = utils.run(cmd)
+                     log.debug("curl returned: %d" % status)
+@@ -339,7 +340,7 @@ class PluginHandle(object):
+                     src = (PLUGIN_FALLBACK_URLS.get(self.__required_version) or
+                            os.path.join(PLUGIN_FALLBACK_LOCATION, self.__plugin_name))
+                     log.info("Plugin is not accessible. Trying to download it from fallback location: [%s]" % src)
+-                    cmd = "%s --create-dirs -O --output-dir %s --location %s" % (curl,self.__plugin_path,src)
++                    cmd = "%s --create-dirs -O %s --output-dir %s --location %s" % (curl, WGET_FALLBACK_HEADERS, self.__plugin_path, src)
+                     log.debug(cmd)
+                     status, output = utils.run(cmd)
+ 

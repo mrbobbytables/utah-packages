@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """What Utah installs is resolved against the candidate, and reported by name."""
 
+import contextlib
+import io
+import json
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -126,6 +131,244 @@ class VerdictTests(unittest.TestCase):
         with mock.patch.object(uis, "attempt", side_effect=attempt):
             report = uis.resolve(["a", "b"], ("utah-packages",))
         self.assertEqual(list(report["unresolved"]), ["(the set together)"])
+
+
+class AttemptTests(unittest.TestCase):
+    """attempt() is the verdict: dnf --assumeno exits 1 on a valid transaction."""
+
+    SUMMARY = "Transaction Summary:\n Installing: 3 packages\nOperation aborted by the user.\n"
+
+    def run_attempt(self, returncode: int, stdout: str):
+        completed = subprocess.CompletedProcess([], returncode, stdout=stdout)
+        with mock.patch.object(uis, "dnf", return_value="/usr/bin/dnf5"), \
+                mock.patch.object(uis.subprocess, "run", return_value=completed) as run:
+            ok, output = uis.attempt(["fish", "libgphoto2"], ("utah-packages", "hummingbird"))
+        return ok, output, run
+
+    def test_assumeno_exit_one_with_a_summary_is_a_valid_transaction(self) -> None:
+        ok, output, _ = self.run_attempt(1, self.SUMMARY)
+        self.assertTrue(ok)
+        self.assertEqual(output, self.SUMMARY)
+
+    def test_nothing_to_do_is_a_valid_transaction(self) -> None:
+        self.assertTrue(self.run_attempt(0, "Nothing to do.\n")[0])
+
+    def test_an_error_line_fails_even_beside_a_summary(self) -> None:
+        for line in ("No match for argument: ptyxis", "nothing provides libexif.so.12",
+                     "Error: Unable to find a match", "Failed to resolve the transaction:",
+                     "Problem: cannot install both a and b"):
+            with self.subTest(line=line):
+                self.assertFalse(self.run_attempt(1, self.SUMMARY + line + "\n")[0])
+
+    def test_no_summary_is_not_a_success(self) -> None:
+        self.assertFalse(self.run_attempt(0, "Updating and loading repositories:\n")[0])
+        self.assertFalse(self.run_attempt(0, "")[0])
+
+    def test_any_other_exit_code_fails(self) -> None:
+        self.assertFalse(self.run_attempt(2, self.SUMMARY)[0])
+
+    def test_only_the_named_repositories_are_enabled_in_the_c_locale(self) -> None:
+        _, _, run = self.run_attempt(1, self.SUMMARY)
+        command = run.call_args.args[0]
+        self.assertEqual(command[:3], ["/usr/bin/dnf5", "--assumeno", "--disablerepo=*"])
+        self.assertEqual([c for c in command if c.startswith("--enablerepo=")],
+                         ["--enablerepo=utah-packages", "--enablerepo=hummingbird"])
+        self.assertEqual(command[-5:], ["-x", "PackageKit*", "install", "fish", "libgphoto2"])
+        self.assertEqual(run.call_args.kwargs["env"]["LC_ALL"], "C")
+        self.assertIs(run.call_args.kwargs["stderr"], subprocess.STDOUT)
+        self.assertFalse(run.call_args.kwargs["check"])
+
+
+class DnfTests(unittest.TestCase):
+    def test_dnf5_is_preferred(self) -> None:
+        found = {"dnf5": "/usr/bin/dnf5", "dnf": "/usr/bin/dnf"}
+        with mock.patch.object(uis.shutil, "which", side_effect=found.get):
+            self.assertEqual(uis.dnf(), "/usr/bin/dnf5")
+
+    def test_dnf_is_the_fallback(self) -> None:
+        with mock.patch.object(uis.shutil, "which", side_effect={"dnf": "/usr/bin/dnf"}.get):
+            self.assertEqual(uis.dnf(), "/usr/bin/dnf")
+
+    def test_no_dnf_is_an_error_not_a_pass(self) -> None:
+        with mock.patch.object(uis.shutil, "which", return_value=None):
+            with self.assertRaisesRegex(RuntimeError, "no dnf"):
+                uis.dnf()
+
+
+class FirstProblemFallbackTests(unittest.TestCase):
+    def test_without_a_problem_line_the_line_after_the_error_is_the_reason(self) -> None:
+        output = "Updating repositories\nError: \n - package foo is filtered out by exclude\n"
+        self.assertEqual(uis.first_problem(output), "package foo is filtered out by exclude")
+
+    def test_an_error_on_the_last_line_reports_that_line(self) -> None:
+        self.assertEqual(uis.first_problem("loading\nError: repo down\n"), "Error: repo down")
+
+    def test_empty_output_says_so(self) -> None:
+        self.assertEqual(uis.first_problem("\n  \n"), "no output")
+
+    def test_the_reason_is_capped(self) -> None:
+        self.assertEqual(len(uis.first_problem("nothing provides " + "x" * 500)), 300)
+
+
+class SummaryTests(unittest.TestCase):
+    def test_an_unchecked_run_says_why(self) -> None:
+        text = uis.summary({"error": "fetch failed", "resolved": False, "unresolved": {}})
+        self.assertIn("**Not checked:** fetch failed", text)
+        self.assertNotIn("All ", text)
+
+    def test_a_clean_run_counts_what_resolved(self) -> None:
+        text = uis.summary({"requested": 412, "resolved": True, "unresolved": {}})
+        self.assertIn("All 412 packages Utah installs resolve", text)
+
+    def test_pipes_in_a_reason_cannot_break_the_table(self) -> None:
+        text = uis.summary({"requested": 2, "resolved": False,
+                            "unresolved": {"b": "x | y", "a": "why"}})
+        self.assertIn("**2 of 2 packages", text)
+        rows = [line for line in text.splitlines() if line.startswith("| `")]
+        self.assertEqual(rows, ["| `a` | `why` |", "| `b` | `x / y` |"])
+
+
+class FetchTests(unittest.TestCase):
+    def test_every_file_comes_from_the_requested_ref_by_its_basename(self) -> None:
+        requested = []
+
+        def urlopen(url, timeout):
+            requested.append((url, timeout))
+            return contextlib.nullcontext(io.BytesIO(url.encode()))
+
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(uis.urllib.request, "urlopen", side_effect=urlopen):
+            paths = uis.fetch("abc123", Path(directory))
+            self.assertEqual(set(paths), set(uis.FILES))
+            for key, path in uis.FILES.items():
+                url = f"https://raw.githubusercontent.com/projectbluefin/utah/abc123/{path}"
+                self.assertEqual(paths[key], Path(directory) / Path(path).name)
+                self.assertEqual(paths[key].read_text(), url)
+        self.assertEqual(len(requested), len(uis.FILES))
+        self.assertTrue(all(timeout == 60 for _, timeout in requested))
+
+    def test_a_failed_download_is_not_swallowed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(uis.urllib.request, "urlopen", side_effect=OSError("404")):
+            with self.assertRaises(OSError):
+                uis.fetch("main", Path(directory))
+
+    def test_resolve_reads_the_names_fetch_writes(self) -> None:
+        # main(resolve) opens the installer and key by these names, inside the
+        # base image, from what fetch wrote on the host.
+        names = {Path(path).name for path in uis.FILES.values()}
+        self.assertIn("install-packages.py", names)
+        self.assertIn("RPM-GPG-KEY-redhat-release-2", names)
+        self.assertIn("utah-packages.repo", names)
+
+
+class MainTests(unittest.TestCase):
+    PINNED = ("quay.io/hummingbird-community/bootc-os:latest@sha256:"
+              "7ea735968c2543f51a975474b13b17bb8e110852045fd99bd13066179bf775f2")
+
+    def run_main(self, argv):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = uis.main(argv)
+        return code, out.getvalue()
+
+    def test_fetch_writes_the_package_set_and_the_base_image(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "utah"
+
+            def fetch(ref, target):
+                self.assertEqual(ref, "feature")
+                (target / "install-packages.py").write_text(INSTALLER)
+                (target / "bluefin.toml").write_text(
+                    '[fedora]\npackages = ["fish"]\n[fedora_v44]\npackages = ["ptyxis"]\n')
+                (target / "utah.toml").write_text(
+                    '[gnome]\npackages = ["fish", "gnome-shell"]\n[build]\npackages = ["meson"]\n')
+                (target / "Containerfile").write_text(f"ARG BASE_IMAGE={self.PINNED}\n")
+                return {"installer": target / "install-packages.py",
+                        "manifest": target / "bluefin.toml", "overlay": target / "utah.toml",
+                        "containerfile": target / "Containerfile"}
+
+            with mock.patch.object(uis, "fetch", side_effect=fetch):
+                code, out = self.run_main(["fetch", "--dir", str(root), "--ref", "feature"])
+            self.assertEqual(code, 0)
+            self.assertEqual((root / "packages.txt").read_text(),
+                             "fish\nptyxis\ngnome-shell\nmeson\n")
+            self.assertEqual((root / "base-image").read_text(), self.PINNED + "\n")
+        self.assertIn("Utah installs 4 packages (projectbluefin/utah@feature)", out)
+
+    def test_fetch_refuses_an_unpinned_base(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            def fetch(ref, target):
+                (target / "install-packages.py").write_text(INSTALLER)
+                for name in ("bluefin.toml", "utah.toml"):
+                    (target / name).write_text("")
+                (target / "Containerfile").write_text("ARG BASE_IMAGE=quay.io/x/y:latest\n")
+                return {"installer": target / "install-packages.py",
+                        "manifest": target / "bluefin.toml", "overlay": target / "utah.toml",
+                        "containerfile": target / "Containerfile"}
+
+            with mock.patch.object(uis, "fetch", side_effect=fetch), \
+                    self.assertRaises(ValueError):
+                self.run_main(["fetch", "--dir", str(root)])
+            self.assertFalse((root / "base-image").exists())
+
+    def test_resolve_installs_utahs_repositories_and_writes_the_verdict(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            utah, system = root / "utah", root / "system"
+            utah.mkdir()
+            (utah / "packages.txt").write_text("fish\n\n  libgphoto2  \n")
+            (utah / "utah-packages.repo").write_text("[utah-packages]\n")
+            (utah / "hummingbird.repo").write_text("[hummingbird]\n")
+            (utah / "RPM-GPG-KEY-redhat-release-2").write_text("KEY\n")
+            (utah / "install-packages.py").write_text(
+                "def install_repos(repos_dir):\n"
+                "    return sorted(p.stem for p in repos_dir.glob('*.repo'))\n")
+            (system / "etc" / "yum.repos.d").mkdir(parents=True)
+            real_path, real_copy = uis.Path, shutil.copy
+
+            def rooted(path):
+                path = str(path)
+                return system / path.lstrip("/") if path.startswith("/etc/") else path
+
+            calls = []
+
+            def resolve(packages, repos):
+                calls.append((packages, repos))
+                return {"requested": 2, "resolved": False, "unresolved": {"libgphoto2": "why"}}
+
+            with mock.patch.object(uis, "Path", side_effect=lambda p: real_path(rooted(p))), \
+                    mock.patch.object(uis.shutil, "copy",
+                                      side_effect=lambda s, d: real_copy(s, rooted(d))), \
+                    mock.patch.object(uis, "resolve", side_effect=resolve):
+                code, out = self.run_main(["resolve", "--dir", str(utah),
+                                           "--report", str(root / "report.json")])
+            self.assertEqual(code, 0)
+            self.assertEqual(calls, [(["fish", "libgphoto2"], ("hummingbird", "utah-packages"))])
+            self.assertEqual(sorted(p.name for p in (system / "etc" / "yum.repos.d").iterdir()),
+                             ["hummingbird.repo", "utah-packages.repo"])
+            self.assertEqual(
+                (system / "etc" / "pki" / "rpm-gpg" / "RPM-GPG-KEY-redhat-release-2").read_text(),
+                "KEY\n")
+            report = json.loads((root / "report.json").read_text())
+        self.assertEqual(report["unresolved"], {"libgphoto2": "why"})
+        self.assertIn("resolving 2 packages from hummingbird, utah-packages", out)
+        self.assertIn("| `libgphoto2` | `why` |", out)
+
+    def test_summary_renders_a_written_report(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "report.json"
+            report.write_text(json.dumps({"requested": 5, "resolved": True, "unresolved": {}}))
+            code, out = self.run_main(["summary", str(report)])
+        self.assertEqual(code, 0)
+        self.assertIn("### Utah install set", out)
+        self.assertIn("All 5 packages", out)
+
+    def test_a_command_is_required(self) -> None:
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            uis.main([])
 
 
 class WorkflowTests(unittest.TestCase):

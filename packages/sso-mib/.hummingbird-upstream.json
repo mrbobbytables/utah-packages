@@ -1,0 +1,8 @@
+{
+  "package": "sso-mib",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/sso-mib.git",
+  "commit": "bdac3bb3c226180ad1f352f667f8ae84dc724e8d",
+  "tree": "f3255a7d7cc0e09e2fb209d8887c8dc5f75e478b",
+  "imported_at": "2026-10-23T03:34:02.429640+00:00"
+}

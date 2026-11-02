@@ -1,0 +1,14 @@
+# Tests for openvpn using NM's tests
+- hosts: localhost
+  roles:
+  - role: standard-test-basic
+    tags:
+    - classic
+    repositories:
+    - repo: "https://gitlab.freedesktop.org/NetworkManager/NetworkManager-ci"
+      dest: "NetworkManager-ci"
+    tests:
+    - sanity-tests:
+        dir: NetworkManager-ci
+        run: run/osci/run-tests openvpn
+

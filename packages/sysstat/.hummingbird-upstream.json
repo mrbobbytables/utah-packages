@@ -1,0 +1,8 @@
+{
+  "package": "sysstat",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/sysstat.git",
+  "commit": "f852c2724a6ef52b69953e84dbecfcf1ad8c956c",
+  "tree": "41b261efa0fca45a44a3c9cf6527b33a90571619",
+  "imported_at": "2026-10-18T08:53:23.739993+00:00"
+}

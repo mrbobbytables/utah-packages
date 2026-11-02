@@ -1,0 +1,8 @@
+{
+  "package": "openal-soft",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/openal-soft.git",
+  "commit": "3f9378cc6baadc32469460772eff1593fdbee752",
+  "tree": "ce62ca76660ac980929e48c333a922678a16f5a1",
+  "imported_at": "2026-10-18T09:01:03.231085+00:00"
+}

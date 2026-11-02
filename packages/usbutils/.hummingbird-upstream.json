@@ -1,0 +1,8 @@
+{
+  "package": "usbutils",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/usbutils.git",
+  "commit": "47080022c80396df64a66e67f355da51eb92a2f9",
+  "tree": "b670fc2eeec59c4b8786fad6c3ba377dd7973a38",
+  "imported_at": "2026-10-24T12:24:40.287133+00:00"
+}

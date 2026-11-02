@@ -1,0 +1,12 @@
+--- !Policy
+product_versions:
+  - rhel-*
+decision_context: osci_compose_gate
+rules:
+  - !PassingTestCaseRule {test_case_name: osci.brew-build.tier0.functional}
+  - !PassingTestCaseRule {test_case_name: xen-ci.brew-build.tier1.functional}
+  - !PassingTestCaseRule {test_case_name: 3rd-esxi-x86_64.brew-build.tier1.functional}
+  - !PassingTestCaseRule {test_case_name: 3rd-esxi-aarch64.brew-build.tier1.functional}
+  - !PassingTestCaseRule {test_case_name: 3rd-hyperv-2019-ci.brew-build.tier1.functional}
+  - !PassingTestCaseRule {test_case_name: s1-aws-ci_x86_64.brew-build.tier1.functional}
+  - !PassingTestCaseRule {test_case_name: s1-aws-ci_aarch64.brew-build.tier1.functional}

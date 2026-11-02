@@ -1,0 +1,37 @@
+diff --git a/scan.py b/scan.py
+index b262ef2..cb0ffc1 100755
+--- a/scan.py
++++ b/scan.py
+@@ -83,7 +83,7 @@ edge_erase_value = 0
+ contrast = 0
+ set_contrast = False
+ 
+-page_size = ''
++page_size = 'a4'
+ size_desc = ''
+ page_units = 'mm'
+ default_res = 300
+@@ -1615,7 +1615,7 @@ try:
+                                         else:
+                                             im = im.convert("RGB")
+                                             
+-                                        #im = imageprocessing.resize_to_scan_area(im,PAGE_SIZES[size],res)
++                                        #im = imageprocessing.resize_to_scan_area(im,PAGE_SIZES[page_size],res)
+                                 if barcode_count>0:
+                                     if barcode_first_occurence == True:
+                                         if barcode_first_page == False:
+@@ -1718,12 +1718,12 @@ try:
+         #so that the output image size matches with the input scan area
+         #for Flatbad 
+         if im:    
+-            im = imageprocessing.resize_to_scan_area(im,PAGE_SIZES[size],res)
++            im = imageprocessing.resize_to_scan_area(im,PAGE_SIZES[page_size],res)
+         """
+         #for ADF
+         for Image_file in adf_page_files:
+             image = Image.open(Image_file)
+-            resized_image = imageprocessing.resize_to_scan_area(image,PAGE_SIZES[size],res)
++            resized_image = imageprocessing.resize_to_scan_area(image,PAGE_SIZES[page_size],res)
+             resized_image.save(Image_file)
+         """
+         if adf and (save_file =='jpg' or save_file == 'png' or save_file == 'tiff' or save_file == 'pdf' or save_file == 'bmp'):

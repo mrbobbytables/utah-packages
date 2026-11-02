@@ -157,10 +157,132 @@ class CacheVerdictTests(unittest.TestCase):
         jobs = [j for j in healthy_jobs() if not j["name"].startswith("pass2")]
         self.assertTrue(any(p.startswith("pass2 built []") for p in self.verdict(jobs)))
 
+    def test_a_compile_in_pass2_with_buildroot_nevra_shift_passes(self) -> None:
+        jobs = healthy_jobs()
+        for entry in jobs:
+            if entry["name"].startswith("pass2") and entry["name"].endswith("(vulkan-headers)"):
+                entry["steps"][1]["conclusion"] = "success"
+        locks = {
+            "pass1": {
+                "vulkan-headers": {
+                    "buildroot": {
+                        "rpms": [{"name": "gettext", "version": "0.22", "release": "4.hum1", "arch": "x86_64"}]
+                    }
+                }
+            },
+            "pass2": {
+                "vulkan-headers": {
+                    "buildroot": {
+                        "rpms": [{"name": "gettext", "version": "0.22", "release": "4.1.hum1", "arch": "x86_64"}]
+                    }
+                }
+            },
+        }
+        outcomes = canary.build_outcomes(jobs)
+        problems = canary.cache_problems(
+            outcomes, SET, "python-typing-inspection", locks=locks
+        )
+        self.assertEqual(problems, [])
+
+    def test_a_compile_in_pass2_with_identical_buildroot_fails(self) -> None:
+        jobs = healthy_jobs()
+        for entry in jobs:
+            if entry["name"].startswith("pass2") and entry["name"].endswith("(vulkan-headers)"):
+                entry["steps"][1]["conclusion"] = "success"
+        locks = {
+            "pass1": {
+                "vulkan-headers": {
+                    "buildroot": {
+                        "rpms": [{"name": "gettext", "version": "0.22", "release": "4.hum1", "arch": "x86_64"}]
+                    }
+                }
+            },
+            "pass2": {
+                "vulkan-headers": {
+                    "buildroot": {
+                        "rpms": [{"name": "gettext", "version": "0.22", "release": "4.hum1", "arch": "x86_64"}]
+                    }
+                }
+            },
+        }
+        outcomes = canary.build_outcomes(jobs)
+        problems = canary.cache_problems(
+            outcomes, SET, "python-typing-inspection", locks=locks
+        )
+        self.assertEqual(len(problems), 1)
+        self.assertIn("pass2: vulkan-headers was compiled", problems[0])
+
+    def test_a_pure_buildroot_removal_names_the_removed_nevra(self) -> None:
+        jobs = healthy_jobs()
+        for entry in jobs:
+            if entry["name"].startswith("pass2") and entry["name"].endswith("(vulkan-headers)"):
+                entry["steps"][1]["conclusion"] = "success"
+        gettext = {"name": "gettext", "version": "0.22", "release": "4.hum1", "arch": "x86_64"}
+        bash = {"name": "bash", "version": "5.2", "release": "1.fc44", "arch": "x86_64"}
+        locks = {
+            "pass1": {"vulkan-headers": {"buildroot": {"rpms": [gettext, bash]}}},
+            "pass2": {"vulkan-headers": {"buildroot": {"rpms": [gettext]}}},
+        }
+        tolerated: list[str] = []
+        problems = canary.cache_problems(
+            canary.build_outcomes(jobs), SET, "python-typing-inspection",
+            locks=locks, tolerated=tolerated,
+        )
+        self.assertEqual(problems, [])
+        self.assertEqual(tolerated, [
+            "pass2: vulkan-headers recompiled due to buildroot NEVRA changes"
+            " (-bash-5.2-1.fc44.x86_64)"
+        ])
+
+    def test_a_compile_in_pass2_without_a_pass2_lock_still_fails(self) -> None:
+        """The lock download is continue-on-error: no pass2 lock means no tolerance."""
+        jobs = healthy_jobs()
+        for entry in jobs:
+            if entry["name"].startswith("pass2") and entry["name"].endswith("(vulkan-headers)"):
+                entry["steps"][1]["conclusion"] = "success"
+        locks = {"pass1": {"vulkan-headers": {"buildroot": {"rpms": [
+            {"name": "gettext", "version": "0.22", "release": "4.hum1", "arch": "x86_64"}
+        ]}}}}
+        tolerated: list[str] = []
+        problems = canary.cache_problems(
+            canary.build_outcomes(jobs), SET, "python-typing-inspection",
+            locks=locks, tolerated=tolerated,
+        )
+        self.assertEqual(len(problems), 1)
+        self.assertIn("pass2: vulkan-headers was compiled", problems[0])
+        self.assertEqual(tolerated, [])
+
+    def test_read_pass_locks_discovers_prefixes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            p1 = root / "p1-lock-s0-libical"
+            p1.mkdir(parents=True)
+            (p1 / "buildroot_lock.json").write_text(json.dumps({
+                "buildroot": {"rpms": [{"name": "bash", "version": "5.2", "release": "1.fc44", "arch": "x86_64"}]}
+            }))
+            p2 = root / "p2-lock-s0-libical"
+            p2.mkdir(parents=True)
+            (p2 / "buildroot_lock.json").write_text(json.dumps({
+                "buildroot": {"rpms": [{"name": "bash", "version": "5.2", "release": "2.fc44", "arch": "x86_64"}]}
+            }))
+            locks = canary.read_pass_locks(root)
+            self.assertIn("pass1", locks)
+            self.assertIn("pass2", locks)
+            self.assertEqual(canary.lock_nevras(locks["pass1"]["libical"]), ["bash-5.2-1.fc44.x86_64"])
+            self.assertEqual(canary.lock_nevras(locks["pass2"]["libical"]), ["bash-5.2-2.fc44.x86_64"])
+
     def test_the_summary_names_every_outcome(self) -> None:
         outcomes = canary.build_outcomes(healthy_jobs())
         text = canary.summary(outcomes, [])
         self.assertIn("| pass2 | `vulkan-headers` | cache hit |", text)
+
+    def test_the_summary_keeps_tolerated_compiles_next_to_failures(self) -> None:
+        outcomes = canary.build_outcomes(healthy_jobs())
+        text = canary.summary(outcomes, ["pass2: libical was failed, not a cache hit"], ["pass3: vulkan-headers recompiled"])
+        self.assertIn("**Failed:**", text)
+        self.assertIn("- pass2: libical was failed, not a cache hit", text)
+        self.assertIn("**Tolerated compiles**", text)
+        self.assertIn("- pass3: vulkan-headers recompiled", text)
 
 
 class FlakyCheckVerdictTests(unittest.TestCase):
@@ -339,7 +461,7 @@ class WorkflowShapeTests(unittest.TestCase):
         script = verify["steps"][-1]["run"]
         self.assertIn("\'[\"vulkan-loader\"]\'", script)
         self.assertIn('test "$DIGEST" != "$PASS1_DIGEST"', script)
-        gate = self.jobs["canary"]["steps"][0]["run"]
+        gate = next(s for s in self.jobs["canary"]["steps"] if s.get("name") == "Decide")["run"]
         self.assertIn('.key != "pass4"', gate)
 
     def test_pass5_is_incremental_against_pass1s_digest(self) -> None:
@@ -695,12 +817,53 @@ class MainTests(unittest.TestCase):
         self.assertIn("**Failed:**", out)
         self.assertIn("::error title=canary cache::pass2: vulkan-headers was compiled", err)
 
+    def recompile_vulkan_headers_in_pass2(self) -> list[dict]:
+        jobs = healthy_jobs()
+        for entry in jobs:
+            if entry["name"].startswith("pass2") and entry["name"].endswith("(vulkan-headers)"):
+                entry["steps"][1]["conclusion"] = "success"
+        return jobs
+
+    def write_lock(self, artifact: str, release: str) -> None:
+        path = self.work / "locks" / artifact
+        path.mkdir(parents=True)
+        (path / "buildroot_lock.json").write_text(json.dumps({"buildroot": {"rpms": [
+            {"name": "gettext", "version": "0.22", "release": release, "arch": "x86_64"}
+        ]}}))
+
+    def run_cache_with_locks(self, jobs: list[dict]) -> tuple[int, str, str]:
+        return self.run_main([
+            "verify-cache", self.jobs_file(jobs),
+            "--set", json.dumps(sorted(SET)), "--perturbed", "python-typing-inspection",
+            "--locks", str(self.work / "locks"),
+        ])
+
+    def test_verify_cache_tolerates_a_recompile_after_a_buildroot_shift(self) -> None:
+        self.write_lock("p1-lock-s0-vulkan-headers", "4.hum1")
+        self.write_lock("p2-lock-s0-vulkan-headers", "4.1.hum1")
+        code, out, err = self.run_cache_with_locks(self.recompile_vulkan_headers_in_pass2())
+        self.assertEqual(code, 0)
+        self.assertIn("| pass2 | `vulkan-headers` | compiled |", out)
+        self.assertIn("**Tolerated compiles**", out)
+        self.assertIn("pass2: vulkan-headers recompiled due to buildroot NEVRA changes", out)
+        self.assertNotIn("pass2 compiled nothing", out)
+        self.assertIn("::notice title=canary cache::pass2: vulkan-headers recompiled", err)
+        self.assertNotIn("::error", err)
+
+    def test_verify_cache_fails_a_recompile_when_the_pass2_lock_is_missing(self) -> None:
+        self.write_lock("p1-lock-s0-vulkan-headers", "4.hum1")
+        code, out, err = self.run_cache_with_locks(self.recompile_vulkan_headers_in_pass2())
+        self.assertEqual(code, 1)
+        self.assertIn("**Failed:**", out)
+        self.assertIn("::error title=canary cache::pass2: vulkan-headers was compiled", err)
+        self.assertNotIn("::notice", err)
+
     # -- the subcommand set itself -----------------------------------------
 
     def test_every_subcommand_the_workflow_invokes_is_dispatched(self) -> None:
         """A rename in canary.py that canary.yml did not follow fails here."""
         invoked = set(re.findall(
-            r"canary\.py\s+([a-z-]+)", (ROOT / ".github" / "workflows" / "canary.yml").read_text()
+            r"(?<!\w)canary\.py\s+([a-z-]+)", (ROOT / ".github" / "workflows" / "canary.yml").read_text()
         ))
         self.assertTrue(invoked)
         for command in sorted(invoked):

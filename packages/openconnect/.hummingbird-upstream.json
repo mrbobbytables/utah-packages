@@ -1,0 +1,8 @@
+{
+  "package": "openconnect",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/openconnect.git",
+  "commit": "8996df25266d9281715982310e3531ac827db1bd",
+  "tree": "7cbbfc00ee917ddc5e88ae637869f8191f831f00",
+  "imported_at": "2026-10-24T03:56:55.046227+00:00"
+}

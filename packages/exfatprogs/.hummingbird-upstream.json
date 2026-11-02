@@ -1,0 +1,8 @@
+{
+  "package": "exfatprogs",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/exfatprogs.git",
+  "commit": "03ef018a087542d7679a44b52ea78df6292fc40c",
+  "tree": "210cc75d66edba9d3977d1e12b13555a2744a12b",
+  "imported_at": "2026-10-24T03:59:33.654126+00:00"
+}

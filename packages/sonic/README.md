@@ -1,0 +1,3 @@
+# sonic
+
+The sonic package

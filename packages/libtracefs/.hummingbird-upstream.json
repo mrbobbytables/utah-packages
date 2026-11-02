@@ -1,0 +1,8 @@
+{
+  "package": "libtracefs",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libtracefs.git",
+  "commit": "aa0462fae1e8056ae8e9a1a2d52771e53b63be34",
+  "tree": "aff643374460a6265b4136c8a59ca8df8b2b279a",
+  "imported_at": "2026-10-24T12:24:31.074483+00:00"
+}

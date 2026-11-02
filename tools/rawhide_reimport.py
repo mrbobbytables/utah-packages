@@ -51,6 +51,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from tools import import_rawhide
+from tools.package_inventory import source_locks
 from tools.render_packit_config import render
 
 KOJI_HUB = "https://koji.fedoraproject.org/kojihub"
@@ -301,10 +302,6 @@ def tree_at(repository: Path, ref: str, scratch: Path) -> Tree:
     return read_tree(destination)
 
 
-def load_locks(path: Path) -> dict[str, dict]:
-    return {entry["name"]: entry for entry in json.loads(path.read_text()).get("packages", [])}
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--root", type=Path, default=Path("."))
@@ -315,7 +312,7 @@ def main() -> int:
 
     root = args.root.resolve()
     packages = root / "packages"
-    locks = load_locks(root / "config" / "upstream-sources.json")
+    locks = source_locks(root)
     recipes = {}
     for directory in sorted(path for path in packages.iterdir() if path.is_dir()):
         record = json.loads((directory / ".hummingbird-upstream.json").read_text())

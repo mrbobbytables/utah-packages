@@ -1,0 +1,8 @@
+{
+  "package": "gnome-user-share",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gnome-user-share.git",
+  "commit": "7f6a11cf68c0cd1bdab6dc705a49ccfb5d09a3e0",
+  "tree": "b873a2c3fd2065c5fae08baf547f10e273dbaac8",
+  "imported_at": "2026-10-20T20:26:20.332753+00:00"
+}

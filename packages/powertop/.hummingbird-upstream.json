@@ -1,0 +1,8 @@
+{
+  "package": "powertop",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/powertop.git",
+  "commit": "89d3c81621c4a5cc2fb9a526f712cc7ca21c4451",
+  "tree": "bb91826e65623fcb0fde30e347d2ef46eddc432f",
+  "imported_at": "2026-10-22T23:07:17.055806+00:00"
+}

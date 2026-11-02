@@ -1,0 +1,8 @@
+{
+  "package": "python-linux-procfs",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/python-linux-procfs.git",
+  "commit": "f77596a24926138c6ca1c38fe34c817d13e5f032",
+  "tree": "2e95b8fe8a6875c3a4fe9657251f0f610ada1da2",
+  "imported_at": "2026-10-24T12:24:26.508136+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "package": "smartmontools",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/smartmontools.git",
+  "commit": "d433214e111ac91f3e273cb7be5fec096a9a7079",
+  "tree": "6c6279bab66a135ad989b9d76f98fcf9493d8301",
+  "imported_at": "2026-10-24T04:00:33.890892+00:00"
+}

@@ -1,0 +1,102 @@
+From 93e6366243c2b8fd1944d0ad9aa31dd17ac4dfac Mon Sep 17 00:00:00 2001
+From: Didier Raboud <odyx@debian.org>
+Date: Fri, 9 Feb 2018 17:46:09 +0100
+Subject: Port to newer cups headers: ppd_file_t is only defined in ppd.h
+
+Origin: vendor
+Last-Update: 2016-09-24
+---
+ configure.ac                          | 2 +-
+ src/common/CupsFilter.h               | 1 +
+ src/lm/CupsFilterLabelManager.h       | 1 +
+ src/lm/tests/TestLabelManagerFilter.h | 1 +
+ src/lw/CupsFilterLabelWriter.h        | 1 +
+ src/lw/raster2dymolw.cpp              | 1 +
+ src/lw/tests/TestLabelWriterFilter.h  | 1 +
+ 7 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 4e6365c..e71a4a9 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -94,7 +94,7 @@ CXXFLAGS+=" ${optimization_flags} ${warning_flags} ${debug_flags} ${cups_cflags}
+ 
+ AC_CHECK_LIB(cups, cupsMarkOptions, , AC_ERROR([Can't find cups library]))
+ AC_CHECK_LIB(cupsimage, cupsRasterReadHeader, , AC_ERROR([Can't find cupsimage library]))
+-AC_CHECK_HEADERS([cups/cups.h cups/raster.h],, AC_ERROR([Can't find cups headers]))
++AC_CHECK_HEADERS([cups/cups.h cups/raster.h cups/ppd.h],, AC_ERROR([Can't find cups headers]))
+ 
+ #CUPS_LIBS=`cups-config --image --libs`
+ #CUPS_LIBS="-lcups -lcupsimage"
+diff --git a/src/common/CupsFilter.h b/src/common/CupsFilter.h
+index e649877..a17dae8 100644
+--- a/src/common/CupsFilter.h
++++ b/src/common/CupsFilter.h
+@@ -23,6 +23,7 @@
+ 
+ #include <cups/cups.h>
+ #include <cups/raster.h>
++#include <cups/ppd.h>
+ #include <memory>
+ #include <string>
+ #include "CupsPrintEnvironment.h"
+diff --git a/src/lm/CupsFilterLabelManager.h b/src/lm/CupsFilterLabelManager.h
+index a777392..32a7db8 100644
+--- a/src/lm/CupsFilterLabelManager.h
++++ b/src/lm/CupsFilterLabelManager.h
+@@ -23,6 +23,7 @@
+ 
+ #include <cups/cups.h>
+ #include <cups/raster.h>
++#include <cups/ppd.h>
+ #include "LabelManagerDriver.h"
+ #include "LabelManagerLanguageMonitor.h"
+ #include "DummyLanguageMonitor.h"
+diff --git a/src/lm/tests/TestLabelManagerFilter.h b/src/lm/tests/TestLabelManagerFilter.h
+index c6342a4..c631709 100644
+--- a/src/lm/tests/TestLabelManagerFilter.h
++++ b/src/lm/tests/TestLabelManagerFilter.h
+@@ -26,6 +26,7 @@
+ #include "../LabelManagerDriver.h"
+ #include "DummyLanguageMonitor.h"
+ #include <cups/cups.h>
++#include <cups/ppd.h>
+ 
+ class LabelManagerFilterTest: public CPPUNIT_NS::TestFixture
+ {
+diff --git a/src/lw/CupsFilterLabelWriter.h b/src/lw/CupsFilterLabelWriter.h
+index 4e7f15a..eaa6077 100644
+--- a/src/lw/CupsFilterLabelWriter.h
++++ b/src/lw/CupsFilterLabelWriter.h
+@@ -23,6 +23,7 @@
+ 
+ #include <cups/cups.h>
+ #include <cups/raster.h>
++#include <cups/ppd.h>
+ #include "LabelWriterDriver.h"
+ #include "LabelWriterLanguageMonitor.h"
+ #include "DummyLanguageMonitor.h"
+diff --git a/src/lw/raster2dymolw.cpp b/src/lw/raster2dymolw.cpp
+index bdfb174..c6a208a 100644
+--- a/src/lw/raster2dymolw.cpp
++++ b/src/lw/raster2dymolw.cpp
+@@ -20,6 +20,7 @@
+ 
+ #include <cups/cups.h>
+ #include <cups/raster.h>
++#include <cups/ppd.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <string.h>
+diff --git a/src/lw/tests/TestLabelWriterFilter.h b/src/lw/tests/TestLabelWriterFilter.h
+index 0ec8a57..45b00c2 100644
+--- a/src/lw/tests/TestLabelWriterFilter.h
++++ b/src/lw/tests/TestLabelWriterFilter.h
+@@ -27,6 +27,7 @@
+ #include "../DummyLanguageMonitor.h"
+ 
+ #include <cups/cups.h>
++#include <cups/ppd.h>
+ 
+ class LabelWriterFilterTest: public CPPUNIT_NS::TestFixture
+ {

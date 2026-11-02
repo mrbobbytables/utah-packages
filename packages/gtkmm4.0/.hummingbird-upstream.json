@@ -1,0 +1,8 @@
+{
+  "package": "gtkmm4.0",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/gtkmm4.0.git",
+  "commit": "9452983260f113fafa2d659bb1daec00f4750c8a",
+  "tree": "b698ca19437badd5543f6b4e7f2c963456196b2f",
+  "imported_at": "2026-10-20T18:44:25.743014+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "package": "printer-driver-brlaser",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/printer-driver-brlaser.git",
+  "commit": "78724715745bbec0c948182a1dfa4b15e5c4bb7b",
+  "tree": "05891aee379dda0f45d92c194cd4d01a011718c3",
+  "imported_at": "2026-10-24T03:59:09.156730+00:00"
+}

@@ -1,0 +1,38 @@
+- hosts: localhost
+
+  roles:
+  - role: standard-test-beakerlib
+    tags:
+    - classic
+    repositories:
+      - repo: https://pagure.io/DSP_test.git
+        dest: DSP_test
+        version: master
+
+    tests:
+    - DSP_test
+    environment:
+      # RPM package containing the policy module
+      TEST_RPM: smartmontools-selinux
+      # policy module name
+      TEST_POLICY: smartmon
+      # policy sources will be extracted from corresponding .src.rpm
+      # policy tar filename regexp (e.g. "usbguard-selinux*.tar.gz") 
+      # or empty string if policy sources are not inside a tar archive
+      POLICY_TAR: ''
+      # path to policy sources (in of the tar archive) -- <POLICY_TAR>/<POLICY_PATH>/<TEST_POLICY>.(te|if|fc)
+      # or path in the src.rpm if there is no tar archive -- <src.rpm>/<POLICY_PATH>/<TEST_POLICY>.(te|if|fc)
+      # can contain wildcards (e.g. for versions etc.)
+      POLICY_PATH: .
+
+    required_packages:
+    - policycoreutils
+    - selinux-policy
+    - selinux-policy-targeted
+    - setools-console
+    - libselinux-utils
+    - rpm
+    - tar
+    - git
+    - smartmontools
+

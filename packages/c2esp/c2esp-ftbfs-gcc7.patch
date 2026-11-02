@@ -1,0 +1,23 @@
+diff -up c2esp-27/src/c2espC.c.ftbfs-gcc7 c2esp-27/src/c2espC.c
+diff -up c2esp-27/src/c2espcommon.c.ftbfs-gcc7 c2esp-27/src/c2espcommon.c
+--- c2esp-27/src/c2espcommon.c.ftbfs-gcc7	2017-03-03 14:10:28.018395128 +0100
++++ c2esp-27/src/c2espcommon.c	2017-03-03 14:19:26.967383931 +0100
+@@ -24,6 +24,7 @@
+ #include <fcntl.h> //files
+ #include <sys/stat.h> //for chmod
+ #include <time.h> //time functions used for debugging
++#include <stdlib.h>
+ 
+ #if HAVE_CUPSFILTERS_DRIVER_H == 1
+ #include <cupsfilters/driver.h> //has the dither functions
+diff -up c2esp-27/src/c2espcommon.h.ftbfs-gcc7 c2esp-27/src/c2espcommon.h
+--- c2esp-27/src/c2espcommon.h.ftbfs-gcc7	2017-03-03 14:25:54.186413550 +0100
++++ c2esp-27/src/c2espcommon.h	2017-03-03 14:26:53.105961575 +0100
+@@ -21,6 +21,7 @@
+ #include <cups/sidechannel.h> //FlushBackChannel, and the side channel functions and constants
+ #include <fcntl.h> //files
+ #include <time.h> //time functions used for debugging
++#include <stdio.h> //library for stderr, stdout, stdin - because of gcc7, it needed to be included
+ 
+ /*
+  * Constants...

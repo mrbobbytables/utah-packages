@@ -1,0 +1,15 @@
+diff -up hplip-3.26.6/io/hpmud/model.c.hpmud-string-parse hplip-3.26.6/io/hpmud/model.c
+--- hplip-3.26.6/io/hpmud/model.c.hpmud-string-parse	2026-09-11 13:22:00.000000000 +0200
++++ hplip-3.26.6/io/hpmud/model.c	2026-09-22 16:02:27.113461684 +0200
+@@ -422,7 +422,10 @@ static int ParseFile(char *datFile, char
+          section[sizeof(section)-1] = '\0';
+          n = strlen(section);
+          section[n-2]=0; /* remove ']' and CR */
+-         if (strcasecmp(model, section) == 0)
++         if (strcasecmp(model, section) == 0 ||
++            (section[0] == 'h' && section[1] == 'p' &&
++             section[2] == '_' &&
++             strcasecmp(model, section + 3) == 0))
+          {
+             /* Found model match. */
+             *bytes_read = ResolveAttributes(fp, attr, attrSize); 

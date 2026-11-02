@@ -1,0 +1,21 @@
+From: Didier Raboud <odyx@debian.org>
+Date: Sun, 27 Oct 2019 09:32:56 +0100
+Subject: Include cups/sidechannel.h for cupsBackChannelRead symbol
+
+Closes: #943549
+---
+ src/common/CupsPrintEnvironment.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/common/CupsPrintEnvironment.cpp b/src/common/CupsPrintEnvironment.cpp
+index 1bee24d..e9034a5 100644
+--- a/src/common/CupsPrintEnvironment.cpp
++++ b/src/common/CupsPrintEnvironment.cpp
+@@ -23,6 +23,7 @@
+ #include "CupsPrintEnvironment.h"
+ #include <errno.h>
+ #include <cups/cups.h>
++#include <cups/sidechannel.h>
+ #include <cassert>
+ 
+ namespace DymoPrinterDriver

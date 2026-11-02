@@ -1,0 +1,8 @@
+{
+  "package": "freerdp",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/freerdp.git",
+  "commit": "d2e930024f6a05894c541c1c34e663c720b013ca",
+  "tree": "36810eabcc8fdb3a10b2cd3eee93a605299caa4f",
+  "imported_at": "2026-10-20T21:55:56.925433+00:00"
+}

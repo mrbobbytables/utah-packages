@@ -1,0 +1,8 @@
+{
+  "package": "lsof",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/lsof.git",
+  "commit": "b7ce407383bdcd454ab8199027702b9263beb8a0",
+  "tree": "8ceffe3261a8226223be7d4df9bdbfa72bbcbfa8",
+  "imported_at": "2026-10-24T03:59:54.738211+00:00"
+}

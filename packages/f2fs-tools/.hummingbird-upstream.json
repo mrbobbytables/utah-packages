@@ -1,0 +1,8 @@
+{
+  "package": "f2fs-tools",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/f2fs-tools.git",
+  "commit": "f7c1c45dffd0a9b60bf81e15026ad3e2fc7887be",
+  "tree": "c8d138d409dec143b3a509cc583f4bb5b3e73c48",
+  "imported_at": "2026-10-24T03:59:38.757200+00:00"
+}

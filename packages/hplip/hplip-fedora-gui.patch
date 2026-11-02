@@ -1,0 +1,31 @@
+diff --git a/base/utils.py b/base/utils.py
+index d493b54..401dc41 100644
+--- a/base/utils.py
++++ b/base/utils.py
+@@ -727,8 +727,8 @@ def canEnterGUIMode4(): # qt4
+         except ImportError:
+             try:
+                 import ui5.setupdialog
+-            except ImportError as e:
+-                log.warn(e)
++            except ImportError:
++                log.error("hplip-gui not installed. GUI not available.")
+                 return False
+ 
+     return True
+@@ -746,6 +746,7 @@ def checkPyQtImport(): # qt3
+         try:
+             import ui
+         except ImportError:
++            log.error("hplip-gui not installed. GUI not available.")
+             return False
+ 
+         log.error("PyQt not installed. GUI not available. Exiting.")
+@@ -800,6 +801,7 @@ def checkPyQtImport4():
+             import ui5.setupdialog
+         except ImportError:
+             log.debug('GUI not available.')
++            log.error('hplip-gui not installed. GUI not available.')
+             return False
+ 
+     return True

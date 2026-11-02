@@ -1,0 +1,12 @@
+diff --git a/base/tui.py b/base/tui.py
+index 99bda7b..0f90f92 100644
+--- a/base/tui.py
++++ b/base/tui.py
+@@ -241,6 +241,7 @@ class ProgressMeter(object):
+         sys.stdout.write(y)
+ 
+         sys.stdout.flush()
++        sys.stdout.write('\n')
+         self.prev_length = len(y)
+         self.spinner_pos = (self.spinner_pos + 1) % 8
+ 

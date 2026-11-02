@@ -1,0 +1,28 @@
+README.Fedora
+-------------
+
+This file is meant as README for Fedora specific changes for sane-backends
+package.
+
+SANE daemon is moved to subpackage
+----------------------------------
+sane-backends daemon - saned - its manual page and systemd unit files are moved
+into subpackage named sane-backends-daemon. It was done because daemon provides
+access to scanning devices on remote server, which nowadays isn't common 
+usage of sane-backends, so it wasn't necessary to ship it with main package.
+
+Several scanners need proprietary driver for working
+----------------------------------------------------
+Several scanners (e.g. Samsung, Brother, Epson) sometimes need special backends,
+whose isn't shipped with sane-backends or cannot be shipped in Fedora because of
+licensing problem. If your scanner isn't working with basic sane-backends:
+
+1) if your scanner is Epson, try to install iscan-firmware package or Image Scan from Epson official site
+2) if your scanner is Samsung, try to find driver on https://support.hp.com/gb-en/drivers/selfservice/
+3) if your scanner is Brother, see http://support.brother.com/g/s/id/linux/en/download_scn.html
+
+Ad2) Samsung proprietary driver is needed when user needs JPEG compression - this
+feature support was added to sane-backends upstream by commit 926bfade544de4a4fd5,
+which contained patches from Samsung. But this commit broke scanning for Samsung
+scanners, so this patch was reverted with consequences of losing JPEG compression 
+feature for Samsung scanners.

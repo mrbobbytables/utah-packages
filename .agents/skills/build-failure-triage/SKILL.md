@@ -107,8 +107,19 @@ the workflow, not mock's documentation.
 ## Rule 2: check the commit is current
 
 Check-run events arrive for superseded commits. Compare the event's
-`head_sha` against the PR's current head before spending time on it. A run
-whose conclusion is `cancelled` was superseded by a later push, not broken.
+`head_sha` against the PR's current head before spending time on it. A run whose conclusion is `cancelled` was superseded by a later push, not broken.
+
+### A branch's own published image shadows `latest`
+
+`rebuild-rpms.yml` resolves the factory image per ref: a branch reads its
+own published image first and only falls back to `latest` when no branch
+image exists. Once a branch has published anything, its later builds never
+see packages that merged to `main` afterwards. The symptom is `No match for
+argument` on a factory package you just watched publish from `main`
+(gtkmm4.0 vs glibmm2.68, October 2026). The branch image digest is printed
+in the run log (`<branch> -> ghcr.io/...@sha256:...`); a digest older than
+the `main` publish you depend on confirms it. Fix by merging the recipe to
+`main`, whose builds read `latest` only — not by rebuilding the branch.
 
 ## Rule 3: on a showstopper, kill the runs that cannot pass
 
@@ -167,13 +178,14 @@ When a later stage cannot see what an earlier stage built, check in this order:
 
 | What the log shows | What it means | What to do |
 | --- | --- | --- |
-| `No match for argument: <pkg>` where `<pkg>` is in `config/upstream-sources.json` | Build ordering: the graph did not see this edge, so the provider was not in an earlier wave. Usually a `%generate_buildrequires` requirement, which rpmspec cannot see, or a spec rpmspec failed to parse (`spec not parsed` warning in `prepare`) | Check the `build-graph` artifact for both packages. A missing generated edge is a `tools/build_graph.py` gap; do not paper over it with a `stage`, which only orders cycle members |
+| `No match for argument: <pkg>` where `<pkg>` is in `config/upstream-sources.json` | Build ordering: the graph did not see this edge, so the provider was not in an earlier wave. Usually a `%generate_buildrequires` requirement, which rpmspec cannot see, or a spec rpmspec failed to parse (`spec not parsed` warning in `prepare`). `Failed to resolve the transaction` with `No match for argument: pkgconfig(...)` for a recipe imported on the same branch (libgedit-gtksourceview on libgedit-amtk and libgedit-gfls, #554) was this too: generated provides came only from the published repository, so an unpublished provider had no edge. `tools/extract_buildrequires.sh` now reads `pkgconfig()` from `.pc` paths in `%files`; a glob such as `pkgconfig/*.pc` still yields nothing until the provider is published | Check the `build-graph` artifact for both packages. A missing generated edge is a `tools/build_graph.py` gap; do not paper over it with a `stage`, which only orders cycle members |
 | `Found X but need: '>= Y'` where the package is one of ours | Same — ordering, not a missing dependency | As above |
 | `Failed to resolve the transaction`, naming a Fedora package that a same-stage recipe BuildRequires and an earlier stage's output in the same chain | Ordering again, with no `No match` line to give it away. The earlier stage's RPM is excluded from Fedora by name and pins a soname (ICU is the recurring one), so Fedora's copy of the *same-stage* package can no longer install | Raise the consumer's `stage` above the package it BuildRequires, and add the pair to `tests/test_icu_staging.py` |
 | `No match for argument: <pkg>` where `<pkg>` is a Fedora package | Genuine gap: Fedora predates what the source needs | Import and pin it, like `wayland-protocols` and `accountsservice` |
 | Error inside `/usr/share/cargo/registry/...` or another Fedora-packaged dependency | Fedora packaging bug | Verify it affects more than one Fedora release before calling it release-specific. Do not work around it in the spec |
 | A package fails on the hermetic lane (`Build offline from the lock`) but built on the container lane | The clean mock root lacks something the hand-built container root supplies: a running service, a staged sysusers entry, working loopback (`tools/hermetic_build.sh` brings `lo` up in its network namespace because git's HTTP tests serve on 127.0.0.1). Read `lock-s<N>-<pkg>`: the lock says exactly what the root contained | Fix the recipe or give the root what the test needs in `tools/mock_config.py`. Only if neither is possible, add `"build_lane": "container"` with a `build_lane_reason` naming the gap. **Never** skip the test |
 | `N to download, M already local` then a `urllib3` `ProtocolError` (`IncompleteRead`, `Connection reset by peer`), no `Start: rpmbuild` after it; or the lock phase spends minutes in `Generating the buildroot lockfile` and ends `Command failed: ... dnf5 ... repoquery -q --location ...` with no dnf error text | The hermetic lane's two online steps -- `mock --calculate-build-dependencies` writing the lock, and `mock-hermetic-repo` fetching the 200-300 RPMs it names -- lost the connection to Hummingbird's repository. Nothing in the package ran. mdadm, setxkbmap (fetch) and dmidecode (lock) went down this way in run 36286494799 (#287) | Not the package. `tools/hermetic_build.sh` retries each online step (`HERMETIC_NET_ATTEMPTS`, default 3) and cleans the half-fetched result between attempts; the `::warning ... retry` lines say how many it took. Three failures in a row is an outage or a wrong URL in the lock, not a flake: check the repository, do not raise the count |
+| `Lock the build root from its BuildRequires (hermetic)` fails with `Curl error (28): Timeout was reached ... Operation too slow. Less than 1000 bytes/sec` and `Cannot download Packages/... All mirrors were tried`, `lock resolve failed 3 times`, in many jobs across later waves, each naming different core RPMs (bash, gawk, srpm-macros) | Hummingbird's CDN (`packages.redhat.com`) stalled for the whole lock window. dnf aborts a download below 1000 B/s for 30 s, so all three attempts fail. Dependents run and fail at their own lock step instead of being skipped, which separates this from a cascade. Run 39898013739 lost 23 packages this way (gnome-shell, mutter, gjs, ffmpeg, cups-filters and more) between 11:06 and 12:08 UTC; it hit hard because the gtk4 4.24.1 bump rebuilt about 100 packages. The tracking issue then closed on a later three-package dispatch, while the image's `failed` state still named 20 | Not the packages. Check that `packages.redhat.com` answers, then dispatch `rebuild-rpms.yml` on `main` with `packages` empty: an empty dispatch retries every name in the published `failed` state. Before calling a "Factory: packages failing on main" issue done, read the `failed` map in the image label (`tools/package_index.py` prints it as `totals.failing`), not just the last run's report |
 | `error: File not found: .../BUILDROOT/<path>` on the hermetic lane for a file the recipe lists and the container lane used to ship | The build installs that file only when the build root already has something -- v4l-utils' meson installs its udevd drop-in only if `systemd-udevd.service` in the root carries `SystemCallFilter`, and a mock root has no `systemd-udev`. The container root happened to; the lock says what the mock root did. Fedora's mock root matches ours, which is why Fedora's spec never listed the file | Install the file explicitly in the recipe when the target needs it (v4l-utils: `install -Dpm 0644` in the install section), so the file list stops depending on the build root. Do not add the missing package as a BuildRequires just to steer a probe, and do not drop the file if consumers need it |
 | `are you running as root?` or `Cannot run ... tests as root` on the hermetic lane | mock was run as root, so the build ran as root | `tools/hermetic_build.sh` runs mock as `mockbuilder`; a change that drops the `runuser` brings this back |
 | An issue *Utah install set: <pkg> does not resolve*, or a `Utah cannot install` warning on `publish` | Something Utah installs does not resolve against the published factory plus Hummingbird. The issue quotes dnf's problem line, e.g. `xdg-desktop-portal … requires libfuse3.so.4()(64bit), but none of the providers can be installed` | Follow the named requirement to the package that should provide it, and fix that package; the issue closes itself on the first run in which it resolves. The check is advisory by design and does not block publication |
@@ -279,6 +291,22 @@ Do not infer a version from what Rawhide ships or from a package name.
   `.hummingbird-upstream.json`. They are built by the factory from upstream
   releases, not imported from Fedora dist-git. Do not triage them as Rawhide
   import gaps or declare them unavailable in the runtime contract.
+
+### A C++ binding header collision can be a stale generated-wrapper stack
+
+When a C++ binding fails against newer C-library headers with conflicting
+`G*Class` declarations, compare the binding release with the exact C-library
+version in the build root before patching the consumer. GLib 2.89.2 made
+`GEmblem` and `GDBusActionGroup` final; glibmm 2.89.0 then stopped deriving
+its `Emblem` and `DBus::ActionGroup` wrappers from the generated `gtkmm__Gxxx`
+types, and glibmm's own release configuration requires GLib >= 2.89.4.
+Thus glibmm 2.88.1 with GLib 2.90.1 is a dependency-stack mismatch; importing
+the current Fedora `glibmm2.68` recipe (2.90.0) is the source-backed fix to
+test, not a speculative patch to the consumer. Fedora's Rawhide spec currently
+declares a lower 2.81.0 minimum, so follow the upstream release's `meson.build`
+for the real dependency minimum. Require the hosted build against the actual
+build root before claiming resolution. A successful unrelated pipeline canary
+does not prove the failing package builds.
 
 ## Never
 

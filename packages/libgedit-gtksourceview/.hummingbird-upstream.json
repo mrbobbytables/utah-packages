@@ -1,0 +1,8 @@
+{
+  "package": "libgedit-gtksourceview",
+  "branch": "rawhide",
+  "remote": "https://src.fedoraproject.org/rpms/libgedit-gtksourceview.git",
+  "commit": "2b0f68d1cd28e66a6f2c0e4f795af8300c52af2c",
+  "tree": "6e63ff9e38f88b3c1263c05cedb53653ca6802f2",
+  "imported_at": "2026-10-20T20:25:00.793945+00:00"
+}

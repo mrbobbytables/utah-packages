@@ -12,13 +12,20 @@ on:
 permissions:
   contents: read
 
+# Every run checks the same thing, so a newer run brings nothing an older one
+# lacks; cancelling only throws away a nearly finished check. When upstreams
+# are slow a run outlasts the 30-minute cron and, with cancellation, no run
+# ever finished (#445). GitHub keeps at most one pending run per group, so
+# letting the running one finish cannot pile runs up.
 concurrency:
   group: source-pipeline
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   verify:
     runs-on: ubuntu-24.04
+    # A hung run still ends, as a failure, instead of holding the queue.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Fetch, verify, and report
